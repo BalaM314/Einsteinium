@@ -12,7 +12,7 @@ Water Cooler: 2
 Beryllium Moderator: 18
 
 */
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 
 
 
@@ -22,7 +22,7 @@ class Reactor {
     this.x = constrain(x, 1, 17);
     this.y = constrain(y, 1, 17);
     this.z = constrain(z, 1, 17);
-    this.named = "Unnamed Reactor";
+    this.name = "Unnamed Reactor";
     let temp1 = [];
     let temp2 = [];
     for(let i = 0; i < this.z; i ++){
@@ -70,12 +70,13 @@ class Reactor {
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
     }
+    document.getElementById("reactorName").value = this.name;
   }
 
   export(){
     download(
       document.getElementById("reactorName").value./*TODO: NEEDS BETTER SANITIZING*/replaceAll("/", "").replaceAll(".", "") + ".json",
-      `{\n\t"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",\n\t"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",\n\t"content": ` + JSON.stringify(this.contents) + `,\n\t"metadata":{"version":${VERSION},"dimensions":[${this.x},${this.y},${this.z}]}\n}`
+      `{\n\t"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",\n\t"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",\n\t"content": ` + JSON.stringify(this.contents) + `,\n\t"metadata":{"version":"${VERSION}","dimensions":[${this.x},${this.y},${this.z}],"name": "${this.name}"}\n}`
     );
     //It's messy but it works.
   }
@@ -115,8 +116,12 @@ function loadReactor(data){
   try {
     var x = JSON.parse(data);
     console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    if(x.metadata.version != VERSION){
+      console.warn("Loading JSON file with a different data version.");
+    }
     defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
     defaultReactor.contents = x.content;
+    defaultReactor.name = x.metadata.name;
     console.assert(defaultReactor.validate());
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){

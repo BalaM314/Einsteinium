@@ -9,6 +9,8 @@ Air: 0
 Fuel Cell: 1
 Water Cooler: 2
 
+Cryotheum Cooler: 11
+
 Beryllium Moderator: 18
 
 */
@@ -58,15 +60,15 @@ class Reactor {
     reactorLayers.innerHTML = "";
     reactorLayers.style.setProperty("--cells-z", this.z.toString());
     reactorLayers.style.setProperty("--cells-x", this.x.toString());
-    let layerInnerHTML = `<div class="layerinner" onclick="alert('Reactor editing is not yet implemented.')">`;
-    for(let i = 0; i < this.x*this.z; i ++){
-      layerInnerHTML += `<div class="cell"></div>`;//This should be different based on the actual reactor's cell.
-    }
-    layerInnerHTML += "</div>";
     for(let i = 0; i < this.y; i ++){
       let tempElement = document.createElement("div");
       tempElement.className = "layer";
       tempElement.attributes.z = i;
+      let layerInnerHTML = `<div class="layerinner" onclick="alert('Reactor editing is not yet implemented.')">`;
+      for(let j = 0; j < this.x*this.z; j ++){
+        layerInnerHTML += `<div class="cell">${this.contents[i][Math.floor(j/this.x)][j % this.x]}</div>`;//Todo: optimize the crap out of this as its being run several hundred times.
+      }
+      layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
     }

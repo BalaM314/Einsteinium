@@ -87,6 +87,9 @@ class Reactor {
     );
     //It's messy but it works.
   }
+  exportToBG(){
+    //Dire, what have you done?! BG strings are a **mess**.
+  }
 }
 
 function download(filename, text) {
@@ -150,3 +153,11 @@ function regenReactor(){
   defaultReactor.updateDOM(reactorLayers);
 }
 regenReactor();
+
+
+document.getElementById("title").innerHTML = "<strong>Einsteinium</strong> alpha v"+VERSION+": editing ";
+console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
+console.log("Version Alpha v" + VERSION);
+console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");
+console.warn("Warning: Einsteinium is currently in Alpha! This means most features aren't implemented, it may or may not be usable, and you are expected to read the code to get full use out of it.");
+console.warn("There will also be bugs everywhere.");

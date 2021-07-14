@@ -59,6 +59,16 @@ html, body {
   background-color: #FFF;
 }
 
+#reactorlayers .cell:hover {
+  border: 1px solid black;
+  background-color: #EEE;
+}
+
+#reactorlayers .cell:active {
+  border: 1px solid black;
+  background-color: #CCC;
+}
+
 #hotbar {
   grid-row: 3;
   grid-column: 2;

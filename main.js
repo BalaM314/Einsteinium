@@ -12,6 +12,7 @@ Water Cooler: 2
 Beryllium Moderator: 18
 
 */
+const VERSION = 1.0.1;
 
 
 
@@ -72,16 +73,29 @@ class Reactor {
   }
 
   export(){
-    console.error("NYI!");
+    download(
+      document.getElementById("reactorName").value./*TODO: NEEDS BETTER SANITIZING*/replaceAll("/", "").replaceAll(".", "") + ".json",
+      `{\n\t"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",\n\t"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",\n\t"content": ` + JSON.stringify(this.contents) + `,\n\t"metadata":{"version":${VERSION},"dimensions":[${this.x},${this.y},${this.z}]}\n}`
+    );
+    //It's messy but it works.
   }
 }
 
+function download(filename, text) {
+  var temp2 = document.createElement('a');
+  temp2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  temp2.setAttribute('download', filename);
+  temp2.style.display = 'none';
+  document.body.appendChild(temp2);
+  temp2.click();
+  document.body.removeChild(temp2);
+}
 
 var reactorLayers = document.getElementById("reactorlayers");
 
 var defaultReactor;
 function regenReactor(){
-  let defaultReactor = new Reactor(
+  defaultReactor = new Reactor(
     document.getElementById("x_input").value,
     document.getElementById("y_input").value,
     document.getElementById("z_input").value);

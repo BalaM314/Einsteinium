@@ -17,6 +17,9 @@ Beryllium Moderator: 18
 const VERSION = "1.0.2";
 
 
+function cp(data){
+  return JSON.parse(JSON.stringify(data));
+}
 
 class Reactor {
   constructor(x, y, z){
@@ -31,20 +34,21 @@ class Reactor {
       temp1.push(0);
     }
     for(let i = 0; i < this.x; i ++){
-      temp2.push(temp1);
+      temp2.push(cp(temp1));
     }
     for(let i = 0; i < this.y; i ++){
-      this.contents.push(temp2);
+      this.contents.push(cp(temp2));
     }
   }
 
   edit(x, y, z, id){
-    if(isNan(id)){
+    console.log(arguments);
+    if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
     try {
-      this.contents[z][x][y] = id;
+      this.contents[y][x][z] = id;
       return true;
     } catch(err){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
@@ -60,13 +64,14 @@ class Reactor {
     reactorLayers.innerHTML = "";
     reactorLayers.style.setProperty("--cells-z", this.z.toString());
     reactorLayers.style.setProperty("--cells-x", this.x.toString());
+    //So glad this worked ^^
     for(let i = 0; i < this.y; i ++){
       let tempElement = document.createElement("div");
       tempElement.className = "layer";
-      tempElement.attributes.z = i;
-      let layerInnerHTML = `<div class="layerinner" onclick="alert('Reactor editing is not yet implemented.')">`;
+      tempElement.attributes.y = i;
+      let layerInnerHTML = `<div class="layerinner">`;
       for(let j = 0; j < this.x*this.z; j ++){
-        layerInnerHTML += `<div class="cell">${this.contents[i][Math.floor(j/this.x)][j % this.x]}</div>`;//Todo: optimize the crap out of this as its being run several hundred times.
+        layerInnerHTML += `<div class="cell" ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */`onclick="defaultReactor.edit(${j % this.x}, ${i}, ${Math.floor(j/this.x)}, 1);defaultReactor.updateDOM(reactorLayers);">${this.contents[i][j % this.x][Math.floor(j/this.x)]}</div>`;//Todo: optimize the crap out of this as its being run several hundred times.
       }
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
@@ -86,7 +91,7 @@ class Reactor {
 
 function download(filename, text) {
   var temp2 = document.createElement('a');
-  temp2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
   temp2.setAttribute('download', filename);
   temp2.style.display = 'none';
   document.body.appendChild(temp2);
@@ -125,6 +130,9 @@ function loadReactor(data){
     defaultReactor.contents = x.content;
     defaultReactor.name = x.metadata.name;
     console.assert(defaultReactor.validate());
+    document.getElementById("x_input").value = x.metadata.dimensions[0];
+    document.getElementById("y_input").value = x.metadata.dimensions[1];
+    document.getElementById("z_input").value = x.metadata.dimensions[2];
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){
     console.error("Invalid JSON!" + err);
@@ -142,26 +150,3 @@ function regenReactor(){
   defaultReactor.updateDOM(reactorLayers);
 }
 regenReactor();
-
-/*
-function generateLayersToDOM(x, y, z){
-  x = constrain(x, 1, 17);
-  y = constrain(y, 1, 17);
-  z = constrain(z, 1, 17);
-  reactorLayers.attributes.dimensions = `${x},${y},${z}`;
-  let layerInnerHTML = `<div class="layerinner">`;
-  for(let i = 0; i < x*z; i ++){
-    layerInnerHTML += `<div class="cell"></div>`;
-  }
-  layerInnerHTML += "</div>";
-  for(let i = 0; i < z; i ++){
-    let tempElement = document.createElement("div");
-    tempElement.className = "layer";
-    tempElement.attributes.z = i;
-    tempElement.innerHTML = layerInnerHTML;
-    reactorLayers.appendChild(tempElement);
-  }
-}
-
-generateLayersToDOM(5, 5, 5);
-*/

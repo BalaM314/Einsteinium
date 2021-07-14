@@ -52,6 +52,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(var(--cells-x), 1fr);
   grid-template-rows: repeat(var(--cells-z), 1fr);
+  /*I'm so glad this worked :D*/
 }
 
 #reactorlayers .cell {

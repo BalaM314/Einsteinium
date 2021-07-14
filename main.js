@@ -12,7 +12,7 @@ Water Cooler: 2
 Beryllium Moderator: 18
 
 */
-const VERSION = 1.0.1;
+const VERSION = "1.0.1";
 
 
 
@@ -91,15 +91,36 @@ function download(filename, text) {
   document.body.removeChild(temp2);
 }
 
+
+var uploadButton = document.getElementById('uploadButton');
+uploadButton.type = 'file';
+uploadButton.onchange = function(e){
+
+   // getting a hold of the file reference
+   var file = e.target.files[0];
+
+   // setting up the reader
+   var reader = new FileReader();
+   reader.readAsText(file);
+
+   // here we tell the reader what to do when it's done reading...
+   reader.onload = function(readerEvent){
+      var content = readerEvent.target.result; // this is the content!
+      console.log(content);
+      loadReactor(content);
+   }
+}
+
 function loadReactor(data){
   try {
     var x = JSON.parse(data);
-    defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
-    defaultReactor.contents = x.contents;
-    console.assert(defaultReactor.validate());
     console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
+    defaultReactor.contents = x.content;
+    console.assert(defaultReactor.validate());
+    defaultReactor.updateDOM(reactorLayers);
   } catch(err){
-    console.error("Invalid JSON!");
+    console.error("Invalid JSON!" + err);
   }
 }
 

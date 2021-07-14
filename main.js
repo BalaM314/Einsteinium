@@ -91,6 +91,18 @@ function download(filename, text) {
   document.body.removeChild(temp2);
 }
 
+function loadReactor(data){
+  try {
+    var x = JSON.parse(data);
+    defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
+    defaultReactor.contents = x.contents;
+    console.assert(defaultReactor.validate());
+    console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+  } catch(err){
+    console.error("Invalid JSON!");
+  }
+}
+
 var reactorLayers = document.getElementById("reactorlayers");
 
 var defaultReactor;

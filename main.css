@@ -50,8 +50,8 @@ html, body {
   width: 99%;
   height: 99%;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
+  grid-template-columns: repeat(var(--cells-x), 1fr);
+  grid-template-rows: repeat(var(--cells-z), 1fr);
 }
 
 #reactorlayers .cell {
@@ -73,10 +73,9 @@ html, body {
   border: 2px ridge blue;
 }
 #optionspanel {
-  display: grid;
   grid-row: 2;
   grid-column: 1;
 }
 #optionspanel button {
-  margin: 50px;
+  margin: 20px;
 }

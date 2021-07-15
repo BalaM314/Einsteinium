@@ -91,7 +91,21 @@ class Reactor {
   }
 
   validate(){
-    return true;// TODO: make this actually validate
+    try {
+      console.assert(this.contents.length == this.y);
+      for(var x of this.contents){
+        console.assert(x.length == this.x);
+        for(var y of x){
+          console.assert(y.length == this.z);
+          for(var cell of y){
+            console.assert(typeof cell == "number");
+            console.assert(cell >= 0 && cell <= 18);
+          }
+        }
+      }
+      return true;
+    } catch(err){}
+    return false;
   }
 
   updateDOM(reactorLayers){
@@ -107,18 +121,19 @@ class Reactor {
       tempElement.attributes.y = i;
       let layerInnerHTML = `<div class="layerinner">`;
       for(let j = 0; j < this.x*this.z; j ++){
+        let cX = j % this.x;
+        let cZ = Math.floor(j/this.x);
         layerInnerHTML +=
         `<div
           class="cell" ` +
           /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ //In case I need it
           `onclick="
-            defaultReactor.edit(${j % this.x}, ${i}, ${Math.floor(j/this.x)}, document.getElementById('idpicker').value);
+            defaultReactor.edit(${cX}, ${i}, ${cZ}, document.getElementById('idpicker').value);
             defaultReactor.updateDOM(reactorLayers);
           "
         >
-          ${this.contents[i][j % this.x][Math.floor(j/this.x)]}
+          ${this.contents[i][cX][cZ]/*TODO: make this display the image instead of the number*/}
         </div>`;
-        //Todo: optimize the crap out of this as its being run several hundred times.
       }
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
@@ -327,11 +342,14 @@ function loadReactor(data){
       console.warn("Loading JSON file with a different data version.");
     }
 
-    //The data's valid, load it now..
-    defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
-    defaultReactor.contents = x.content;
-    defaultReactor.name = x.metadata.name;
-    console.assert(defaultReactor.validate());//TODO: if this fails reload a reactor.
+    //The data's probably valid, load it now..
+    let tempReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
+    tempReactor.contents = x.content;
+    tempReactor.name = x.metadata.name;
+    console.assert(tempReactor.validate());
+
+    //Validation passed, its good.
+    defaultReactor = tempReactor;
     document.getElementById("x_input").value = x.metadata.dimensions[0];
     document.getElementById("y_input").value = x.metadata.dimensions[1];
     document.getElementById("z_input").value = x.metadata.dimensions[2];

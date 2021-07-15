@@ -23,11 +23,12 @@
     </div>
     <div id="optionspanel">
       <button onclick="alert('Not yet implemented.')">Do stuff!</button><br>
-      <button onclick="alert('Not yet implemented.')">Do stuff!</button><br>
+      <button onclick="alert('Not yet implemented.');">Export to BG string</button><br>
       <input type="number" id="x_input" value="5">x<input type="number" id="y_input" value="5">x<input type="number" id="z_input" value="5"><br>
       <button onclick="regenReactor()">Regenerate reactor with above values</button><br>
       <button onclick="defaultReactor.export()">Download reactor as JSON</button><br>
-      <label for="uploadButton">Upload reactor from JSON</label><input id="uploadButton"></input>
+      <label for="uploadButton">Upload reactor from JSON</label><input id="uploadButton"></input><br>
+      <label for="heat_input">Base heat:</label><input type="number" id="heat_input" onchange="baseHeat = this.value;" value="18">
     </div>
     <div id="hotbar">
       <input type="number" id="idpicker" value="1">

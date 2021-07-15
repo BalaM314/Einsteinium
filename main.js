@@ -17,13 +17,31 @@ Beryllium Moderator: 18
 const VERSION = "1.0.2";
 
 
+//Util functions
 function cp(data){
   return JSON.parse(JSON.stringify(data));
 }
+function gna(arr, x, y, z){//Safely get a value from nested arrays
+  if(arr){
+    if(arr[x]){
+      if(arr[x][y]){
+        if(arr[x][y][z] != undefined){
+          return arr[x][y][z];
+        }
+      }
+    }
+  }
+  return null;
+}
+
 
 class Reactor {
   constructor(x, y, z){
     this.contents = [];
+    /*
+    Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
+    It is stored in the format Reactor.contents[y][x][z].
+    */
     this.x = constrain(x, 1, 17);
     this.y = constrain(y, 1, 17);
     this.z = constrain(z, 1, 17);
@@ -42,11 +60,11 @@ class Reactor {
   }
 
   edit(x, y, z, id){
-    console.log(arguments);
     if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
+    id *= 1;//convert to number
     try {
       this.contents[y][x][z] = id;
       return true;
@@ -72,7 +90,7 @@ class Reactor {
       let layerInnerHTML = `<div class="layerinner">`;
       for(let j = 0; j < this.x*this.z; j ++){
         layerInnerHTML += `<div class="cell" ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */`onclick="defaultReactor.edit(${j % this.x}, ${i}, ${Math.floor(j/this.x)}, document.getElementById('idpicker').value);defaultReactor.updateDOM(reactorLayers);">${this.contents[i][j % this.x][Math.floor(j/this.x)]}</div>`;//Todo: optimize the crap out of this as its being run several hundred times.
-      }
+      }//What a mess ^^: todo format.
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
@@ -89,6 +107,142 @@ class Reactor {
   }
   exportToBG(){
     //Dire, what have you done?! BG strings are a **mess**.
+    let exportString = `
+    {
+      stateIntArray:[I;1,2,2,1,2,1,1,2],
+      dim:0,
+      posIntArray:[I;256,65792,257,65793,0,65536,1,65537],
+      startPos:{X:0,Y:0,Z:0},
+      mapIntState: [
+        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
+        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
+        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
+        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
+        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
+        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
+        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
+        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}}
+      ],
+      endPos:{X:1,Y:1,Z:1}
+    }
+    `;
+    console.error("Not yet implemented.");
+    return exportString;
+  }
+
+  getAdjacentCells(x, y, z){
+    let adjacentCells = 0;
+    adjacentCells += (gna(this.contents, y + 1, x, z) == 1);
+    adjacentCells += (gna(this.contents, y, x + 1, z) == 1);
+    adjacentCells += (gna(this.contents, y, x, z + 1) == 1);
+    adjacentCells += (gna(this.contents, y - 1, x, z) == 1);
+    adjacentCells += (gna(this.contents, y, x - 1, z) == 1);
+    adjacentCells += (gna(this.contents, y, x, z - 1) == 1);
+    return adjacentCells;
+  }
+
+  getAdjacentModerators(x, y, z){
+    let adjacentModerators = 0;
+    adjacentModerators += (gna(this.contents, y + 1, x, z) == 17);
+    adjacentModerators += (gna(this.contents, y, x + 1, z) == 17);
+    adjacentModerators += (gna(this.contents, y, x, z + 1) == 17);
+    adjacentModerators += (gna(this.contents, y - 1, x, z) == 17);
+    adjacentModerators += (gna(this.contents, y, x - 1, z) == 17);
+    adjacentModerators += (gna(this.contents, y, x, z - 1) == 17);
+    return adjacentModerators;
+  }
+
+  getDistantAdjacentCells(x, y, z){
+    //Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
+    let adjacentCells = 0;
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y + i, x, z);
+      if(currentCell == 1 && i > 1){
+        adjacentCells ++; break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y, x + i, z);
+      if(currentCell == 1 && i > 1){
+        adjacentCells ++; break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y, x, z + i);
+      console.log(i, x, y && i > 1, z, currentCell);
+      if(currentCell == 1){
+        adjacentCells ++; console.log("cell found"); break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y - i, x, z);
+      if(currentCell == 1 && i > 1){
+        adjacentCells ++; break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y, x - i, z);
+      if(currentCell == 1 && i > 1){
+        adjacentCells ++; break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
+      let currentCell = gna(this.contents, y, x, z - i);
+      if(currentCell == 1 && i > 1){
+        adjacentCells ++; break;
+      } else if(currentCell == 17){
+        continue;
+      } else {
+        break;
+      }
+    }
+    return adjacentCells;
+  }
+
+  calculateStats(){
+    let totalHeat = 0;
+    let totalCooling = 0;
+    var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    for(var y in this.contents){
+      for(var x in this.contents[y]){
+        for(var z in this.contents[y][x]){
+          const ccell = this.contents[y][x][z];
+          cellsCount[ccell] ++;
+          if(ccell == 1){
+            let adjacentCells = this.getAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
+            adjacentCells += this.getDistantAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
+            let adjacentModerators = this.getAdjacentModerators(parseInt(x), parseInt(y), parseInt(z));
+            let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
+            heatMultiplier += adjacentModerators * (1/3) * (adjacentCells + 1);//weird neutron flux thing
+            totalHeat += baseHeat * heatMultiplier;
+            console.log(adjacentCells, adjacentModerators, heatMultiplier);
+          } else if(ccell == 11){
+            totalCooling -= 160;
+          }
+        }
+      }
+    }
+    return {"heatgen":totalHeat, "cooling":totalCooling};
   }
 }
 
@@ -102,6 +256,11 @@ function download(filename, text) {
   document.body.removeChild(temp2);
 }
 
+var baseHeat = 18;
+var settings = {
+  "heatMult": 1.0,
+  "neutronRadiationReach": 4,
+};
 
 var uploadButton = document.getElementById('uploadButton');
 uploadButton.type = 'file';

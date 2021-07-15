@@ -14,7 +14,7 @@ Cryotheum Cooler: 11
 Beryllium Moderator: 18
 
 */
-const VERSION = "1.0.2";
+const VERSION = "1.0.3";
 
 var settings = {
   "heatMult": 1.0,

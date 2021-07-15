@@ -222,11 +222,11 @@ class Reactor {
   calculateStats(){
     let totalHeat = 0;
     let totalCooling = 0;
-    var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     for(var y in this.contents){
       for(var x in this.contents[y]){
         for(var z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
+          var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           cellsCount[ccell] ++;
           if(ccell == 1){
             let adjacentCells = this.getAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
@@ -242,7 +242,7 @@ class Reactor {
         }
       }
     }
-    return {"heatgen":totalHeat, "cooling":totalCooling};
+    return {"heatgen":totalHeat, "cooling":totalCooling, "cellcount": cellsCount};
   }
 }
 

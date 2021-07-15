@@ -19,7 +19,13 @@ const VERSION = "1.0.2";
 var settings = {
   "heatMult": 1.0,
   "neutronRadiationReach": 4,
-  "maxReactorSize": 10
+  "maxReactorSize": 10,
+  "moderatorExtraHeat": 2,
+  "coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110]
+};
+
+var hardSettings = {
+  "defaultName": "Unnamed Reactor"
 };
 
 //Util functions
@@ -51,7 +57,8 @@ class Reactor {
     this.x = constrain(x, 1, settings.maxReactorSize);
     this.z = constrain(z, 1, settings.maxReactorSize);
     //some input validation cus why not
-    this.name = "Unnamed Reactor";
+
+    this.name = hardSettings.defaultName;
 
     //code to populate the this.contents array
     let temp1 = [];
@@ -270,11 +277,11 @@ class Reactor {
             adjacentCells += this.getDistantAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
             let adjacentModerators = this.getAdjacentModerators(parseInt(x), parseInt(y), parseInt(z));
             let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
-            heatMultiplier += adjacentModerators * (1/3) * (adjacentCells + 1);//also weird neutron flux thing
+            heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
             console.log(adjacentCells, adjacentModerators, heatMultiplier);
-          } else if(ccell == 11){
-            totalCooling -= 160;
+          } else if(ccell > 1 && ccell < 17){
+            totalCooling -= settings.coolers[ccell];
           }
         }
       }

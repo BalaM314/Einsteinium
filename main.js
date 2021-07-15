@@ -16,6 +16,11 @@ Beryllium Moderator: 18
 */
 const VERSION = "1.0.2";
 
+var settings = {
+  "heatMult": 1.0,
+  "neutronRadiationReach": 4,
+  "maxReactorSize": 10
+};
 
 //Util functions
 function cp(data){
@@ -42,10 +47,13 @@ class Reactor {
     Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
     It is stored in the format Reactor.contents[y][x][z].
     */
-    this.x = constrain(x, 1, 17);
-    this.y = constrain(y, 1, 17);
-    this.z = constrain(z, 1, 17);
+    this.y = constrain(y, 1, settings.maxReactorSize);
+    this.x = constrain(x, 1, settings.maxReactorSize);
+    this.z = constrain(z, 1, settings.maxReactorSize);
+    //some input validation cus why not
     this.name = "Unnamed Reactor";
+
+    //code to populate the this.contents array
     let temp1 = [];
     let temp2 = [];
     for(let i = 0; i < this.z; i ++){
@@ -60,6 +68,7 @@ class Reactor {
   }
 
   edit(x, y, z, id){
+    //Self explanatory.
     if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
@@ -83,14 +92,27 @@ class Reactor {
     reactorLayers.style.setProperty("--cells-z", this.z.toString());
     reactorLayers.style.setProperty("--cells-x", this.x.toString());
     //So glad this worked ^^
+
+    //This code is a bit messy, it generates the html for the reactor layer editor.
     for(let i = 0; i < this.y; i ++){
       let tempElement = document.createElement("div");
       tempElement.className = "layer";
       tempElement.attributes.y = i;
       let layerInnerHTML = `<div class="layerinner">`;
       for(let j = 0; j < this.x*this.z; j ++){
-        layerInnerHTML += `<div class="cell" ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */`onclick="defaultReactor.edit(${j % this.x}, ${i}, ${Math.floor(j/this.x)}, document.getElementById('idpicker').value);defaultReactor.updateDOM(reactorLayers);">${this.contents[i][j % this.x][Math.floor(j/this.x)]}</div>`;//Todo: optimize the crap out of this as its being run several hundred times.
-      }//What a mess ^^: todo format.
+        layerInnerHTML +=
+        `<div
+          class="cell" ` +
+          /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ //In case I need it
+          `onclick="
+            defaultReactor.edit(${j % this.x}, ${i}, ${Math.floor(j/this.x)}, document.getElementById('idpicker').value);
+            defaultReactor.updateDOM(reactorLayers);
+          "
+        >
+          ${this.contents[i][j % this.x][Math.floor(j/this.x)]}
+        </div>`;
+        //Todo: optimize the crap out of this as its being run several hundred times.
+      }
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
@@ -99,11 +121,21 @@ class Reactor {
   }
 
   export(){
+    //Generates and then saves the JSON for the reactor. Format can just be read off the code.
     download(
       document.getElementById("reactorName").value./*TODO: NEEDS BETTER SANITIZING*/replaceAll("/", "").replaceAll(".", "") + ".json",
-      `{\n\t"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",\n\t"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",\n\t"content": ` + JSON.stringify(this.contents) + `,\n\t"metadata":{"version":"${VERSION}","dimensions":[${this.x},${this.y},${this.z}],"name": "${this.name}"}\n}`
+      `{
+        "readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
+        "READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
+        "content": ` + JSON.stringify(this.contents) + `,
+        "metadata":{
+          "version":"${VERSION}",
+          "dimensions":[${this.x},${this.y},${this.z}],
+          "name": "${this.name}",
+          "validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
+        }
+      }`
     );
-    //It's messy but it works.
   }
   exportToBG(){
     //Dire, what have you done?! BG strings are a **mess**.
@@ -131,6 +163,7 @@ class Reactor {
   }
 
   getAdjacentCells(x, y, z){
+    //Does what it says.
     let adjacentCells = 0;
     adjacentCells += (gna(this.contents, y + 1, x, z) == 1);
     adjacentCells += (gna(this.contents, y, x + 1, z) == 1);
@@ -142,6 +175,7 @@ class Reactor {
   }
 
   getAdjacentModerators(x, y, z){
+    //Also does what it says.
     let adjacentModerators = 0;
     adjacentModerators += (gna(this.contents, y + 1, x, z) == 17);
     adjacentModerators += (gna(this.contents, y, x + 1, z) == 17);
@@ -153,7 +187,11 @@ class Reactor {
   }
 
   getDistantAdjacentCells(x, y, z){
-    //Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
+    /*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
+    Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
+    This is because IRL this causes neutron flux to be shared.
+    It makes the logic far more complicated.
+    */
     let adjacentCells = 0;
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y + i, x, z);
@@ -177,9 +215,8 @@ class Reactor {
     }
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x, z + i);
-      console.log(i, x, y && i > 1, z, currentCell);
       if(currentCell == 1){
-        adjacentCells ++; console.log("cell found"); break;
+        adjacentCells ++; break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -233,7 +270,7 @@ class Reactor {
             adjacentCells += this.getDistantAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
             let adjacentModerators = this.getAdjacentModerators(parseInt(x), parseInt(y), parseInt(z));
             let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
-            heatMultiplier += adjacentModerators * (1/3) * (adjacentCells + 1);//weird neutron flux thing
+            heatMultiplier += adjacentModerators * (1/3) * (adjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
             console.log(adjacentCells, adjacentModerators, heatMultiplier);
           } else if(ccell == 11){
@@ -247,6 +284,7 @@ class Reactor {
 }
 
 function download(filename, text) {
+  //Self explanatory.
   var temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
   temp2.setAttribute('download', filename);
@@ -257,25 +295,15 @@ function download(filename, text) {
 }
 
 var baseHeat = 18;
-var settings = {
-  "heatMult": 1.0,
-  "neutronRadiationReach": 4,
-};
 
 var uploadButton = document.getElementById('uploadButton');
 uploadButton.type = 'file';
 uploadButton.onchange = function(e){
-
-   // getting a hold of the file reference
    var file = e.target.files[0];
-
-   // setting up the reader
    var reader = new FileReader();
    reader.readAsText(file);
-
-   // here we tell the reader what to do when it's done reading...
    reader.onload = function(readerEvent){
-      var content = readerEvent.target.result; // this is the content!
+      var content = readerEvent.target.result;
       console.log(content);
       loadReactor(content);
    }
@@ -284,14 +312,19 @@ uploadButton.onchange = function(e){
 function loadReactor(data){
   try {
     var x = JSON.parse(data);
+    // First some validation to make sure the data is valid.
     console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    //hehe VV
+    console.assert(x.metadata.version == "1.0.2" || x.metadata.version == "1.0.1" || x.metadata.version == "1.0.0" || x.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
     if(x.metadata.version != VERSION){
       console.warn("Loading JSON file with a different data version.");
     }
+
+    //The data's valid, load it now..
     defaultReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
     defaultReactor.contents = x.content;
     defaultReactor.name = x.metadata.name;
-    console.assert(defaultReactor.validate());
+    console.assert(defaultReactor.validate());//TODO: if this fails reload a reactor.
     document.getElementById("x_input").value = x.metadata.dimensions[0];
     document.getElementById("y_input").value = x.metadata.dimensions[1];
     document.getElementById("z_input").value = x.metadata.dimensions[2];

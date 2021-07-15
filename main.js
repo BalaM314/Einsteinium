@@ -49,6 +49,7 @@ function gna(arr, x, y, z){//Safely get a value from nested arrays
 class Reactor {
   constructor(x, y, z){
     this.contents = [];
+    this.valids = [];
     /*
     Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
     It is stored in the format Reactor.contents[y][x][z].
@@ -62,15 +63,20 @@ class Reactor {
 
     //code to populate the this.contents array
     let temp1 = [];
+    let temp11 = [];
     let temp2 = [];
+    let temp22 = [];
     for(let i = 0; i < this.z; i ++){
       temp1.push(0);
+      temp11.push(false);
     }
     for(let i = 0; i < this.x; i ++){
       temp2.push(cp(temp1));
+      temp22.push(cp(temp11));
     }
     for(let i = 0; i < this.y; i ++){
       this.contents.push(cp(temp2));
+      this.valids.push(cp(temp22));
     }
   }
 
@@ -83,6 +89,7 @@ class Reactor {
     id *= 1;//convert to number
     try {
       this.contents[y][x][z] = id;
+      this.valids[y][x][z] = (id == 1);
       return true;
     } catch(err){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
@@ -129,10 +136,11 @@ class Reactor {
           /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ //In case I need it
           `onclick="
             defaultReactor.edit(${cX}, ${i}, ${cZ}, document.getElementById('idpicker').value);
+            defaultReactor.calculateStats();
             defaultReactor.updateDOM(reactorLayers);
           "
         >
-          ${this.contents[i][cX][cZ]/*TODO: make this display the image instead of the number*/}
+          <b>${this.contents[i][cX][cZ]}</b> ${this.valids[i][cX][cZ]/*TODO: make this display the image instead of the number*/}
         </div>`;
       }
       layerInnerHTML += "</div>";
@@ -193,6 +201,7 @@ class Reactor {
     adjacentCells += (gna(this.contents, y - 1, x, z) == 1);
     adjacentCells += (gna(this.contents, y, x - 1, z) == 1);
     adjacentCells += (gna(this.contents, y, x, z - 1) == 1);
+    console.log(gna(this.contents, y, x, z - 1));
     return adjacentCells;
   }
 
@@ -218,7 +227,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y + i, x, z);
       if(currentCell == 1 && i > 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y + r, x, z] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -228,7 +241,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x + i, z);
       if(currentCell == 1 && i > 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y, x + r, z] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -238,7 +255,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x, z + i);
       if(currentCell == 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y, x, z + r] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -248,7 +269,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y - i, x, z);
       if(currentCell == 1 && i > 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y - r, x, z] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -258,7 +283,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x - i, z);
       if(currentCell == 1 && i > 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y, x - r, z] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -268,7 +297,11 @@ class Reactor {
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x, z - i);
       if(currentCell == 1 && i > 1){
-        adjacentCells ++; break;
+        adjacentCells ++;
+        for(let r = i; r > 0; r --){
+          this.valids[y, x, z - r] = true;
+        }
+        break;
       } else if(currentCell == 17){
         continue;
       } else {
@@ -285,18 +318,29 @@ class Reactor {
       for(var x in this.contents[y]){
         for(var z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
+          const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
           var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           cellsCount[ccell] ++;
           if(ccell == 1){
-            let adjacentCells = this.getAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
-            adjacentCells += this.getDistantAdjacentCells(parseInt(x), parseInt(y), parseInt(z));
-            let adjacentModerators = this.getAdjacentModerators(parseInt(x), parseInt(y), parseInt(z));
+            let adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
+            adjacentCells += this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
+            let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
             let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
             heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
-            console.log(adjacentCells, adjacentModerators, heatMultiplier);
+            //console.log(adjacentCells, adjacentModerators, heatMultiplier);
           } else if(ccell > 1 && ccell < 17){
-            totalCooling -= settings.coolers[ccell];
+            switch(ccell){
+              case 11:
+                if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 2){
+                  this.valids[pos.y][pos.x][pos.z] = true;
+                  totalCooling -= settings.coolers[ccell];
+                } else {
+                  this.valids[pos.y][pos.x][pos.z] = false;
+                }
+            }
+          } else if(ccell == 17){
+            this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
           }
         }
       }
@@ -353,6 +397,7 @@ function loadReactor(data){
     document.getElementById("x_input").value = x.metadata.dimensions[0];
     document.getElementById("y_input").value = x.metadata.dimensions[1];
     document.getElementById("z_input").value = x.metadata.dimensions[2];
+    defaultReactor.calculateStats();
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){
     console.error("Invalid JSON!" + err);
@@ -367,6 +412,7 @@ function regenReactor(){
     document.getElementById("x_input").value,
     document.getElementById("y_input").value,
     document.getElementById("z_input").value);
+  defaultReactor.calculateStats();
   defaultReactor.updateDOM(reactorLayers);
 }
 regenReactor();

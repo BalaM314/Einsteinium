@@ -14,7 +14,28 @@ Cryotheum Cooler: 11
 Beryllium Moderator: 18
 
 */
-const VERSION = "1.0.3";
+const VERSION = "1.1.0";
+
+var idmappings = {
+  0: "Air",
+  1: "Fuel Cell",
+  2: "Water Cooler",
+  3: "Redstone Cooler",
+  4: "Quartz Cooler",
+  5: "Gold Cooler",
+  6: "Glowstone Cooler",
+  7: "Lapis Cooler",
+  8: "Diamond Cooler",
+  9: "Helium Cooler",
+  10: "Enderium Cooler",
+  11: "Cryotheum Cooler",
+  12: "Iron Cooler",
+  13: "Emerald Cooler",
+  14: "Copper Cooler",
+  15: "Tin Cooler",
+  16: "Magnesium Cooler",
+  17: "Graphite Moderator"
+}
 
 var settings = {
   "heatMult": 1.0,
@@ -135,21 +156,22 @@ class Reactor {
       let tempElement = document.createElement("div");
       tempElement.className = "layer";
       tempElement.attributes.y = i;
-      let layerInnerHTML = `<div class="layerinner">`;
+      let layerInnerHTML = `<div class="layerinner" onload="squarifyCells(this);">`;
       for(let j = 0; j < this.x*this.z; j ++){
         let cX = j % this.x;
         let cZ = Math.floor(j/this.x);
         layerInnerHTML +=
         `<div
-          class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}" ` +
-          /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ //In case I need it
-          `onclick="
+          class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}"
+          ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
+          onclick="
             defaultReactor.edit(${cX}, ${i}, ${cZ}, document.getElementById('idpicker').value);
-            defaultReactor.calculateStats();
+            defaultReactor.updateStats(statspanel);defaultReactor.updateStats(statspanel);
             defaultReactor.updateDOM(reactorLayers);
           "
+          style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
         >
-          <b>${this.contents[i][cX][cZ]}</b>
+          <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
         </div>`;
       }
       layerInnerHTML += "</div>";
@@ -157,6 +179,7 @@ class Reactor {
       reactorLayers.appendChild(tempElement);
     }
     document.getElementById("reactorName").value = this.name;
+    squarifyCells(reactorLayers);
   }
 
   export(){
@@ -210,7 +233,6 @@ class Reactor {
     adjacentCells += (gna(this.contents, y - 1, x, z) == 1);
     adjacentCells += (gna(this.contents, y, x - 1, z) == 1);
     adjacentCells += (gna(this.contents, y, x, z - 1) == 1);
-    console.log(gna(this.contents, y, x, z - 1));
     return adjacentCells;
   }
 
@@ -238,7 +260,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y + r, x, z] = true;
+          this.valids[y + r][x][z] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -252,7 +274,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y, x + r, z] = true;
+          this.valids[y][x + r][z] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -266,7 +288,7 @@ class Reactor {
       if(currentCell == 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y, x, z + r] = true;
+          this.valids[y][x][z + r] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -280,7 +302,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y - r, x, z] = true;
+          this.valids[y - r][x][z] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -294,7 +316,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y, x - r, z] = true;
+          this.valids[y][x - r][z] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -308,7 +330,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         for(let r = i; r > 0; r --){
-          this.valids[y, x, z - r] = true;
+          this.valids[y][x][z - r] = true;
         }
         break;
       } else if(currentCell == 17){
@@ -320,15 +342,37 @@ class Reactor {
     return adjacentCells;
   }
 
+  getAdjacentCell(x, y, z, id){
+    //Gets the number of a specified adjacent cell.
+    let adjacentCells = 0;
+    adjacentCells += (gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
+    adjacentCells += (gna(this.contents, y, x + 1, z) == id && (gna(this.valids, y, x + 1, z) != false));
+    adjacentCells += (gna(this.contents, y, x, z + 1) == id && (gna(this.valids, y, x, z + 1) != false));
+    adjacentCells += (gna(this.contents, y - 1, x, z) == id && (gna(this.valids, y - 1, x, z) != false));
+    adjacentCells += (gna(this.contents, y, x - 1, z) == id && (gna(this.valids, y, x - 1, z) != false));
+    adjacentCells += (gna(this.contents, y, x, z - 1) == id && (gna(this.valids, y, x, z - 1) != false));
+    return adjacentCells;
+  }
+
+  tinCoolerValid(x, y, z){
+    //becuase the Tin Cooler wanted to be sPeCiAl.
+    return (gna(this.contents, y + 1, x, z) == 7)&&
+    (gna(this.contents, y - 1, x, z) == 7)||
+    (gna(this.contents, y, x + 1, z) == 7)&&
+    (gna(this.contents, y, x - 1, z) == 7)||
+    (gna(this.contents, y, x, z + 1) == 7)&&
+    (gna(this.contents, y, x, z - 1) == 7);
+  }
+
   calculateStats(){
     let totalHeat = 0;
     let totalCooling = 0;
+    var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     for(var y in this.contents){
       for(var x in this.contents[y]){
         for(var z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
           const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
-          var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           cellsCount[ccell] ++;
           if(ccell == 1){
             let adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
@@ -337,9 +381,81 @@ class Reactor {
             let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
             heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
-            //console.log(adjacentCells, adjacentModerators, heatMultiplier);
+            this.valids[pos.y][pos.x][pos.z] = true;
           } else if(ccell > 1 && ccell < 17){
             switch(ccell){
+              case 2:
+              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 || this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 3:
+              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 4:
+              if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 5:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 3){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 6:
+              if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 2){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 7:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 8:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 3){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 9:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 3) == 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 10:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 3){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
               case 11:
                 if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 2){
                   this.valids[pos.y][pos.x][pos.z] = true;
@@ -347,11 +463,55 @@ class Reactor {
                 } else {
                   this.valids[pos.y][pos.x][pos.z] = false;
                 }
+                break;
+              case 12:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 5) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 13:
+              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 14:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 6) >= 1){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 15:
+              if(this.tinCoolerValid(pos.x, pos.y, pos.z)){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+              case 16:
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 3){
+                this.valids[pos.y][pos.x][pos.z] = true;
+                totalCooling -= settings.coolers[ccell];
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
             }
           } else if(ccell == 17){
             this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
           } else if(ccell == 0){
             this.valids[y][x][z] = true;
+          }
+          if(this.valids[0] == true || this.valids[1] == true || this.valids[2] == true || this.valids[3] == true || this.valids[4] == true){
+            debugger;
           }
         }
       }
@@ -360,11 +520,57 @@ class Reactor {
   }
 
   updateStats(DOMnode){
-    let stats = calculateStats();
-    let netHeat = stats.heatgen - stats.cooling;
+    let stats = this.calculateStats();
+    let netHeat = stats.heatgen + stats.cooling;
+    let spaceEfficiency = 1-(stats.cellcount[0] / this.x*this.y*this.z);
+    let numCasings = 2*this.x*this.y + 2*this.x*this.z + 2*this.y*this.z;
 
+    DOMnode.innerHTML = `
+    <h1>Reactor Stats</h1>
+    <br>
+    <h2>Heat</h2>
+    Total heat: ${Math.round(10*stats.heatgen)/10} HU/t<br>
+    Total cooling: ${Math.round(10*stats.cooling)/10} HU/t<br>
+    Net heat gen: <span style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</span><br>
+    ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
+    Max base heat: ${Math.floor(-stats.cooling / (stats.heatgen/baseHeat))}<br>
+    <h2>Materials</h2>
+    Casings: ${numCasings}<br>
+    Fuel cells: ${stats.cellcount[1]}
+    <h3>Coolers</h3>
+    ${(stats.cellcount[2]) ? idmappings[2] + ": " + stats.cellcount[2] + "<br>" : ""}
+    ${(stats.cellcount[3]) ? idmappings[3] + ": " + stats.cellcount[3] + "<br>" : ""}
+    ${(stats.cellcount[4]) ? idmappings[4] + ": " + stats.cellcount[4] + "<br>" : ""}
+    ${(stats.cellcount[5]) ? idmappings[5] + ": " + stats.cellcount[5] + "<br>" : ""}
+    ${(stats.cellcount[6]) ? idmappings[6] + ": " + stats.cellcount[6] + "<br>" : ""}
+    ${(stats.cellcount[7]) ? idmappings[7] + ": " + stats.cellcount[7] + "<br>" : ""}
+    ${(stats.cellcount[8]) ? idmappings[8] + ": " + stats.cellcount[8] + "<br>" : ""}
+    ${(stats.cellcount[9]) ? idmappings[9] + ": " + stats.cellcount[9] + "<br>" : ""}
+    ${(stats.cellcount[10]) ? idmappings[10] + ": " + stats.cellcount[10] + "<br>" : ""}
+    ${(stats.cellcount[11]) ? idmappings[11] + ": " + stats.cellcount[11] + "<br>" : ""}
+    ${(stats.cellcount[12]) ? idmappings[12] + ": " + stats.cellcount[12] + "<br>" : ""}
+    ${(stats.cellcount[13]) ? idmappings[13] + ": " + stats.cellcount[13] + "<br>" : ""}
+    ${(stats.cellcount[14]) ? idmappings[14] + ": " + stats.cellcount[14] + "<br>" : ""}
+    ${(stats.cellcount[15]) ? idmappings[15] + ": " + stats.cellcount[15] + "<br>" : ""}
+    ${(stats.cellcount[16]) ? idmappings[16] + ": " + stats.cellcount[16] + "<br>" : ""}
+    Moderators: ${stats.cellcount[17] + stats.cellcount[18]}
+    `;
   }
 
+}
+
+function squarifyCells(reactorLayers){
+  const z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
+  const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
+  const cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth/x;
+  const cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight/z;
+  for(var reactorLayerOuter of reactorLayers.childNodes){
+    let reactorLayer = reactorLayerOuter.firstChild;
+    for(var cell of reactorLayer.childNodes){
+      cell.style.setProperty("width", cellWidth + "px");
+      cell.style.setProperty("height", cellHeight + "px");
+    }
+  }
 }
 
 function download(filename, text) {
@@ -415,7 +621,7 @@ function loadReactor(data){
     document.getElementById("x_input").value = x.metadata.dimensions[0];
     document.getElementById("y_input").value = x.metadata.dimensions[1];
     document.getElementById("z_input").value = x.metadata.dimensions[2];
-    defaultReactor.calculateStats();
+    defaultReactor.updateStats(statspanel);
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){
     console.error("Invalid JSON!" + err);
@@ -423,6 +629,7 @@ function loadReactor(data){
 }
 
 var reactorLayers = document.getElementById("reactorlayers");
+var statspanel = document.getElementById('statspanel');
 
 var defaultReactor;
 function regenReactor(){
@@ -430,7 +637,7 @@ function regenReactor(){
     document.getElementById("x_input").value,
     document.getElementById("y_input").value,
     document.getElementById("z_input").value);
-  defaultReactor.calculateStats();
+  defaultReactor.updateStats(statspanel);
   defaultReactor.updateDOM(reactorLayers);
 }
 regenReactor();

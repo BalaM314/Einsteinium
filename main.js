@@ -44,6 +44,15 @@ function gna(arr, x, y, z){//Safely get a value from nested arrays
   }
   return null;
 }
+function constrain(a, n, x){
+  if(a < n){
+    return n;
+  } else if (a > x){
+    return x;
+  } else {
+    return a;
+  }
+}
 
 
 class Reactor {
@@ -347,6 +356,13 @@ class Reactor {
     }
     return {"heatgen":totalHeat, "cooling":totalCooling, "cellcount": cellsCount};
   }
+
+  updateStats(DOMnode){
+    let stats = calculateStats();
+    let netHeat = stats.heatgen - stats.cooling;
+    
+  }
+
 }
 
 function download(filename, text) {

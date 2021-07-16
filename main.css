@@ -66,6 +66,10 @@ html, body {
   background-color: #D4D4D4;
 }
 
+#reactorlayers .cell.invalid {
+  background-color: #FAA;
+}
+
 #reactorlayers .cell:active {
   border: 1px solid black;
   background-color: #AAA;

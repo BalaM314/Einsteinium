@@ -141,7 +141,7 @@ class Reactor {
         let cZ = Math.floor(j/this.x);
         layerInnerHTML +=
         `<div
-          class="cell" ` +
+          class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}" ` +
           /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ //In case I need it
           `onclick="
             defaultReactor.edit(${cX}, ${i}, ${cZ}, document.getElementById('idpicker').value);
@@ -149,7 +149,7 @@ class Reactor {
             defaultReactor.updateDOM(reactorLayers);
           "
         >
-          <b>${this.contents[i][cX][cZ]}</b> ${this.valids[i][cX][cZ]/*TODO: make this display the image instead of the number*/}
+          <b>${this.contents[i][cX][cZ]}</b>
         </div>`;
       }
       layerInnerHTML += "</div>";
@@ -350,6 +350,8 @@ class Reactor {
             }
           } else if(ccell == 17){
             this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
+          } else if(ccell == 0){
+            this.valids[y][x][z] = true;
           }
         }
       }
@@ -360,7 +362,7 @@ class Reactor {
   updateStats(DOMnode){
     let stats = calculateStats();
     let netHeat = stats.heatgen - stats.cooling;
-    
+
   }
 
 }

@@ -624,7 +624,57 @@ function loadReactor(data){
     defaultReactor.updateStats(statspanel);
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){
-    console.error("Invalid JSON!" + err);
+    loadNCReactorPlanner(data, "Imported Reactor");
+  }
+}
+
+function loadNCReactorPlanner(rawData, filename){
+
+  let ncmappings = {
+    "Redstone": 3,
+    "Glowstone": 6,
+    "Helium": 9,
+    "Iron": 12,
+    "Tin": 15,
+    "Beryllium": 18,
+    "FuelCell": 1,
+    "Quartz": 4,
+    "Lapis": 7,
+    "Enderium": 10,
+    "Emerald": 13,
+    "Magnesium": 16,
+    "Water": 1,
+    "Gold": 5,
+    "Diamond": 8,
+    "Cryotheum": 1,
+    "Copper": 14,
+    "Graphite": 17,
+  };
+  try {
+    let data = JSON.parse(rawData);
+    console.assert(typeof data.SaveVersion.Build == "number");
+    console.assert(data.CompressedReactor);
+
+
+    let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
+    for(var x of ["Redstone","Glowstone","Helium","Iron","Tin","Beryllium","FuelCell","Quartz","Lapis","Enderium","Emerald","Magnesium","Water","Gold","Diamond","Cryotheum","Copper","Graphite"]){
+        if(data.CompressedReactor[x] instanceof Array){
+          for(var pos of data.CompressedReactor[x]){
+            tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[x];
+          }
+        }
+    }
+    tempReactor.name = filename;
+    console.assert(tempReactor.validate());
+
+    defaultReactor = tempReactor;
+    document.getElementById("x_input").value = data.InteriorDimensions.X;
+    document.getElementById("y_input").value = data.InteriorDimensions.X;
+    document.getElementById("z_input").value = data.InteriorDimensions.X;
+    defaultReactor.updateStats(statspanel);
+    defaultReactor.updateDOM(reactorLayers);
+  } catch(err){
+    console.error("Invalid JSON!", err);
   }
 }
 

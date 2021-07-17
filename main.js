@@ -533,7 +533,7 @@ class Reactor {
     Total cooling: ${Math.round(10*stats.cooling)/10} HU/t<br>
     Net heat gen: <span style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</span><br>
     ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
-    Max base heat: ${Math.floor(-stats.cooling / (stats.heatgen/baseHeat))}<br>
+    Max base heat: ${stats.heatgen/baseHeat ? (Math.floor(-stats.cooling/(stats.heatgen/baseHeat))) : "0"}<br>
     <h2>Materials</h2>
     Casings: ${numCasings}<br>
     Fuel cells: ${stats.cellcount[1]}

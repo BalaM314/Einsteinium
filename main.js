@@ -66,6 +66,13 @@ function gna(arr, x, y, z){//Safely get a value from nested arrays
   return null;
 }
 function constrain(a, n, x){
+  if(isNaN(a)){
+    return 0;
+  } else {
+    a *= 1;
+    n *= 1;
+    x *= 1;
+  }
   if(a < n){
     return n;
   } else if (a > x){
@@ -646,7 +653,7 @@ function loadNCReactorPlanner(rawData, filename){
     "Water": 1,
     "Gold": 5,
     "Diamond": 8,
-    "Cryotheum": 1,
+    "Cryotheum": 11,
     "Copper": 14,
     "Graphite": 17,
   };

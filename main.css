@@ -87,8 +87,14 @@ html, body {
   border: 2px ridge blue;
 }
 .hotbarcell {
-  margin-right: 10px;
+  margin-right: 1%;
+  align-self: center;
+  width: 4.5%;
 }
+.hotbarcell img {
+  width: 99.9%;
+}
+
 .hotbarcellselected {
   border: 5px ridge green;
 }

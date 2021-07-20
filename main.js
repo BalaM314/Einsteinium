@@ -608,7 +608,8 @@ uploadButton.onchange = function(e){
 
 function getSelectedId(){
   try {
-    let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.substr(-5).charAt(0);
+    let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
+    //who said the code had to be readable
     if(typeof calcedId == "number" || !isNaN(parseInt(calcedId))){
       return calcedId;
     }

@@ -86,6 +86,12 @@ html, body {
   background-color: #333;
   border: 2px ridge blue;
 }
+.hotbarcell {
+  margin-right: 10px;
+}
+.hotbarcellselected {
+  border: 5px ridge green;
+}
 #idpicker {
   margin: auto;
   height: 60%;

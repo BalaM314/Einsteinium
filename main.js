@@ -172,7 +172,7 @@ class Reactor {
           class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}"
           ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
           onclick="
-            defaultReactor.edit(${cX}, ${i}, ${cZ}, document.getElementById('idpicker').value);
+            defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());
             defaultReactor.updateStats(statspanel);defaultReactor.updateStats(statspanel);
             defaultReactor.updateDOM(reactorLayers);
           "
@@ -604,6 +604,24 @@ uploadButton.onchange = function(e){
       console.log(content);
       loadReactor(content);
    }
+}
+
+function getSelectedId(){
+  try {
+    let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.substr(-5).charAt(0);
+    if(typeof calcedId == "number" || !isNaN(parseInt(calcedId))){
+      return calcedId;
+    }
+  } catch(err){
+
+  }
+  return 0;
+}
+
+function unselectCells(){
+  for(var x of document.getElementsByClassName("hotbarcell")){
+    x.classList.remove("hotbarcellselected");
+  }
 }
 
 function loadReactor(data){

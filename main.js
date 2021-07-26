@@ -628,6 +628,24 @@ document.body.onkeypress = e => {
       selectCell(document.getElementsByClassName("hotbarcell")[7]);break;
     case "9":
       selectCell(document.getElementsByClassName("hotbarcell")[8]);break;
+    case "q":
+      selectCell(document.getElementsByClassName("hotbarcell")[9]);break;
+    case "w":
+      selectCell(document.getElementsByClassName("hotbarcell")[10]);break;
+    case "e":
+      selectCell(document.getElementsByClassName("hotbarcell")[11]);break;
+    case "r":
+      selectCell(document.getElementsByClassName("hotbarcell")[12]);break;
+    case "t":
+      selectCell(document.getElementsByClassName("hotbarcell")[13]);break;
+    case "y":
+      selectCell(document.getElementsByClassName("hotbarcell")[14]);break;
+    case "u":
+      selectCell(document.getElementsByClassName("hotbarcell")[15]);break;
+    case "i":
+      selectCell(document.getElementsByClassName("hotbarcell")[16]);break;
+    case "o":
+      selectCell(document.getElementsByClassName("hotbarcell")[17]);break;
   }
 }
 

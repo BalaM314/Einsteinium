@@ -606,6 +606,38 @@ uploadButton.onchange = function(e){
    }
 }
 
+document.body.onkeypress = e => {
+  switch(e.key){
+    case "0":
+      selectCell(document.getElementsByClassName("hotbarcell")[18]);break;
+    case "1":
+      selectCell(document.getElementsByClassName("hotbarcell")[0]);break;
+    case "2":
+      selectCell(document.getElementsByClassName("hotbarcell")[1]);break;
+    case "3":
+      selectCell(document.getElementsByClassName("hotbarcell")[2]);break;
+    case "4":
+      selectCell(document.getElementsByClassName("hotbarcell")[3]);break;
+    case "5":
+      selectCell(document.getElementsByClassName("hotbarcell")[4]);break;
+    case "6":
+      selectCell(document.getElementsByClassName("hotbarcell")[5]);break;
+    case "7":
+      selectCell(document.getElementsByClassName("hotbarcell")[6]);break;
+    case "8":
+      selectCell(document.getElementsByClassName("hotbarcell")[7]);break;
+    case "9":
+      selectCell(document.getElementsByClassName("hotbarcell")[8]);break;
+  }
+}
+
+function selectCell(cell){
+  for(var x of document.getElementsByClassName("hotbarcell")){
+    x.classList.remove("hotbarcellselected");
+  }
+  cell.classList.add("hotbarcellselected");
+}
+
 function getSelectedId(){
   try {
     let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
@@ -617,12 +649,6 @@ function getSelectedId(){
 
   }
   return 0;
-}
-
-function unselectCells(){
-  for(var x of document.getElementsByClassName("hotbarcell")){
-    x.classList.remove("hotbarcellselected");
-  }
 }
 
 function loadReactor(data){

@@ -280,9 +280,6 @@ class Reactor {
       let currentCell = gna(this.contents, y + i, x, z);
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y + r][x][z] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;
@@ -294,9 +291,6 @@ class Reactor {
       let currentCell = gna(this.contents, y, x + i, z);
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y][x + r][z] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;
@@ -306,11 +300,8 @@ class Reactor {
     }
     for(let i = 1; i <= settings.neutronRadiationReach; i ++){
       let currentCell = gna(this.contents, y, x, z + i);
-      if(currentCell == 1){
+      if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y][x][z + r] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;
@@ -322,9 +313,6 @@ class Reactor {
       let currentCell = gna(this.contents, y - i, x, z);
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y - r][x][z] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;
@@ -336,9 +324,6 @@ class Reactor {
       let currentCell = gna(this.contents, y, x - i, z);
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y][x - r][z] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;
@@ -350,9 +335,6 @@ class Reactor {
       let currentCell = gna(this.contents, y, x, z - i);
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
-        for(let r = i; r > 0; r --){
-          this.valids[y][x][z - r] = true;
-        }
         break;
       } else if(currentCell == 17){
         continue;

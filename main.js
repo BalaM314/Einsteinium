@@ -42,6 +42,7 @@ var settings = {
   "neutronRadiationReach": 4,
   "maxReactorSize": 10,
   "moderatorExtraHeat": 2,
+  "moderatorExtraPower": 1,
   "coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110]
 };
 
@@ -81,7 +82,9 @@ function constrain(a, n, x){
     return a;
   }
 }
-
+function checkNaN(value, deefalt){
+  return isNaN(value) ? deefalt : value;
+}
 
 class Reactor {
   constructor(x, y, z){
@@ -185,9 +188,8 @@ class Reactor {
         `<div
           class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}"
           ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
-          onclick="
-            defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());
-          "
+          onclick="defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());"
+          oncontextmenu="defaultReactor.edit(${cX}, ${i}, ${cZ}, 0);return false;"
           style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
           title="${idmappings[this.contents[i][cX][cZ]]}"
         >
@@ -260,12 +262,12 @@ class Reactor {
   getAdjacentModerators(x, y, z){
     //Also does what it says.
     let adjacentModerators = 0;
-    adjacentModerators += (gna(this.contents, y + 1, x, z) == 17 && (gna(this.valids, y + 1, x, z) != false));
-    adjacentModerators += (gna(this.contents, y, x + 1, z) == 17 && (gna(this.valids, y, x + 1, z) != false));
-    adjacentModerators += (gna(this.contents, y, x, z + 1) == 17 && (gna(this.valids, y, x, z + 1) != false));
-    adjacentModerators += (gna(this.contents, y - 1, x, z) == 17 && (gna(this.valids, y - 1, x, z) != false));
-    adjacentModerators += (gna(this.contents, y, x - 1, z) == 17 && (gna(this.valids, y, x - 1, z) != false));
-    adjacentModerators += (gna(this.contents, y, x, z - 1) == 17 && (gna(this.valids, y, x, z - 1) != false));
+    adjacentModerators += ((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
+    adjacentModerators += ((gna(this.contents, y, x + 1, z) == 17 || gna(this.contents, y, x + 1, z) == 18) && (gna(this.valids, y, x + 1, z) != false));
+    adjacentModerators += ((gna(this.contents, y, x, z + 1) == 17 || gna(this.contents, y, x, z + 1) == 18) && (gna(this.valids, y, x, z + 1) != false));
+    adjacentModerators += ((gna(this.contents, y - 1, x, z) == 17 || gna(this.contents, y - 1, x, z) == 18) && (gna(this.valids, y - 1, x, z) != false));
+    adjacentModerators += ((gna(this.contents, y, x - 1, z) == 17 || gna(this.contents, y, x - 1, z) == 18) && (gna(this.valids, y, x - 1, z) != false));
+    adjacentModerators += ((gna(this.contents, y, x, z - 1) == 17 || gna(this.contents, y, x, z - 1) == 18) && (gna(this.valids, y, x, z - 1) != false));
     return adjacentModerators;
   }
 
@@ -281,7 +283,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -292,7 +294,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -303,7 +305,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -314,7 +316,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -325,7 +327,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -336,7 +338,7 @@ class Reactor {
       if(currentCell == 1 && i > 1){
         adjacentCells ++;
         break;
-      } else if(currentCell == 17){
+      } else if(currentCell == 17 || currentCell == 18){
         continue;
       } else {
         break;
@@ -370,6 +372,7 @@ class Reactor {
   calculateStats(){
     let totalHeat = 0;
     let totalCooling = 0;
+    let totalEnergyPerTick = 0;
     var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     for(var y in this.contents){
       for(var x in this.contents[y]){
@@ -382,13 +385,17 @@ class Reactor {
             let distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
             let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
             let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
+            let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
+            energyMultiplier += adjacentModerators * (settings.moderatorExtraPower/6) * (adjacentCells + distantAdjacentCells + 1);
             heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
+            totalEnergyPerTick += basePower * energyMultiplier;
             this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += `
 Adjacent Cells: ${adjacentCells}
 ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
 Adjacent Moderators: ${adjacentModerators}
-Heat Multiplier: ${heatMultiplier * 100}%`;
+Heat Multiplier: ${heatMultiplier * 100}%
+Energy Multiplier: ${energyMultiplier * 100}%`;
             console.log(this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z));
           } else if(ccell > 1 && ccell < 17){
             if(this.valids[pos.y][pos.x][pos.z]){
@@ -398,7 +405,7 @@ Heat Multiplier: ${heatMultiplier * 100}%`;
         }
       }
     }
-    return {"heatgen":totalHeat, "cooling":totalCooling, "cellcount": cellsCount};
+    return {"heatgen":totalHeat, "cooling":totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount};
   }
 
   updateCellsValidity(){
@@ -529,7 +536,6 @@ Heat Multiplier: ${heatMultiplier * 100}%`;
   }
 
   updateStats(DOMnode){
-    //todo fix dat bodge
     let stats = this.calculateStats();
     let netHeat = stats.heatgen + stats.cooling;
     let spaceEfficiency = 1-(stats.cellcount[0] / this.x*this.y*this.z);
@@ -538,12 +544,16 @@ Heat Multiplier: ${heatMultiplier * 100}%`;
     DOMnode.innerHTML = `
     <h1>Reactor Stats</h1>
     <br>
-    <h2>Heat</h2>
+    <h2>Heat and Power</h2>
     Total heat: ${Math.round(10*stats.heatgen)/10} HU/t<br>
     Total cooling: ${Math.round(10*stats.cooling)/10} HU/t<br>
     Net heat gen: <span style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</span><br>
     ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
-    Max base heat: ${stats.heatgen/baseHeat ? (Math.floor(-stats.cooling/(stats.heatgen/baseHeat))) : "0"}<br>
+    Max base heat: ${checkNaN(Math.floor(-stats.cooling/(stats.heatgen/baseHeat)), "0")}<br>
+    Efficiency: ${checkNaN(Math.round(1000*stats.power/(stats.cellcount[1]*basePower))/10, 100)}%<br>
+    Total Power: ${stats.power} RF/t<br>
+    Fuel Pellet Duration: ${Math.round(fuelTime/stats.cellcount[1])/20} s<br>
+    Energy Per Pellet: ${checkNaN(stats.power * (fuelTime/stats.cellcount[1]), "No")} RF<br>
     <h2>Materials</h2>
     Casings: ${numCasings}<br>
     Fuel cells: ${stats.cellcount[1]}
@@ -595,6 +605,8 @@ function download(filename, text) {
 }
 
 var baseHeat = 18;
+var basePower = 60;
+var fuelTime = 144000;
 
 var uploadButton = document.getElementById('uploadButton');
 uploadButton.type = 'file';

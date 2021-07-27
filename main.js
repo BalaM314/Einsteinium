@@ -127,11 +127,21 @@ class Reactor {
     try {
       this.contents[y][x][z] = id;
       this.valids[y][x][z] = (id == 1);
-      return true;
     } catch(err){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
+    this.update();
+  }
+
+  update(){
+    this.updateCellsValidity();
+    this.updateCellsValidity();
+    this.updateCellsValidity();
+    this.updateCellsValidity();
+    //sure why not
+    this.updateDOM(reactorLayers);
+    this.updateStats(statspanel);
   }
 
   validate(){
@@ -150,6 +160,10 @@ class Reactor {
       return true;
     } catch(err){}
     return false;
+  }
+
+  getDOMCell(reactorLayers, x, y, z){
+    return reactorLayers.childNodes[y].firstChild.childNodes[(z*this.x) + x];
   }
 
   updateDOM(reactorLayers){
@@ -173,14 +187,12 @@ class Reactor {
           ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
           onclick="
             defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());
-            defaultReactor.updateStats(statspanel);defaultReactor.updateStats(statspanel);
-            defaultReactor.updateDOM(reactorLayers);
           "
           style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
           title="${idmappings[this.contents[i][cX][cZ]]}"
         >
           <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
-        </div>`;//TODO fix bodge with double calling updateStats
+        </div>`;
       }
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;
@@ -385,142 +397,20 @@ class Reactor {
           cellsCount[ccell] ++;
           if(ccell == 1){
             let adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
-            adjacentCells += this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
+            let distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
             let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
-            let heatMultiplier = (adjacentCells + 1) * (adjacentCells + 2) / 2;
-            heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + 1);//also weird neutron flux thing
+            let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
+            heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);//also weird neutron flux thing
             totalHeat += baseHeat * heatMultiplier;
-            this.valids[pos.y][pos.x][pos.z] = true;
+            this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += `
+Adjacent Cells: ${adjacentCells}
+${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
+Heat Multiplier: ${heatMultiplier * 100}%`;
+            console.log(this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z));
           } else if(ccell > 1 && ccell < 17){
-            switch(ccell){
-              case 2:
-              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 || this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 3:
-              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 4:
-              if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 5:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 3){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 6:
-              if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 2){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 7:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 8:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 9:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 3) == 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 10:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 3){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 11:
-                if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 2){
-                  this.valids[pos.y][pos.x][pos.z] = true;
-                  totalCooling -= settings.coolers[ccell];
-                } else {
-                  this.valids[pos.y][pos.x][pos.z] = false;
-                }
-                break;
-              case 12:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 5) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 13:
-              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 14:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 6) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 15:
-              if(this.tinCoolerValid(pos.x, pos.y, pos.z)){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
-              case 16:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
-                this.valids[pos.y][pos.x][pos.z] = true;
-                totalCooling -= settings.coolers[ccell];
-              } else {
-                this.valids[pos.y][pos.x][pos.z] = false;
-              }
-              break;
+            if(this.valids[pos.y][pos.x][pos.z]){
+              totalCooling -= settings.coolers[ccell];
             }
-          } else if(ccell == 17){
-            this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
-          } else if(ccell == 0){
-            this.valids[y][x][z] = true;
-          }
-          if(this.valids[0] == true || this.valids[1] == true || this.valids[2] == true || this.valids[3] == true || this.valids[4] == true){
-            debugger;
           }
         }
       }
@@ -528,9 +418,135 @@ class Reactor {
     return {"heatgen":totalHeat, "cooling":totalCooling, "cellcount": cellsCount};
   }
 
+  updateCellsValidity(){
+    for(var y in this.contents){
+      for(var x in this.contents[y]){
+        for(var z in this.contents[y][x]){
+          const ccell = this.contents[y][x][z];
+          const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
+          switch(ccell){
+            case 1:
+            this.valids[pos.y][pos.x][pos.z] = true;
+            break;
+            case 2:
+            if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 || this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 3:
+            if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 4:
+            if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 5:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 3){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 6:
+            if(this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 2){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 7:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 8:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 9:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, 3) == 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 10:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 3){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 11:
+              if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 2){
+                this.valids[pos.y][pos.x][pos.z] = true;
+              } else {
+                this.valids[pos.y][pos.x][pos.z] = false;
+              }
+              break;
+            case 12:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, 5) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 13:
+            if(this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 14:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, 6) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 15:
+            if(this.tinCoolerValid(pos.x, pos.y, pos.z)){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 16:
+            if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
+              this.valids[pos.y][pos.x][pos.z] = true;
+            } else {
+              this.valids[pos.y][pos.x][pos.z] = false;
+            }
+            break;
+            case 17:case 18:
+            this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
+            break;
+            case 0:
+            this.valids[pos.y][pos.x][pos.z] = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
   updateStats(DOMnode){
-    this.calculateStats();
-    this.calculateStats();
+    //todo fix dat bodge
     let stats = this.calculateStats();
     let netHeat = stats.heatgen + stats.cooling;
     let spaceEfficiency = 1-(stats.cellcount[0] / this.x*this.y*this.z);
@@ -695,8 +711,7 @@ function loadReactor(data){
     document.getElementById("x_input").value = x.metadata.dimensions[0];
     document.getElementById("y_input").value = x.metadata.dimensions[1];
     document.getElementById("z_input").value = x.metadata.dimensions[2];
-    defaultReactor.updateStats(statspanel);
-    defaultReactor.updateDOM(reactorLayers);
+    defaultReactor.update();
   } catch(err){
     loadNCReactorPlanner(data, "Imported Reactor");
   }
@@ -745,9 +760,7 @@ function loadNCReactorPlanner(rawData, filename){
     document.getElementById("x_input").value = data.InteriorDimensions.X;
     document.getElementById("y_input").value = data.InteriorDimensions.X;
     document.getElementById("z_input").value = data.InteriorDimensions.X;
-    defaultReactor.updateStats(statspanel);
-    defaultReactor.updateStats(statspanel);
-    defaultReactor.updateDOM(reactorLayers);
+    defaultReactor.update();
   } catch(err){
     console.error("Invalid JSON!", err);
   }
@@ -762,8 +775,8 @@ function regenReactor(){
     document.getElementById("x_input").value,
     document.getElementById("y_input").value,
     document.getElementById("z_input").value);
-  defaultReactor.updateStats(statspanel);
-  defaultReactor.updateDOM(reactorLayers);
+
+  defaultReactor.update();
 }
 regenReactor();
 

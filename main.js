@@ -177,9 +177,10 @@ class Reactor {
             defaultReactor.updateDOM(reactorLayers);
           "
           style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
+          title="${idmappings[this.contents[i][cX][cZ]]}"
         >
           <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
-        </div>`;
+        </div>`;//TODO fix bodge with double calling updateStats
       }
       layerInnerHTML += "</div>";
       tempElement.innerHTML = layerInnerHTML;

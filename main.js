@@ -53,7 +53,7 @@ var hardSettings = {
 function cp(data){
   return JSON.parse(JSON.stringify(data));
 }
-function gna(arr, x, y, z){//Safely get a value from nested arrays
+function gna(arr, x, y, z){//Safely get a value from nested arrays, have to use this until we get the .? operator in browsers :(
   if(arr){
     if(arr[x]){
       if(arr[x][y]){
@@ -206,6 +206,7 @@ class Reactor {
       }`
     );
   }
+
   exportToBG(){
     //Dire, what have you done?! BG strings are a **mess**.
     let exportString = `
@@ -246,12 +247,12 @@ class Reactor {
   getAdjacentModerators(x, y, z){
     //Also does what it says.
     let adjacentModerators = 0;
-    adjacentModerators += (gna(this.contents, y + 1, x, z) == 17);
-    adjacentModerators += (gna(this.contents, y, x + 1, z) == 17);
-    adjacentModerators += (gna(this.contents, y, x, z + 1) == 17);
-    adjacentModerators += (gna(this.contents, y - 1, x, z) == 17);
-    adjacentModerators += (gna(this.contents, y, x - 1, z) == 17);
-    adjacentModerators += (gna(this.contents, y, x, z - 1) == 17);
+    adjacentModerators += (gna(this.contents, y + 1, x, z) == 17 && (gna(this.valids, y + 1, x, z) != false));
+    adjacentModerators += (gna(this.contents, y, x + 1, z) == 17 && (gna(this.valids, y, x + 1, z) != false));
+    adjacentModerators += (gna(this.contents, y, x, z + 1) == 17 && (gna(this.valids, y, x, z + 1) != false));
+    adjacentModerators += (gna(this.contents, y - 1, x, z) == 17 && (gna(this.valids, y - 1, x, z) != false));
+    adjacentModerators += (gna(this.contents, y, x - 1, z) == 17 && (gna(this.valids, y, x - 1, z) != false));
+    adjacentModerators += (gna(this.contents, y, x, z - 1) == 17 && (gna(this.valids, y, x, z - 1) != false));
     return adjacentModerators;
   }
 
@@ -440,7 +441,7 @@ class Reactor {
               }
               break;
               case 8:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 3){
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 1){
                 this.valids[pos.y][pos.x][pos.z] = true;
                 totalCooling -= settings.coolers[ccell];
               } else {
@@ -504,7 +505,7 @@ class Reactor {
               }
               break;
               case 16:
-              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 3){
+              if(this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1){
                 this.valids[pos.y][pos.x][pos.z] = true;
                 totalCooling -= settings.coolers[ccell];
               } else {
@@ -527,6 +528,8 @@ class Reactor {
   }
 
   updateStats(DOMnode){
+    this.calculateStats();
+    this.calculateStats();
     let stats = this.calculateStats();
     let netHeat = stats.heatgen + stats.cooling;
     let spaceEfficiency = 1-(stats.cellcount[0] / this.x*this.y*this.z);
@@ -713,7 +716,7 @@ function loadNCReactorPlanner(rawData, filename){
     "Enderium": 10,
     "Emerald": 13,
     "Magnesium": 16,
-    "Water": 1,
+    "Water": 2,
     "Gold": 5,
     "Diamond": 8,
     "Cryotheum": 11,
@@ -741,6 +744,7 @@ function loadNCReactorPlanner(rawData, filename){
     document.getElementById("x_input").value = data.InteriorDimensions.X;
     document.getElementById("y_input").value = data.InteriorDimensions.X;
     document.getElementById("z_input").value = data.InteriorDimensions.X;
+    defaultReactor.updateStats(statspanel);
     defaultReactor.updateStats(statspanel);
     defaultReactor.updateDOM(reactorLayers);
   } catch(err){

@@ -387,6 +387,7 @@ class Reactor {
             this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += `
 Adjacent Cells: ${adjacentCells}
 ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
+Adjacent Moderators: ${adjacentModerators}
 Heat Multiplier: ${heatMultiplier * 100}%`;
             console.log(this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z));
           } else if(ccell > 1 && ccell < 17){

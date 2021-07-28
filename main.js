@@ -247,9 +247,9 @@ class Reactor {
   exportToBG(){
     //Dire, what have you done?! BG strings are a **mess**.
 
-    function getStateIntArray(){
+    function getStateIntArray(that){
       let cells = [];
-      for(var layer of this.contents){
+      for(var layer of that.contents){
         for(var column of layer){
           for(var cell of column){
             if(cell){cells.push(cell);}
@@ -258,11 +258,11 @@ class Reactor {
       }
       return cells;
     }
-    function getPosIntArray(){
+    function getPosIntArray(that){
       let poss = [];
-      for(var y in this.contents){
-        for(var x in this.contents[y]){
-          for(var z in this.contents[y][x]){
+      for(var y in that.contents){
+        for(var x in that.contents[y]){
+          for(var z in that.contents[y][x]){
             if(cell){
               poss.push(65536*x + 256*y + z);
             }
@@ -270,13 +270,13 @@ class Reactor {
         }
       }
     }
-    function getMapIntState(){
+    function getMapIntState(that){
       let states = [];
-      for(var y in this.contents){
-        for(var x in this.contents[y]){
-          for(var z in this.contents[y][x]){
+      for(var y in that.contents){
+        for(var x in that.contents[y]){
+          for(var z in that.contents[y][x]){
             if(cell){
-              poss.push(`{mapSlot:${this.contents[y][x][z]}s,mapState:{${blockIDMappings[this.contents[y][x][z]]}}`);
+              poss.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}`);
             }
           }
         }
@@ -285,11 +285,11 @@ class Reactor {
 
     let exportString = `
     {
-      stateIntArray:[I;${getStateIntArray().join(",")}],
+      stateIntArray:[I;${getStateIntArray(this).join(",")}],
       dim:0,
-      posIntArray:[I;${getPosIntArray().join(",")}],
+      posIntArray:[I;${getPosIntArray(this).join(",")}],
       startPos:{X:0,Y:0,Z:0},
-      mapIntState:[${getMapIntState().join(",")}],
+      mapIntState:[${getMapIntState(this).join(",")}],
       endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}
     }
     `;

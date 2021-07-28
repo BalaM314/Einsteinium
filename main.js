@@ -269,6 +269,7 @@ class Reactor {
           }
         }
       }
+      return poss;
     }
     function getMapIntState(that){
       let states = [];
@@ -281,6 +282,7 @@ class Reactor {
           }
         }
       }
+      return states;
     }
 
     let exportString = `

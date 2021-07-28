@@ -263,7 +263,7 @@ class Reactor {
       for(var y in that.contents){
         for(var x in that.contents[y]){
           for(var z in that.contents[y][x]){
-            if(cell){
+            if(that.contents[y][x][z] != 0){
               poss.push(65536*x + 256*y + z);
             }
           }
@@ -275,7 +275,7 @@ class Reactor {
       for(var y in that.contents){
         for(var x in that.contents[y]){
           for(var z in that.contents[y][x]){
-            if(cell){
+            if(that.contents[y][x][z] != 0){
               poss.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}`);
             }
           }

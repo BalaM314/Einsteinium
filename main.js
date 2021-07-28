@@ -290,7 +290,7 @@ class Reactor {
       posIntArray:[I;${getPosIntArray().join(",")}],
       startPos:{X:0,Y:0,Z:0},
       mapIntState:[${getMapIntState().join(",")}],
-      endPos:{X:${this.x},Y:${this.y},Z:${this.z}}
+      endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}
     }
     `;
     return exportString;

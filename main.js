@@ -14,7 +14,7 @@ Cryotheum Cooler: 11
 Beryllium Moderator: 18
 
 */
-const VERSION = "1.1.1";
+const VERSION = "1.1.2";
 
 var idmappings = {
   0: "Air",

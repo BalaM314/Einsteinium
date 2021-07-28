@@ -636,7 +636,7 @@ function squarifyCells(reactorLayers){
   }
 }
 
-function download(filename, text) {
+function download(filename, text){
   //Self explanatory.
   var temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
@@ -645,6 +645,17 @@ function download(filename, text) {
   document.body.appendChild(temp2);
   temp2.click();
   document.body.removeChild(temp2);
+}
+
+function copyToClipboard(str){
+   var el = document.createElement('textarea');
+   el.value = str;
+   el.setAttribute('readonly', '');
+   el.style = {position: 'absolute', left: '-9999px'};
+   document.body.appendChild(el);
+   el.select();
+   document.execCommand('copy');
+   document.body.removeChild(el);
 }
 
 var baseHeat = 18;

@@ -285,16 +285,8 @@ class Reactor {
       return states;
     }
 
-    let exportString = `
-    {
-      stateIntArray:[I;${getStateIntArray(this).join(",")}],
-      dim:0,
-      posIntArray:[I;${getPosIntArray(this).join(",")}],
-      startPos:{X:0,Y:0,Z:0},
-      mapIntState:[${getMapIntState(this).join(",")}],
-      endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}
-    }
-    `;
+    let exportString = `{stateIntArray:[I;${getStateIntArray(this).join(",")}],dim:0,posIntArray:[I;${getPosIntArray(this).join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${getMapIntState(this).join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
+    //It just works.
     return exportString;
   }
 

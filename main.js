@@ -37,6 +37,28 @@ var idmappings = {
   17: "Graphite Moderator"
 }
 
+var blockIDMappings = {
+  0: null,
+  1: '{Name:"nuclearcraft:cell_block"}',
+  2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"}',
+  3: 'Properties:{type:"redstone"},Name:"nuclearcraft:cooler"}',
+  4: 'Properties:{type:"quartz"},Name:"nuclearcraft:cooler"}',
+  5: 'Properties:{type:"gold"},Name:"nuclearcraft:cooler"}',
+  6: 'Properties:{type:"glowstone"},Name:"nuclearcraft:cooler"}',
+  7: 'Properties:{type:"lapis"},Name:"nuclearcraft:cooler"}',
+  8: 'Properties:{type:"diamond"},Name:"nuclearcraft:cooler"}',
+  9: 'Properties:{type:"helium"},Name:"nuclearcraft:cooler"}',
+  10: 'Properties:{type:"enderium"},Name:"nuclearcraft:cooler"}',
+  11: 'Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}',
+  12: 'Properties:{type:"iron"},Name:"nuclearcraft:cooler"}',
+  13: 'Properties:{type:"emerald"},Name:"nuclearcraft:cooler"}',
+  14: 'Properties:{type:"copper"},Name:"nuclearcraft:cooler"}',
+  15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"}',
+  16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"}',
+  17: 'Properties:{variant:"graphite"},Name:"nuclearcraft:ingot_block"}',
+  18: 'Properties:{variant:"beryllium"},Name:"nuclearcraft:ingot_block"}'
+}
+
 var settings = {
   "heatMult": 1.0,
   "neutronRadiationReach": 4,
@@ -248,6 +270,18 @@ class Reactor {
         }
       }
     }
+    function getMapIntState(){
+      let states = [];
+      for(var y in this.contents){
+        for(var x in this.contents[y]){
+          for(var z in this.contents[y][x]){
+            if(cell){
+              poss.push(`{mapSlot:${this.contents[y][x][z]}s,mapState:{${blockIDMappings[this.contents[y][x][z]]}}`);
+            }
+          }
+        }
+      }
+    }
 
     let exportString = `
     {
@@ -255,16 +289,7 @@ class Reactor {
       dim:0,
       posIntArray:[I;${getPosIntArray().join(",")}],
       startPos:{X:0,Y:0,Z:0},
-      mapIntState:[
-        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
-        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
-        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
-        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
-        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
-        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
-        {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
-        {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}}
-      ],
+      mapIntState:[${getMapIntState().join(",")}],
       endPos:{X:${this.x},Y:${this.y},Z:${this.z}}
     }
     `;

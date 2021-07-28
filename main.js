@@ -277,7 +277,7 @@ class Reactor {
         for(var x in that.contents[y]){
           for(var z in that.contents[y][x]){
             if(that.contents[y][x][z] != 0){
-              states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}`);
+              states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}}`);
             }
           }
         }

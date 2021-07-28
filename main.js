@@ -39,7 +39,7 @@ var idmappings = {
 
 var blockIDMappings = {
   0: null,
-  1: '{Name:"nuclearcraft:cell_block"}',
+  1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"}',
   3: 'Properties:{type:"redstone"},Name:"nuclearcraft:cooler"}',
   4: 'Properties:{type:"quartz"},Name:"nuclearcraft:cooler"}',

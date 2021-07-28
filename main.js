@@ -14,7 +14,7 @@ Cryotheum Cooler: 11
 Beryllium Moderator: 18
 
 */
-const VERSION = "1.1.2";
+const VERSION = "2.0.0";
 
 var idmappings = {
   0: "Air",
@@ -55,8 +55,8 @@ var blockIDMappings = {
   14: 'Properties:{type:"copper"},Name:"nuclearcraft:cooler"',
   15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"',
   16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
-  17: 'Properties:{variant:"graphite"},Name:"nuclearcraft:ingot_block"',
-  18: 'Properties:{variant:"beryllium"},Name:"nuclearcraft:ingot_block"'
+  17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
+  18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
 }
 
 var settings = {
@@ -849,9 +849,8 @@ function regenReactor(){
 regenReactor();
 
 
-document.getElementById("title").innerHTML = "<strong>Einsteinium</strong> alpha v"+VERSION+": editing ";
+document.getElementById("title").innerHTML = "<strong>Einsteinium</strong> beta v"+VERSION+": editing ";
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
-console.log("Version Alpha v" + VERSION);
+console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");
-console.warn("Warning: Einsteinium is currently in Alpha! This means most features aren't implemented, it may or may not be usable, and you are expected to read the code to get full use out of it.");
-console.warn("There will also be bugs everywhere.");
+console.warn("Einsteinium is currently in beta. This means there will probably be a few bugs, and features will be added regularly. If you find a bug please report it on this project's GitHub.");

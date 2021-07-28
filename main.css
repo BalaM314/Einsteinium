@@ -12,8 +12,7 @@ html, body {
   width: 99%;
   height: 99%;
   grid-template-columns: 15% 65% 20%;
-  grid-template-rows: 5% 85% 10%;
-
+  grid-template-rows: 6% 85% 10%;
   background-color: #3a0;
 }
 #titlebar {
@@ -25,7 +24,19 @@ html, body {
   background-color: #280;
 }
 #titletext {
-
+  font-family: "Helvetica",sans-serif;
+  font-size: 225%;
+  color: #FF0;
+  display:flex;
+  align-content: center;
+}
+#title {
+  margin-right: 10px;
+}
+#titletext input {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 #reactorlayers {
   display: grid;

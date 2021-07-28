@@ -224,13 +224,38 @@ class Reactor {
 
   exportToBG(){
     //Dire, what have you done?! BG strings are a **mess**.
+
+    function getStateIntArray(){
+      let cells = [];
+      for(var layer of this.contents){
+        for(var column of layer){
+          for(var cell of column){
+            if(cell){cells.push(cell);}
+          }
+        }
+      }
+      return cells;
+    }
+    function getPosIntArray(){
+      let poss = [];
+      for(var y in this.contents){
+        for(var x in this.contents[y]){
+          for(var z in this.contents[y][x]){
+            if(cell){
+              poss.push(65536*x + 256*y + z);
+            }
+          }
+        }
+      }
+    }
+
     let exportString = `
     {
-      stateIntArray:[I;1,2,2,1,2,1,1,2],
+      stateIntArray:[I;${getStateIntArray().join(",")}],
       dim:0,
-      posIntArray:[I;256,65792,257,65793,0,65536,1,65537],
+      posIntArray:[I;${getPosIntArray().join(",")}],
       startPos:{X:0,Y:0,Z:0},
-      mapIntState: [
+      mapIntState:[
         {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
         {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
         {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}},
@@ -240,10 +265,9 @@ class Reactor {
         {mapSlot:1s,mapState:{Name:"nuclearcraft:cell_block"}},
         {mapSlot:2s,mapState:{Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"}}
       ],
-      endPos:{X:1,Y:1,Z:1}
+      endPos:{X:${this.x},Y:${this.y},Z:${this.z}}
     }
     `;
-    console.error("Not yet implemented.");
     return exportString;
   }
 
@@ -686,6 +710,9 @@ function getSelectedId(){
 
 function loadReactor(data){
   try {
+    //Check for security reasons(why not)
+    console.assert(data.match(/[<>\\;^]|(script)/gi));
+
     var x = JSON.parse(data);
     // First some validation to make sure the data is valid.
     console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
@@ -694,6 +721,11 @@ function loadReactor(data){
     if(x.metadata.version != VERSION){
       console.warn("Loading JSON file with a different data version.");
     }
+
+    console.assert(x.metadata.dimensions.length == 3);
+    console.assert(typeof x.metadata.dimensions[0] == "number");
+    console.assert(typeof x.metadata.dimensions[1] == "number");
+    console.assert(typeof x.metadata.dimensions[2] == "number");
 
     //The data's probably valid, load it now..
     let tempReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
@@ -713,7 +745,6 @@ function loadReactor(data){
 }
 
 function loadNCReactorPlanner(rawData, filename){
-
   let ncmappings = {
     "Redstone": 3,
     "Glowstone": 6,
@@ -735,6 +766,7 @@ function loadNCReactorPlanner(rawData, filename){
     "Graphite": 17,
   };
   try {
+    console.assert(data.match(/[<>\\;^]|(script)/gi));
     let data = JSON.parse(rawData);
     console.assert(typeof data.SaveVersion.Build == "number");
     console.assert(data.CompressedReactor);

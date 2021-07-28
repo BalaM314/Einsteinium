@@ -264,7 +264,7 @@ class Reactor {
         for(var x in that.contents[y]){
           for(var z in that.contents[y][x]){
             if(that.contents[y][x][z] != 0){
-              poss.push(65536*x + 256*y + z);
+              poss.push(65536*x + 256*y + 1*z);
             }
           }
         }

@@ -38,7 +38,7 @@ var idmappings = {
 }
 
 var blockIDMappings = {
-  0: null,
+  0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
   1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
   3: 'Properties:{type:"redstone"},Name:"nuclearcraft:cooler"',
@@ -244,9 +244,11 @@ class Reactor {
     );
   }
 
-  exportToBG(){
+  exportToBG(includeCasings){
     //Dire, what have you done?! BG strings are a **mess**.
-
+    if(includeCasings){
+      console.warn("includeCasings is not yet implemented.");//TODO
+    }
     function getStateIntArray(that){
       let cells = [];
       for(var layer of that.contents){

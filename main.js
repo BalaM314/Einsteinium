@@ -791,8 +791,8 @@ function loadNCReactorPlanner(rawData, filename){
     "Graphite": 17,
   };
   try {
-    console.assert(data.match(/[<>\\;^]|(script)/gi));
     let data = JSON.parse(rawData);
+    console.assert(data.match(/[<>\\;^]|(script)/gi));
     console.assert(typeof data.SaveVersion.Build == "number");
     console.assert(data.CompressedReactor);
 

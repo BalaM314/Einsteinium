@@ -78,6 +78,10 @@ html, body {
   background-color: #FAA;
 }
 
+#x_input, #y_input, #z_input {
+  width: 40px;
+  margin: 5px;
+}
 
 #hotbar {
   grid-row: 3;
@@ -87,7 +91,7 @@ html, body {
   border: 2px ridge blue;
 }
 .hotbarcell {
-  margin-right: 1%;
+  margin: 0.3%;
   align-self: center;
   width: 4.5%;
 }
@@ -106,19 +110,61 @@ html, body {
 #statspanel {
   grid-row: 2;
   grid-column: 3;
-  background-color: #017;
+  background-color: #015;
   color: whitesmoke;
+  font-family: monospace;
+  font-size: 14px;
   border: 2px ridge blue;
   padding: 5px;
+  overflow-y: scroll;
 }
 #statspanel h3 {
   margin-top: 5px;
   margin-bottom: 5px;
 }
 #optionspanel {
+  display: grid;
+  grid-template-columns: 95%;
+  grid-template-rows: 1fr 1fr 0.3fr 1fr 1fr 0.4fr 0.4fr;
   grid-row: 2;
   grid-column: 1;
+  text-align: center;
+}
+#optionspanel div.flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* border: 5px ridge darkblue; */
+}
+#optionspanel div.noflex {
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-family: "Helvetica",sans-serif;
+  font-size: 20px;
+}
+#optionspanel input {
+  /* background-color: #68F;
+  border-color: #32B; */
+  background-color: #BCF;
+  color: darkblue;
+  border: 2px solid #347;
+  border-radius: 3px;
+  box-shadow: 3px 2px 2px gray;
+  width: 90%;
 }
 #optionspanel button {
-  margin: 20px;
+  padding: 1%;
+  border: 1%;
+  margin: auto;
+  width: 78%;
+  height: 78%;
+  font-family: "Helvetica",sans-serif;
+  font-size: 15px;
+  background-color: #BCF;
+  color: darkblue;
+  border: 2px solid #347;
+  border-radius: 5px;
+  box-shadow: 3px 2px 2px gray;
 }

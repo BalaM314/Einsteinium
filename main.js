@@ -583,25 +583,35 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
   updateStats(DOMnode){
     let stats = this.calculateStats();
     let netHeat = stats.heatgen + stats.cooling;
-    let spaceEfficiency = 1-(stats.cellcount[0] / this.x*this.y*this.z);
+    let spaceEfficiency = 1-(stats.cellcount[0]/(this.x*this.y*this.z));
     let numCasings = 2*this.x*this.y + 2*this.x*this.z + 2*this.y*this.z;
 
+    function sum(arr){
+      let sum = 0;
+      for(var x of arr){
+        sum += x;
+      }
+      return sum;
+    }
     DOMnode.innerHTML = `
     <h1>Reactor Stats</h1>
     <br>
     <h2>Heat and Power</h2>
     Total heat: ${Math.round(10*stats.heatgen)/10} HU/t<br>
     Total cooling: ${Math.round(10*stats.cooling)/10} HU/t<br>
-    Net heat gen: <span style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</span><br>
+    Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
     ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
     Max base heat: ${checkNaN(Math.floor(-stats.cooling/(stats.heatgen/baseHeat)), "0")}<br>
     Efficiency: ${checkNaN(Math.round(1000*stats.power/(stats.cellcount[1]*basePower))/10, 100)}%<br>
     Total Power: ${stats.power} RF/t<br>
     Fuel Pellet Duration: ${Math.round(fuelTime/stats.cellcount[1])/20} s<br>
-    Energy Per Pellet: ${checkNaN(stats.power * (fuelTime/stats.cellcount[1]), "No")} RF<br>
+    Energy Per Pellet: ${checkNaN(stats.power * (fuelTime/stats.cellcount[1]), "0")} RF<br>
     <h2>Materials</h2>
     Casings: ${numCasings}<br>
-    Fuel cells: ${stats.cellcount[1]}
+    Fuel cells: ${stats.cellcount[1]}<br>
+    Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
+    Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
+    Space Efficiency: ${spaceEfficiency}%
     <h3>Coolers</h3>
     ${(stats.cellcount[2]) ? idmappings[2] + ": " + stats.cellcount[2] + "<br>" : ""}
     ${(stats.cellcount[3]) ? idmappings[3] + ": " + stats.cellcount[3] + "<br>" : ""}
@@ -618,7 +628,6 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
     ${(stats.cellcount[14]) ? idmappings[14] + ": " + stats.cellcount[14] + "<br>" : ""}
     ${(stats.cellcount[15]) ? idmappings[15] + ": " + stats.cellcount[15] + "<br>" : ""}
     ${(stats.cellcount[16]) ? idmappings[16] + ": " + stats.cellcount[16] + "<br>" : ""}
-    Moderators: ${stats.cellcount[17] + stats.cellcount[18]}
     `;
   }
 

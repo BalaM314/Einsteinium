@@ -34,7 +34,21 @@ var idmappings = {
   14: "Copper Cooler",
   15: "Tin Cooler",
   16: "Magnesium Cooler",
-  17: "Graphite Moderator"
+  17: "Graphite Moderator",
+  22: "Active Water Cooler",
+  23: "Active Redstone Cooler",
+  24: "Active Quartz Cooler",
+  25: "Active Gold Cooler",
+  26: "Active Glowstone Cooler",
+  27: "Active Lapis Cooler",
+  28: "Active Diamond Cooler",
+  29: "Active Helium Cooler",
+  30: "Active Enderium Cooler",
+  31: "Active Cryotheum Cooler",
+  32: "Active Iron Cooler",
+  33: "Active Emerald Cooler",
+  34: "Active Copper Cooler",
+  35: "Active Tin Cooler",
 }
 
 var blockIDMappings = {
@@ -56,7 +70,21 @@ var blockIDMappings = {
   15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"',
   16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
   17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
-  18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
+  18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"',
+  22: 'Name:"nuclearcraft:active_cooler"',
+  23: 'Name:"nuclearcraft:active_cooler"',
+  24: 'Name:"nuclearcraft:active_cooler"',
+  25: 'Name:"nuclearcraft:active_cooler"',
+  26: 'Name:"nuclearcraft:active_cooler"',
+  27: 'Name:"nuclearcraft:active_cooler"',
+  28: 'Name:"nuclearcraft:active_cooler"',
+  29: 'Name:"nuclearcraft:active_cooler"',
+  30: 'Name:"nuclearcraft:active_cooler"',
+  31: 'Name:"nuclearcraft:active_cooler"',
+  32: 'Name:"nuclearcraft:active_cooler"',
+  33: 'Name:"nuclearcraft:active_cooler"',
+  34: 'Name:"nuclearcraft:active_cooler"',
+  35: 'Name:"nuclearcraft:active_cooler"',
 }
 
 var settings = {
@@ -814,12 +842,12 @@ function loadNCReactorPlanner(rawData, filename){
 
 
     let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
-    for(var x of ["Redstone","Glowstone","Helium","Iron","Tin","Beryllium","FuelCell","Quartz","Lapis","Enderium","Emerald","Magnesium","Water","Gold","Diamond","Cryotheum","Copper","Graphite"]){
-        if(data.CompressedReactor[x] instanceof Array){
-          for(var pos of data.CompressedReactor[x]){
-            tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[x];
-          }
+    for(var x of Object.keys(ncmappings)){
+      if(data.CompressedReactor[x] instanceof Array){
+        for(var pos of data.CompressedReactor[x]){
+          tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[x];
         }
+      }
     }
     tempReactor.name = filename;
     console.assert(tempReactor.validate());

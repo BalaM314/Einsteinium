@@ -101,7 +101,7 @@ var hardSettings = {
 };
 
 //Util functions
-function cp(data){
+function cp(data:any): any {
   return JSON.parse(JSON.stringify(data));
 }
 function gna(arr, x, y, z){//Safely get a value from nested arrays, have to use this until we get the .? operator in browsers :(
@@ -134,6 +134,16 @@ function constrain(a, n, x){
 }
 function checkNaN(value, deefalt){
   return isNaN(value) ? deefalt : value;
+}
+
+interface Reactor {
+  contents: number[][][]
+  valids: boolean[][][]
+  x: number
+  y: number
+  z: number
+  name: string
+
 }
 
 class Reactor {
@@ -227,7 +237,7 @@ class Reactor {
 
     //This code is a bit messy, it generates the html for the reactor layer editor.
     for(let i = 0; i < this.y; i ++){
-      let tempElement = document.createElement("div");
+      let tempElement:any = document.createElement("div");
       tempElement.className = "layer";
       tempElement.attributes.y = i;
       let layerInnerHTML = `<div class="layerinner" onload="squarifyCells(this);">`;
@@ -250,14 +260,16 @@ class Reactor {
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
     }
-    document.getElementById("reactorName").value = this.name;
+
+    (document.getElementById("reactorName") as HTMLInputElement).value = this.name;
+
     squarifyCells(reactorLayers);
   }
 
   export(){
     //Generates and then saves the JSON for the reactor. Format can just be read off the code.
     download(
-      document.getElementById("reactorName").value./*TODO: NEEDS BETTER SANITIZING*/replaceAll("/", "").replaceAll(".", "") + ".json",
+      this.name.replaceAll("/", "").replaceAll(".", "") + ".json",
       `{
         "readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
         "READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
@@ -294,7 +306,7 @@ class Reactor {
         for(var x in that.contents[y]){
           for(var z in that.contents[y][x]){
             if(that.contents[y][x][z] != 0){
-              poss.push(65536*x + 256*y + 1*z);
+              poss.push(65536*parseInt(x) + 256*parseInt(y) + 1*parseInt(z));
             }
           }
         }
@@ -322,19 +334,19 @@ class Reactor {
 
   getAdjacentCells(x, y, z){
     //Does what it says.
-    let adjacentCells = 0;
-    adjacentCells += (gna(this.contents, y + 1, x, z) == 1);
-    adjacentCells += (gna(this.contents, y, x + 1, z) == 1);
-    adjacentCells += (gna(this.contents, y, x, z + 1) == 1);
-    adjacentCells += (gna(this.contents, y - 1, x, z) == 1);
-    adjacentCells += (gna(this.contents, y, x - 1, z) == 1);
-    adjacentCells += (gna(this.contents, y, x, z - 1) == 1);
+    let adjacentCells:any = 0;
+    adjacentCells += gna(this.contents, y + 1, x, z) == 1;
+    adjacentCells += gna(this.contents, y, x + 1, z) == 1;
+    adjacentCells += gna(this.contents, y, x, z + 1) == 1;
+    adjacentCells += gna(this.contents, y - 1, x, z) == 1;
+    adjacentCells += gna(this.contents, y, x - 1, z) == 1;
+    adjacentCells += gna(this.contents, y, x, z - 1) == 1;
     return adjacentCells;
   }
 
   getAdjacentModerators(x, y, z){
     //Also does what it says.
-    let adjacentModerators = 0;
+    let adjacentModerators:any = 0;
     adjacentModerators += ((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
     adjacentModerators += ((gna(this.contents, y, x + 1, z) == 17 || gna(this.contents, y, x + 1, z) == 18) && (gna(this.valids, y, x + 1, z) != false));
     adjacentModerators += ((gna(this.contents, y, x, z + 1) == 17 || gna(this.contents, y, x, z + 1) == 18) && (gna(this.valids, y, x, z + 1) != false));
@@ -422,7 +434,7 @@ class Reactor {
 
   getAdjacentCell(x, y, z, id){
     //Gets the number of a specified adjacent cell.
-    let adjacentCells = 0;
+    let adjacentCells:any = 0;
     adjacentCells += (gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
     adjacentCells += (gna(this.contents, y, x + 1, z) == id && (gna(this.valids, y, x + 1, z) != false));
     adjacentCells += (gna(this.contents, y, x, z + 1) == id && (gna(this.valids, y, x, z + 1) != false));
@@ -690,7 +702,7 @@ function copyToClipboard(str){
    var el = document.createElement('textarea');
    el.value = str;
    el.setAttribute('readonly', '');
-   el.style = {position: 'absolute', left: '-9999px'};
+   el.style.setProperty("hidden", "true");
    document.body.appendChild(el);
    el.select();
    document.execCommand('copy');
@@ -701,7 +713,7 @@ var baseHeat = 18;
 var basePower = 60;
 var fuelTime = 144000;
 
-var uploadButton = document.getElementById('uploadButton');
+var uploadButton:any = document.getElementById('uploadButton');
 uploadButton.type = 'file';
 uploadButton.onchange = function(e){
    var file = e.target.files[0];
@@ -766,7 +778,7 @@ function selectCell(cell){
 
 function getSelectedId(){
   try {
-    let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
+    let calcedId = (document.getElementsByClassName("hotbarcellselected")[0].childNodes[1] as HTMLImageElement).src.split("/").pop().split(".")[0];
     //who said the code had to be readable
     if(typeof calcedId == "number" || !isNaN(parseInt(calcedId))){
       return calcedId;
@@ -777,36 +789,37 @@ function getSelectedId(){
   return 0;
 }
 
-function loadReactor(data){
+function loadReactor(rawData){
   try {
     //Check for security reasons(why not)
-    console.assert(data.match(/[<>\\;^]|(script)/gi));
+    console.assert(rawData.match(/[<>\\;^]|(script)/gi));
 
-    var x = JSON.parse(data);
+    var data = JSON.parse(rawData);
     // First some validation to make sure the data is valid.
-    console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    console.assert(data.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
     //hehe VV
-    console.assert(x.metadata.version == "1.0.2" || x.metadata.version == "1.0.1" || x.metadata.version == "1.0.0" || x.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
-    if(x.metadata.version != VERSION){
+    console.assert(data.metadata.version == "1.0.2" || data.metadata.version == "1.0.1" || data.metadata.version == "1.0.0" || data.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
+    if(data.metadata.version != VERSION){
       console.warn("Loading JSON file with a different data version.");
     }
 
-    console.assert(x.metadata.dimensions.length == 3);
-    console.assert(typeof x.metadata.dimensions[0] == "number");
-    console.assert(typeof x.metadata.dimensions[1] == "number");
-    console.assert(typeof x.metadata.dimensions[2] == "number");
+    console.assert(data.metadata.dimensions.length == 3);
+    console.assert(typeof data.metadata.dimensions[0] == "number");
+    console.assert(typeof data.metadata.dimensions[1] == "number");
+    console.assert(typeof data.metadata.dimensions[2] == "number");
 
-    //The data's probably valid, load it now..
-    let tempReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
-    tempReactor.contents = x.content;
-    tempReactor.name = x.metadata.name;
+    //The data's probably valid, try loading it now..
+    let tempReactor = new Reactor(data.metadata.dimensions[0], data.metadata.dimensions[1], data.metadata.dimensions[2]);
+    tempReactor.contents = data.content;
+    tempReactor.name = data.metadata.name;
     console.assert(tempReactor.validate());
 
     //Validation passed, its good.
     defaultReactor = tempReactor;
-    document.getElementById("x_input").value = x.metadata.dimensions[0];
-    document.getElementById("y_input").value = x.metadata.dimensions[1];
-    document.getElementById("z_input").value = x.metadata.dimensions[2];
+    (document.getElementById("x_input") as HTMLInputElement).value = data.metadata.dimensions[0];
+    (document.getElementById("y_input") as HTMLInputElement).value = data.metadata.dimensions[1];
+    (document.getElementById("z_input") as HTMLInputElement).value = data.metadata.dimensions[2];
+    //Typescript why
     defaultReactor.update();
   } catch(err){
     loadNCReactorPlanner(data, "Imported Reactor");
@@ -853,9 +866,9 @@ function loadNCReactorPlanner(rawData, filename){
     console.assert(tempReactor.validate());
 
     defaultReactor = tempReactor;
-    document.getElementById("x_input").value = data.InteriorDimensions.X;
-    document.getElementById("y_input").value = data.InteriorDimensions.X;
-    document.getElementById("z_input").value = data.InteriorDimensions.X;
+    (document.getElementById("x_input") as HTMLInputElement).value = data.InteriorDimensions.X;
+    (document.getElementById("y_input") as HTMLInputElement).value = data.InteriorDimensions.X;
+    (document.getElementById("z_input") as HTMLInputElement).value = data.InteriorDimensions.X;
     defaultReactor.update();
   } catch(err){
     console.error("Invalid JSON!", err);
@@ -868,10 +881,10 @@ var statspanel = document.getElementById('statspanel');
 var defaultReactor;
 function regenReactor(){
   defaultReactor = new Reactor(
-    document.getElementById("x_input").value,
-    document.getElementById("y_input").value,
-    document.getElementById("z_input").value);
-
+    (document.getElementById("x_input") as HTMLInputElement).value,
+    (document.getElementById("y_input") as HTMLInputElement).value,
+    (document.getElementById("z_input") as HTMLInputElement).value
+  );
   defaultReactor.update();
 }
 regenReactor();

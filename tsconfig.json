@@ -1,6 +1,10 @@
 {
     "compilerOptions": {
-        "target": "ES6",
-        "lib": ["DOM", "ES2017"]
+        "target": "ESNext",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "es2021"
+        ]
     }
 }

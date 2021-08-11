@@ -101,10 +101,10 @@ var hardSettings = {
 };
 
 //Util functions
-function cp(data:any): any {
+function cp(data:any):any {
   return JSON.parse(JSON.stringify(data));
 }
-function gna(arr, x, y, z){//Safely get a value from nested arrays, have to use this until we get the .? operator in browsers :(
+function gna(arr:any[][][], x:number, y:number, z:number):any {//Safely get a value from nested arrays, have to use this until we get the .? operator in browsers :(
   if(arr){
     if(arr[x]){
       if(arr[x][y]){
@@ -116,7 +116,7 @@ function gna(arr, x, y, z){//Safely get a value from nested arrays, have to use 
   }
   return null;
 }
-function constrain(a, n, x){
+function constrain(a:any, n:any, x:any):number {
   if(isNaN(a)){
     return 0;
   } else {
@@ -132,7 +132,7 @@ function constrain(a, n, x){
     return a;
   }
 }
-function checkNaN(value, deefalt){
+function checkNaN(value:any, deefalt:any):any {
   return isNaN(value) ? deefalt : value;
 }
 
@@ -147,7 +147,7 @@ interface Reactor {
 }
 
 class Reactor {
-  constructor(x, y, z){
+  constructor(x:number, y:number, z:number){
     this.contents = [];
     this.valids = [];
     /*
@@ -180,7 +180,7 @@ class Reactor {
     }
   }
 
-  edit(x, y, z, id){
+  edit(x:number, y:number, z:number, id:number):boolean {
     //Self explanatory.
     if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
@@ -194,10 +194,10 @@ class Reactor {
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
-    this.update();
+    return this.update();
   }
 
-  update(){
+  update():boolean {
     this.updateCellsValidity();
     this.updateCellsValidity();
     this.updateCellsValidity();
@@ -205,9 +205,10 @@ class Reactor {
     //sure why not
     this.updateDOM(reactorLayers);
     this.updateStats(statspanel);
+    return true;
   }
 
-  validate(){
+  validate():boolean {
     try {
       console.assert(this.contents.length == this.y);
       for(var x of this.contents){
@@ -225,11 +226,11 @@ class Reactor {
     return false;
   }
 
-  getDOMCell(reactorLayers, x, y, z){
-    return reactorLayers.childNodes[y].firstChild.childNodes[(z*this.x) + x];
+  getDOMCell(reactorLayers:HTMLDivElement, x:number, y:number, z:number):HTMLDivElement {
+    return <HTMLDivElement>reactorLayers.childNodes[y].firstChild.childNodes[(z*this.x) + x]!;
   }
 
-  updateDOM(reactorLayers){
+  updateDOM(reactorLayers:HTMLDivElement){
     reactorLayers.innerHTML = "";
     reactorLayers.style.setProperty("--cells-z", this.z.toString());
     reactorLayers.style.setProperty("--cells-x", this.x.toString());
@@ -284,12 +285,12 @@ class Reactor {
     );
   }
 
-  exportToBG(includeCasings){
+  exportToBG(includeCasings:boolean):string {
     //Dire, what have you done?! BG strings are a **mess**.
     if(includeCasings){
       console.warn("includeCasings is not yet implemented.");//TODO
     }
-    function getStateIntArray(that){
+    function getStateIntArray(that:Reactor){
       let cells = [];
       for(var layer of that.contents){
         for(var column of layer){
@@ -300,7 +301,7 @@ class Reactor {
       }
       return cells;
     }
-    function getPosIntArray(that){
+    function getPosIntArray(that:Reactor){
       let poss = [];
       for(var y in that.contents){
         for(var x in that.contents[y]){
@@ -313,7 +314,7 @@ class Reactor {
       }
       return poss;
     }
-    function getMapIntState(that){
+    function getMapIntState(that:Reactor){
       let states = [];
       for(var y in that.contents){
         for(var x in that.contents[y]){
@@ -332,7 +333,7 @@ class Reactor {
     return exportString;
   }
 
-  getAdjacentCells(x, y, z){
+  getAdjacentCells(x:number, y:number, z:number):number {
     //Does what it says.
     let adjacentCells:any = 0;
     adjacentCells += gna(this.contents, y + 1, x, z) == 1;
@@ -344,7 +345,7 @@ class Reactor {
     return adjacentCells;
   }
 
-  getAdjacentModerators(x, y, z){
+  getAdjacentModerators(x:number, y:number, z:number):number {
     //Also does what it says.
     let adjacentModerators:any = 0;
     adjacentModerators += ((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
@@ -356,7 +357,7 @@ class Reactor {
     return adjacentModerators;
   }
 
-  getDistantAdjacentCells(x, y, z){
+  getDistantAdjacentCells(x:number, y:number, z:number):number {
     /*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
     Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
     This is because IRL this causes neutron flux to be shared.
@@ -432,7 +433,7 @@ class Reactor {
     return adjacentCells;
   }
 
-  getAdjacentCell(x, y, z, id){
+  getAdjacentCell(x:number, y:number, z:number, id:number){
     //Gets the number of a specified adjacent cell.
     let adjacentCells:any = 0;
     adjacentCells += (gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
@@ -444,7 +445,7 @@ class Reactor {
     return adjacentCells;
   }
 
-  tinCoolerValid(x, y, z){
+  tinCoolerValid(x:number, y:number, z:number):boolean {
     //becuase the Tin Cooler wanted to be sPeCiAl.
     return (gna(this.contents, y + 1, x, z) == 7)&&
     (gna(this.contents, y - 1, x, z) == 7)||
@@ -454,7 +455,7 @@ class Reactor {
     (gna(this.contents, y, x, z - 1) == 7);
   }
 
-  calculateStats(){
+  calculateStats():{"heatgen": number, "cooling":  number, "power": number, "cellcount": number[]} {
     let totalHeat = 0;
     let totalCooling = 0;
     let totalEnergyPerTick = 0;
@@ -620,13 +621,13 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
     }
   }
 
-  updateStats(DOMnode){
+  updateStats(DOMnode:HTMLDivElement){
     let stats = this.calculateStats();
     let netHeat = stats.heatgen + stats.cooling;
     let spaceEfficiency = 1-(stats.cellcount[0]/(this.x*this.y*this.z));
     let numCasings = 2*this.x*this.y + 2*this.x*this.z + 2*this.y*this.z;
 
-    function sum(arr){
+    function sum(arr:number[]){
       let sum = 0;
       for(var x of arr){
         sum += x;
@@ -673,21 +674,21 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
 
 }
 
-function squarifyCells(reactorLayers){
+function squarifyCells(reactorLayers:HTMLDivElement){
   const z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
   const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
-  const cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth/x;
-  const cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight/z;
+  const cellWidth = (reactorLayers.childNodes[0].firstChild as HTMLElement).offsetWidth/x;
+  const cellHeight = (reactorLayers.childNodes[0].firstChild as HTMLElement).offsetHeight/z;
   for(var reactorLayerOuter of reactorLayers.childNodes){
-    let reactorLayer = reactorLayerOuter.firstChild;
+    let reactorLayer = reactorLayerOuter.firstChild as HTMLDivElement;
     for(var cell of reactorLayer.childNodes){
-      cell.style.setProperty("width", cellWidth + "px");
-      cell.style.setProperty("height", cellHeight + "px");
+      (cell as HTMLElement).style.setProperty("width", cellWidth + "px");
+      (cell as HTMLElement).style.setProperty("height", cellHeight + "px");
     }
   }
 }
 
-function download(filename, text){
+function download(filename:string, text:string){
   //Self explanatory.
   var temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
@@ -698,7 +699,7 @@ function download(filename, text){
   document.body.removeChild(temp2);
 }
 
-function copyToClipboard(str){
+function copyToClipboard(str:string){
    var el = document.createElement('textarea');
    el.value = str;
    el.setAttribute('readonly', '');
@@ -713,63 +714,63 @@ var baseHeat = 18;
 var basePower = 60;
 var fuelTime = 144000;
 
-var uploadButton:any = document.getElementById('uploadButton');
+var uploadButton = document.getElementById('uploadButton')! as HTMLInputElement;
 uploadButton.type = 'file';
 uploadButton.onchange = function(e){
-   var file = e.target.files[0];
+   var file = (e.target as HTMLInputElement).files[0];
    var reader = new FileReader();
    reader.readAsText(file);
    reader.onload = function(readerEvent){
       var content = readerEvent.target.result;
       console.log(content);
-      loadReactor(content);
+      loadReactor(content as string);
    }
 }
 
 document.body.onkeypress = e => {
   switch(e.key){
     case "0":
-      selectCell(document.getElementsByClassName("hotbarcell")[18]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[18] as HTMLDivElement);break;
     case "1":
-      selectCell(document.getElementsByClassName("hotbarcell")[0]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[0] as HTMLDivElement);break;
     case "2":
-      selectCell(document.getElementsByClassName("hotbarcell")[1]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[1] as HTMLDivElement);break;
     case "3":
-      selectCell(document.getElementsByClassName("hotbarcell")[2]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[2] as HTMLDivElement);break;
     case "4":
-      selectCell(document.getElementsByClassName("hotbarcell")[3]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[3] as HTMLDivElement);break;
     case "5":
-      selectCell(document.getElementsByClassName("hotbarcell")[4]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[4] as HTMLDivElement);break;
     case "6":
-      selectCell(document.getElementsByClassName("hotbarcell")[5]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[5] as HTMLDivElement);break;
     case "7":
-      selectCell(document.getElementsByClassName("hotbarcell")[6]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[6] as HTMLDivElement);break;
     case "8":
-      selectCell(document.getElementsByClassName("hotbarcell")[7]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[7] as HTMLDivElement);break;
     case "9":
-      selectCell(document.getElementsByClassName("hotbarcell")[8]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[8] as HTMLDivElement);break;
     case "q":
-      selectCell(document.getElementsByClassName("hotbarcell")[9]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[9] as HTMLDivElement);break;
     case "w":
-      selectCell(document.getElementsByClassName("hotbarcell")[10]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[10] as HTMLDivElement);break;
     case "e":
-      selectCell(document.getElementsByClassName("hotbarcell")[11]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[11] as HTMLDivElement);break;
     case "r":
-      selectCell(document.getElementsByClassName("hotbarcell")[12]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[12] as HTMLDivElement);break;
     case "t":
-      selectCell(document.getElementsByClassName("hotbarcell")[13]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[13] as HTMLDivElement);break;
     case "y":
-      selectCell(document.getElementsByClassName("hotbarcell")[14]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[14] as HTMLDivElement);break;
     case "u":
-      selectCell(document.getElementsByClassName("hotbarcell")[15]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[15] as HTMLDivElement);break;
     case "i":
-      selectCell(document.getElementsByClassName("hotbarcell")[16]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[16] as HTMLDivElement);break;
     case "o":
-      selectCell(document.getElementsByClassName("hotbarcell")[17]);break;
+      selectCell(document.getElementsByClassName("hotbarcell")[17] as HTMLDivElement);break;
   }
 }
 
-function selectCell(cell){
+function selectCell(cell:HTMLDivElement){
   for(var x of document.getElementsByClassName("hotbarcell")){
     x.classList.remove("hotbarcellselected");
   }
@@ -789,10 +790,10 @@ function getSelectedId(){
   return 0;
 }
 
-function loadReactor(rawData){
+function loadReactor(rawData:string){
   try {
     //Check for security reasons(why not)
-    console.assert(rawData.match(/[<>\\;^]|(script)/gi));
+    console.assert(!! rawData.match(/[<>\\;^]|(script)/gi));
 
     var data = JSON.parse(rawData);
     // First some validation to make sure the data is valid.
@@ -875,15 +876,15 @@ function loadNCReactorPlanner(rawData, filename){
   }
 }
 
-var reactorLayers = document.getElementById("reactorlayers");
-var statspanel = document.getElementById('statspanel');
+var reactorLayers = document.getElementById("reactorlayers") as HTMLDivElement;
+var statspanel = document.getElementById('statspanel') as HTMLDivElement;
 
 var defaultReactor;
 function regenReactor(){
   defaultReactor = new Reactor(
-    (document.getElementById("x_input") as HTMLInputElement).value,
-    (document.getElementById("y_input") as HTMLInputElement).value,
-    (document.getElementById("z_input") as HTMLInputElement).value
+    parseInt((document.getElementById("x_input") as HTMLInputElement).value),
+    parseInt((document.getElementById("y_input") as HTMLInputElement).value),
+    parseInt((document.getElementById("z_input") as HTMLInputElement).value)
   );
   defaultReactor.update();
 }

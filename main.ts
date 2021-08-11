@@ -274,7 +274,7 @@ class Reactor {
   export(){
     //Generates and then saves the JSON for the reactor. Format can just be read off the code.
     download(
-      this.name.replaceAll("/", "").replaceAll(".", "") + ".json",
+      this.name.replace(/\//, "").replace(/\./, "") + ".json",
       `{
         "readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
         "READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",

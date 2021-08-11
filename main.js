@@ -9,7 +9,7 @@ Cryotheum Cooler: 11
 Beryllium Moderator: 18
 
 */
-var VERSION = "2.0.0";
+const VERSION = "2.0.0";
 var idmappings = {
     0: "Air",
     1: "Fuel Cell",
@@ -29,6 +29,7 @@ var idmappings = {
     15: "Tin Cooler",
     16: "Magnesium Cooler",
     17: "Graphite Moderator",
+    18: "Beryllium Moderator",
     22: "Active Water Cooler",
     23: "Active Redstone Cooler",
     24: "Active Quartz Cooler",
@@ -42,7 +43,7 @@ var idmappings = {
     32: "Active Iron Cooler",
     33: "Active Emerald Cooler",
     34: "Active Copper Cooler",
-    35: "Active Tin Cooler"
+    35: "Active Tin Cooler",
 };
 var blockIDMappings = {
     0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
@@ -77,7 +78,7 @@ var blockIDMappings = {
     32: 'Name:"nuclearcraft:active_cooler"',
     33: 'Name:"nuclearcraft:active_cooler"',
     34: 'Name:"nuclearcraft:active_cooler"',
-    35: 'Name:"nuclearcraft:active_cooler"'
+    35: 'Name:"nuclearcraft:active_cooler"',
 };
 var settings = {
     "heatMult": 1.0,
@@ -128,8 +129,8 @@ function constrain(a, n, x) {
 function checkNaN(value, deefalt) {
     return isNaN(value) ? deefalt : value;
 }
-var Reactor = /** @class */ (function () {
-    function Reactor(x, y, z) {
+class Reactor {
+    constructor(x, y, z) {
         this.contents = [];
         this.valids = [];
         /*
@@ -142,41 +143,40 @@ var Reactor = /** @class */ (function () {
         //some input validation cus why not
         this.name = hardSettings.defaultName;
         //code to populate the this.contents array
-        var temp1 = [];
-        var temp11 = [];
-        var temp2 = [];
-        var temp22 = [];
-        for (var i = 0; i < this.z; i++) {
+        let temp1 = [];
+        let temp11 = [];
+        let temp2 = [];
+        let temp22 = [];
+        for (let i = 0; i < this.z; i++) {
             temp1.push(0);
             temp11.push(false);
         }
-        for (var i = 0; i < this.x; i++) {
+        for (let i = 0; i < this.x; i++) {
             temp2.push(cp(temp1));
             temp22.push(cp(temp11));
         }
-        for (var i = 0; i < this.y; i++) {
+        for (let i = 0; i < this.y; i++) {
             this.contents.push(cp(temp2));
             this.valids.push(cp(temp22));
         }
     }
-    Reactor.prototype.edit = function (x, y, z, id) {
+    edit(x, y, z, id) {
         //Self explanatory.
         if (isNaN(id)) {
-            console.error("Invalid attempt to edit reactor 1 at position " + x + "," + y + "," + z + " with bad id " + id);
+            console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
             return false;
         }
-        id *= 1; //convert to number
         try {
             this.contents[y][x][z] = id;
             this.valids[y][x][z] = (id == 1);
         }
         catch (err) {
-            console.error("Invalid attempt to edit reactor 1 at position " + x + "," + y + "," + z + " with bad id " + id);
+            console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
             return false;
         }
-        this.update();
-    };
-    Reactor.prototype.update = function () {
+        return this.update();
+    }
+    update() {
         this.updateCellsValidity();
         this.updateCellsValidity();
         this.updateCellsValidity();
@@ -184,18 +184,16 @@ var Reactor = /** @class */ (function () {
         //sure why not
         this.updateDOM(reactorLayers);
         this.updateStats(statspanel);
-    };
-    Reactor.prototype.validate = function () {
+        return true;
+    }
+    validate() {
         try {
             console.assert(this.contents.length == this.y);
-            for (var _i = 0, _a = this.contents; _i < _a.length; _i++) {
-                var x = _a[_i];
+            for (var x of this.contents) {
                 console.assert(x.length == this.x);
-                for (var _b = 0, x_1 = x; _b < x_1.length; _b++) {
-                    var y = x_1[_b];
+                for (var y of x) {
                     console.assert(y.length == this.z);
-                    for (var _c = 0, y_1 = y; _c < y_1.length; _c++) {
-                        var cell = y_1[_c];
+                    for (var cell of y) {
                         console.assert(typeof cell == "number");
                         console.assert(cell >= 0 && cell <= 18);
                     }
@@ -205,26 +203,35 @@ var Reactor = /** @class */ (function () {
         }
         catch (err) { }
         return false;
-    };
-    Reactor.prototype.getDOMCell = function (reactorLayers, x, y, z) {
+    }
+    getDOMCell(reactorLayers, x, y, z) {
         return reactorLayers.childNodes[y].firstChild.childNodes[(z * this.x) + x];
-    };
-    Reactor.prototype.updateDOM = function (reactorLayers) {
+    }
+    updateDOM(reactorLayers) {
         reactorLayers.innerHTML = "";
         reactorLayers.style.setProperty("--cells-z", this.z.toString());
         reactorLayers.style.setProperty("--cells-x", this.x.toString());
         //So glad this worked ^^
         //This code is a bit messy, it generates the html for the reactor layer editor.
-        for (var i = 0; i < this.y; i++) {
-            var tempElement = document.createElement("div");
+        for (let i = 0; i < this.y; i++) {
+            let tempElement = document.createElement("div");
             tempElement.className = "layer";
             tempElement.attributes.y = i;
-            var layerInnerHTML = "<div class=\"layerinner\" onload=\"squarifyCells(this);\">";
-            for (var j = 0; j < this.x * this.z; j++) {
-                var cX = j % this.x;
-                var cZ = Math.floor(j / this.x);
+            let layerInnerHTML = `<div class="layerinner" onload="squarifyCells(this);">`;
+            for (let j = 0; j < this.x * this.z; j++) {
+                let cX = j % this.x;
+                let cZ = Math.floor(j / this.x);
                 layerInnerHTML +=
-                    "<div\n          class=\"cell" + (this.valids[i][cX][cZ] ? "" : " invalid") + "\"\n          " + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ ("\n          onclick=\"defaultReactor.edit(" + cX + ", " + i + ", " + cZ + ", getSelectedId());\"\n          oncontextmenu=\"defaultReactor.edit(" + cX + ", " + i + ", " + cZ + ", 0);return false;\"\n          style=\"grid-row:" + (cZ + 1) + "; grid-column:" + (cX + 1) + ";\"\n          title=\"" + idmappings[this.contents[i][cX][cZ]] + "\"\n        >\n          <img src=\"assets/" + this.contents[i][cX][cZ] + ".png\" alt=\"" + this.contents[i][cX][cZ] + "\" width=100%>\n        </div>");
+                    `<div
+          class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}"
+          ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
+          onclick="defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());"
+          oncontextmenu="defaultReactor.edit(${cX}, ${i}, ${cZ}, 0);return false;"
+          style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
+          title="${idmappings[this.contents[i][cX][cZ]]}"
+        >
+          <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
+        </div>`;
             }
             layerInnerHTML += "</div>";
             tempElement.innerHTML = layerInnerHTML;
@@ -232,24 +239,31 @@ var Reactor = /** @class */ (function () {
         }
         document.getElementById("reactorName").value = this.name;
         squarifyCells(reactorLayers);
-    };
-    Reactor.prototype["export"] = function () {
+    }
+    export() {
         //Generates and then saves the JSON for the reactor. Format can just be read off the code.
-        download(this.name.replaceAll("/", "").replaceAll(".", "") + ".json", "{\n        \"readme\":\"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html\",\n        \"READMEALSO\":\"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.\",\n        \"content\": " + JSON.stringify(this.contents) + (",\n        \"metadata\":{\n          \"version\":\"" + VERSION + "\",\n          \"dimensions\":[" + this.x + "," + this.y + "," + this.z + "],\n          \"name\": \"" + this.name + "\",\n          \"validationCode\": \"This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.\"\n        }\n      }"));
-    };
-    Reactor.prototype.exportToBG = function (includeCasings) {
+        download(this.name.replace(/\//, "").replace(/\./, "") + ".json", `{
+        "readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
+        "READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
+        "content": ` + JSON.stringify(this.contents) + `,
+        "metadata":{
+          "version":"${VERSION}",
+          "dimensions":[${this.x},${this.y},${this.z}],
+          "name": "${this.name}",
+          "validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
+        }
+      }`);
+    }
+    exportToBG(includeCasings) {
         //Dire, what have you done?! BG strings are a **mess**.
         if (includeCasings) {
             console.warn("includeCasings is not yet implemented."); //TODO
         }
         function getStateIntArray(that) {
-            var cells = [];
-            for (var _i = 0, _a = that.contents; _i < _a.length; _i++) {
-                var layer = _a[_i];
-                for (var _b = 0, layer_1 = layer; _b < layer_1.length; _b++) {
-                    var column = layer_1[_b];
-                    for (var _c = 0, column_1 = column; _c < column_1.length; _c++) {
-                        var cell = column_1[_c];
+            let cells = [];
+            for (var layer of that.contents) {
+                for (var column of layer) {
+                    for (var cell of column) {
                         if (cell) {
                             cells.push(cell);
                         }
@@ -259,7 +273,7 @@ var Reactor = /** @class */ (function () {
             return cells;
         }
         function getPosIntArray(that) {
-            var poss = [];
+            let poss = [];
             for (var y in that.contents) {
                 for (var x in that.contents[y]) {
                     for (var z in that.contents[y][x]) {
@@ -272,25 +286,25 @@ var Reactor = /** @class */ (function () {
             return poss;
         }
         function getMapIntState(that) {
-            var states = [];
+            let states = [];
             for (var y in that.contents) {
                 for (var x in that.contents[y]) {
                     for (var z in that.contents[y][x]) {
                         if (that.contents[y][x][z] != 0) {
-                            states.push("{mapSlot:" + that.contents[y][x][z] + "s,mapState:{" + blockIDMappings[that.contents[y][x][z]] + "}}");
+                            states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}}`);
                         }
                     }
                 }
             }
             return states;
         }
-        var exportString = "{stateIntArray:[I;" + getStateIntArray(this).join(",") + "],dim:0,posIntArray:[I;" + getPosIntArray(this).join(",") + "],startPos:{X:0,Y:0,Z:0},mapIntState:[" + getMapIntState(this).join(",") + "],endPos:{X:" + (this.x - 1) + ",Y:" + (this.y - 1) + ",Z:" + (this.z - 1) + "}}";
+        let exportString = `{stateIntArray:[I;${getStateIntArray(this).join(",")}],dim:0,posIntArray:[I;${getPosIntArray(this).join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${getMapIntState(this).join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
         //It just works.
         return exportString;
-    };
-    Reactor.prototype.getAdjacentCells = function (x, y, z) {
+    }
+    getAdjacentCells(x, y, z) {
         //Does what it says.
-        var adjacentCells = 0;
+        let adjacentCells = 0;
         adjacentCells += gna(this.contents, y + 1, x, z) == 1;
         adjacentCells += gna(this.contents, y, x + 1, z) == 1;
         adjacentCells += gna(this.contents, y, x, z + 1) == 1;
@@ -298,10 +312,10 @@ var Reactor = /** @class */ (function () {
         adjacentCells += gna(this.contents, y, x - 1, z) == 1;
         adjacentCells += gna(this.contents, y, x, z - 1) == 1;
         return adjacentCells;
-    };
-    Reactor.prototype.getAdjacentModerators = function (x, y, z) {
+    }
+    getAdjacentModerators(x, y, z) {
         //Also does what it says.
-        var adjacentModerators = 0;
+        let adjacentModerators = 0;
         adjacentModerators += ((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
         adjacentModerators += ((gna(this.contents, y, x + 1, z) == 17 || gna(this.contents, y, x + 1, z) == 18) && (gna(this.valids, y, x + 1, z) != false));
         adjacentModerators += ((gna(this.contents, y, x, z + 1) == 17 || gna(this.contents, y, x, z + 1) == 18) && (gna(this.valids, y, x, z + 1) != false));
@@ -309,16 +323,16 @@ var Reactor = /** @class */ (function () {
         adjacentModerators += ((gna(this.contents, y, x - 1, z) == 17 || gna(this.contents, y, x - 1, z) == 18) && (gna(this.valids, y, x - 1, z) != false));
         adjacentModerators += ((gna(this.contents, y, x, z - 1) == 17 || gna(this.contents, y, x, z - 1) == 18) && (gna(this.valids, y, x, z - 1) != false));
         return adjacentModerators;
-    };
-    Reactor.prototype.getDistantAdjacentCells = function (x, y, z) {
+    }
+    getDistantAdjacentCells(x, y, z) {
         /*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
         Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
         This is because IRL this causes neutron flux to be shared.
         It makes the logic far more complicated.
         */
-        var adjacentCells = 0;
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y + i, x, z);
+        let adjacentCells = 0;
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y + i, x, z);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -330,8 +344,8 @@ var Reactor = /** @class */ (function () {
                 break;
             }
         }
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y, x + i, z);
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y, x + i, z);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -343,8 +357,8 @@ var Reactor = /** @class */ (function () {
                 break;
             }
         }
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y, x, z + i);
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y, x, z + i);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -356,8 +370,8 @@ var Reactor = /** @class */ (function () {
                 break;
             }
         }
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y - i, x, z);
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y - i, x, z);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -369,8 +383,8 @@ var Reactor = /** @class */ (function () {
                 break;
             }
         }
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y, x - i, z);
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y, x - i, z);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -382,8 +396,8 @@ var Reactor = /** @class */ (function () {
                 break;
             }
         }
-        for (var i = 1; i <= settings.neutronRadiationReach; i++) {
-            var currentCell = gna(this.contents, y, x, z - i);
+        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
+            let currentCell = gna(this.contents, y, x, z - i);
             if (currentCell == 1 && i > 1) {
                 adjacentCells++;
                 break;
@@ -396,10 +410,10 @@ var Reactor = /** @class */ (function () {
             }
         }
         return adjacentCells;
-    };
-    Reactor.prototype.getAdjacentCell = function (x, y, z, id) {
+    }
+    getAdjacentCell(x, y, z, id) {
         //Gets the number of a specified adjacent cell.
-        var adjacentCells = 0;
+        let adjacentCells = 0;
         adjacentCells += (gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
         adjacentCells += (gna(this.contents, y, x + 1, z) == id && (gna(this.valids, y, x + 1, z) != false));
         adjacentCells += (gna(this.contents, y, x, z + 1) == id && (gna(this.valids, y, x, z + 1) != false));
@@ -407,8 +421,8 @@ var Reactor = /** @class */ (function () {
         adjacentCells += (gna(this.contents, y, x - 1, z) == id && (gna(this.valids, y, x - 1, z) != false));
         adjacentCells += (gna(this.contents, y, x, z - 1) == id && (gna(this.valids, y, x, z - 1) != false));
         return adjacentCells;
-    };
-    Reactor.prototype.tinCoolerValid = function (x, y, z) {
+    }
+    tinCoolerValid(x, y, z) {
         //becuase the Tin Cooler wanted to be sPeCiAl.
         return (gna(this.contents, y + 1, x, z) == 7) &&
             (gna(this.contents, y - 1, x, z) == 7) ||
@@ -416,29 +430,34 @@ var Reactor = /** @class */ (function () {
                 (gna(this.contents, y, x - 1, z) == 7) ||
             (gna(this.contents, y, x, z + 1) == 7) &&
                 (gna(this.contents, y, x, z - 1) == 7);
-    };
-    Reactor.prototype.calculateStats = function () {
-        var totalHeat = 0;
-        var totalCooling = 0;
-        var totalEnergyPerTick = 0;
+    }
+    calculateStats() {
+        let totalHeat = 0;
+        let totalCooling = 0;
+        let totalEnergyPerTick = 0;
         var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         for (var y in this.contents) {
             for (var x in this.contents[y]) {
                 for (var z in this.contents[y][x]) {
-                    var ccell = this.contents[y][x][z];
-                    var pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
+                    const ccell = this.contents[y][x][z];
+                    const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
                     cellsCount[ccell]++;
                     if (ccell == 1) {
-                        var adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
-                        var distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
-                        var adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
-                        var heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
-                        var energyMultiplier = adjacentCells + distantAdjacentCells + 1;
+                        let adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
+                        let distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
+                        let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
+                        let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
+                        let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
                         energyMultiplier += adjacentModerators * (settings.moderatorExtraPower / 6) * (adjacentCells + distantAdjacentCells + 1);
                         heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat / 6) * (adjacentCells + distantAdjacentCells + 1); //also weird neutron flux thing
                         totalHeat += baseHeat * heatMultiplier;
                         totalEnergyPerTick += basePower * energyMultiplier;
-                        this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += "\nAdjacent Cells: " + adjacentCells + "\n" + (distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : "") + "Adjacent Moderators: " + adjacentModerators + "\nHeat Multiplier: " + heatMultiplier * 100 + "%\nEnergy Multiplier: " + energyMultiplier * 100 + "%";
+                        this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += `
+Adjacent Cells: ${adjacentCells}
+${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
+Adjacent Moderators: ${adjacentModerators}
+Heat Multiplier: ${heatMultiplier * 100}%
+Energy Multiplier: ${energyMultiplier * 100}%`;
                         console.log(this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z));
                     }
                     else if (ccell > 1 && ccell < 17) {
@@ -450,13 +469,13 @@ var Reactor = /** @class */ (function () {
             }
         }
         return { "heatgen": totalHeat, "cooling": totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount };
-    };
-    Reactor.prototype.updateCellsValidity = function () {
+    }
+    updateCellsValidity() {
         for (var y in this.contents) {
             for (var x in this.contents[y]) {
                 for (var z in this.contents[y][x]) {
-                    var ccell = this.contents[y][x][z];
-                    var pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
+                    const ccell = this.contents[y][x][z];
+                    const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
                     switch (ccell) {
                         case 1:
                             this.valids[pos.y][pos.x][pos.z] = true;
@@ -592,34 +611,65 @@ var Reactor = /** @class */ (function () {
                 }
             }
         }
-    };
-    Reactor.prototype.updateStats = function (DOMnode) {
-        var stats = this.calculateStats();
-        var netHeat = stats.heatgen + stats.cooling;
-        var spaceEfficiency = 1 - (stats.cellcount[0] / (this.x * this.y * this.z));
-        var numCasings = 2 * this.x * this.y + 2 * this.x * this.z + 2 * this.y * this.z;
+    }
+    updateStats(DOMnode) {
+        let stats = this.calculateStats();
+        let netHeat = stats.heatgen + stats.cooling;
+        let spaceEfficiency = 1 - (stats.cellcount[0] / (this.x * this.y * this.z));
+        let numCasings = 2 * this.x * this.y + 2 * this.x * this.z + 2 * this.y * this.z;
         function sum(arr) {
-            var sum = 0;
-            for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
-                var x = arr_1[_i];
+            let sum = 0;
+            for (var x of arr) {
                 sum += x;
             }
             return sum;
         }
-        DOMnode.innerHTML = "\n    <h1>Reactor Stats</h1>\n    <br>\n    <h2>Heat and Power</h2>\n    Total heat: " + Math.round(10 * stats.heatgen) / 10 + " HU/t<br>\n    Total cooling: " + Math.round(10 * stats.cooling) / 10 + " HU/t<br>\n    Net heat gen: <" + ((netHeat <= 0) ? "span" : "strong") + " style=\"color: " + ((netHeat <= 0) ? "#00FF00" : "#FF0000") + "\">" + Math.round(10 * netHeat) / 10 + " HU/t</" + ((netHeat <= 0) ? "span" : "strong") + "><br>\n    " + ((netHeat > 0) ? "Meltdown time: " + Math.floor((25000 * this.x * this.y * this.z) * 0.05 / netHeat) + " s<br>" : "") + "\n    Max base heat: " + checkNaN(Math.floor(-stats.cooling / (stats.heatgen / baseHeat)), "0") + "<br>\n    Efficiency: " + checkNaN(Math.round(1000 * stats.power / (stats.cellcount[1] * basePower)) / 10, 100) + "%<br>\n    Total Power: " + stats.power + " RF/t<br>\n    Fuel Pellet Duration: " + Math.round(fuelTime / stats.cellcount[1]) / 20 + " s<br>\n    Energy Per Pellet: " + checkNaN(stats.power * (fuelTime / stats.cellcount[1]), "0") + " RF<br>\n    <h2>Materials</h2>\n    Casings: " + numCasings + "<br>\n    Fuel cells: " + stats.cellcount[1] + "<br>\n    Moderators: " + (stats.cellcount[17] + stats.cellcount[18]) + "<br>\n    Total coolers: " + sum(stats.cellcount.slice(2, 17)) + "<br>\n    Space Efficiency: " + spaceEfficiency + "%\n    <h3>Coolers</h3>\n    " + ((stats.cellcount[2]) ? idmappings[2] + ": " + stats.cellcount[2] + "<br>" : "") + "\n    " + ((stats.cellcount[3]) ? idmappings[3] + ": " + stats.cellcount[3] + "<br>" : "") + "\n    " + ((stats.cellcount[4]) ? idmappings[4] + ": " + stats.cellcount[4] + "<br>" : "") + "\n    " + ((stats.cellcount[5]) ? idmappings[5] + ": " + stats.cellcount[5] + "<br>" : "") + "\n    " + ((stats.cellcount[6]) ? idmappings[6] + ": " + stats.cellcount[6] + "<br>" : "") + "\n    " + ((stats.cellcount[7]) ? idmappings[7] + ": " + stats.cellcount[7] + "<br>" : "") + "\n    " + ((stats.cellcount[8]) ? idmappings[8] + ": " + stats.cellcount[8] + "<br>" : "") + "\n    " + ((stats.cellcount[9]) ? idmappings[9] + ": " + stats.cellcount[9] + "<br>" : "") + "\n    " + ((stats.cellcount[10]) ? idmappings[10] + ": " + stats.cellcount[10] + "<br>" : "") + "\n    " + ((stats.cellcount[11]) ? idmappings[11] + ": " + stats.cellcount[11] + "<br>" : "") + "\n    " + ((stats.cellcount[12]) ? idmappings[12] + ": " + stats.cellcount[12] + "<br>" : "") + "\n    " + ((stats.cellcount[13]) ? idmappings[13] + ": " + stats.cellcount[13] + "<br>" : "") + "\n    " + ((stats.cellcount[14]) ? idmappings[14] + ": " + stats.cellcount[14] + "<br>" : "") + "\n    " + ((stats.cellcount[15]) ? idmappings[15] + ": " + stats.cellcount[15] + "<br>" : "") + "\n    " + ((stats.cellcount[16]) ? idmappings[16] + ": " + stats.cellcount[16] + "<br>" : "") + "\n    ";
-    };
-    return Reactor;
-}());
+        DOMnode.innerHTML = `
+    <h1>Reactor Stats</h1>
+    <br>
+    <h2>Heat and Power</h2>
+    Total heat: ${Math.round(10 * stats.heatgen) / 10} HU/t<br>
+    Total cooling: ${Math.round(10 * stats.cooling) / 10} HU/t<br>
+    Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10 * netHeat) / 10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
+    ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000 * this.x * this.y * this.z) * 0.05 / netHeat)} s<br>` : ""}
+    Max base heat: ${checkNaN(Math.floor(-stats.cooling / (stats.heatgen / baseHeat)), "0")}<br>
+    Efficiency: ${checkNaN(Math.round(1000 * stats.power / (stats.cellcount[1] * basePower)) / 10, 100)}%<br>
+    Total Power: ${stats.power} RF/t<br>
+    Fuel Pellet Duration: ${Math.round(fuelTime / stats.cellcount[1]) / 20} s<br>
+    Energy Per Pellet: ${checkNaN(stats.power * (fuelTime / stats.cellcount[1]), "0")} RF<br>
+    <h2>Materials</h2>
+    Casings: ${numCasings}<br>
+    Fuel cells: ${stats.cellcount[1]}<br>
+    Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
+    Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
+    Space Efficiency: ${spaceEfficiency}%
+    <h3>Coolers</h3>
+    ${(stats.cellcount[2]) ? idmappings[2] + ": " + stats.cellcount[2] + "<br>" : ""}
+    ${(stats.cellcount[3]) ? idmappings[3] + ": " + stats.cellcount[3] + "<br>" : ""}
+    ${(stats.cellcount[4]) ? idmappings[4] + ": " + stats.cellcount[4] + "<br>" : ""}
+    ${(stats.cellcount[5]) ? idmappings[5] + ": " + stats.cellcount[5] + "<br>" : ""}
+    ${(stats.cellcount[6]) ? idmappings[6] + ": " + stats.cellcount[6] + "<br>" : ""}
+    ${(stats.cellcount[7]) ? idmappings[7] + ": " + stats.cellcount[7] + "<br>" : ""}
+    ${(stats.cellcount[8]) ? idmappings[8] + ": " + stats.cellcount[8] + "<br>" : ""}
+    ${(stats.cellcount[9]) ? idmappings[9] + ": " + stats.cellcount[9] + "<br>" : ""}
+    ${(stats.cellcount[10]) ? idmappings[10] + ": " + stats.cellcount[10] + "<br>" : ""}
+    ${(stats.cellcount[11]) ? idmappings[11] + ": " + stats.cellcount[11] + "<br>" : ""}
+    ${(stats.cellcount[12]) ? idmappings[12] + ": " + stats.cellcount[12] + "<br>" : ""}
+    ${(stats.cellcount[13]) ? idmappings[13] + ": " + stats.cellcount[13] + "<br>" : ""}
+    ${(stats.cellcount[14]) ? idmappings[14] + ": " + stats.cellcount[14] + "<br>" : ""}
+    ${(stats.cellcount[15]) ? idmappings[15] + ": " + stats.cellcount[15] + "<br>" : ""}
+    ${(stats.cellcount[16]) ? idmappings[16] + ": " + stats.cellcount[16] + "<br>" : ""}
+    `;
+    }
+}
 function squarifyCells(reactorLayers) {
-    var z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
-    var x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
-    var cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth / x;
-    var cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight / z;
-    for (var _i = 0, _a = reactorLayers.childNodes; _i < _a.length; _i++) {
-        var reactorLayerOuter = _a[_i];
-        var reactorLayer = reactorLayerOuter.firstChild;
-        for (var _b = 0, _c = reactorLayer.childNodes; _b < _c.length; _b++) {
-            var cell = _c[_b];
+    const z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
+    const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
+    const cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth / x;
+    const cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight / z;
+    for (var reactorLayerOuter of reactorLayers.childNodes) {
+        let reactorLayer = reactorLayerOuter.firstChild;
+        for (var cell of reactorLayer.childNodes) {
             cell.style.setProperty("width", cellWidth + "px");
             cell.style.setProperty("height", cellHeight + "px");
         }
@@ -660,7 +710,7 @@ uploadButton.onchange = function (e) {
         loadReactor(content);
     };
 };
-document.body.onkeypress = function (e) {
+document.body.onkeypress = e => {
     switch (e.key) {
         case "0":
             selectCell(document.getElementsByClassName("hotbarcell")[18]);
@@ -722,15 +772,14 @@ document.body.onkeypress = function (e) {
     }
 };
 function selectCell(cell) {
-    for (var _i = 0, _a = document.getElementsByClassName("hotbarcell"); _i < _a.length; _i++) {
-        var x = _a[_i];
+    for (var x of document.getElementsByClassName("hotbarcell")) {
         x.classList.remove("hotbarcellselected");
     }
     cell.classList.add("hotbarcellselected");
 }
 function getSelectedId() {
     try {
-        var calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
+        let calcedId = document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
         //who said the code had to be readable
         if (typeof calcedId == "number" || !isNaN(parseInt(calcedId))) {
             return calcedId;
@@ -743,7 +792,7 @@ function getSelectedId() {
 function loadReactor(rawData) {
     try {
         //Check for security reasons(why not)
-        console.assert(rawData.match(/[<>\\;^]|(script)/gi));
+        console.assert(!!rawData.match(/[<>\\;^]|(script)/gi));
         var data = JSON.parse(rawData);
         // First some validation to make sure the data is valid.
         console.assert(data.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
@@ -757,7 +806,7 @@ function loadReactor(rawData) {
         console.assert(typeof data.metadata.dimensions[1] == "number");
         console.assert(typeof data.metadata.dimensions[2] == "number");
         //The data's probably valid, try loading it now..
-        var tempReactor = new Reactor(data.metadata.dimensions[0], data.metadata.dimensions[1], data.metadata.dimensions[2]);
+        let tempReactor = new Reactor(data.metadata.dimensions[0], data.metadata.dimensions[1], data.metadata.dimensions[2]);
         tempReactor.contents = data.content;
         tempReactor.name = data.metadata.name;
         console.assert(tempReactor.validate());
@@ -774,7 +823,7 @@ function loadReactor(rawData) {
     }
 }
 function loadNCReactorPlanner(rawData, filename) {
-    var ncmappings = {
+    let ncmappings = {
         "Redstone": 3,
         "Glowstone": 6,
         "Helium": 9,
@@ -792,19 +841,17 @@ function loadNCReactorPlanner(rawData, filename) {
         "Diamond": 8,
         "Cryotheum": 11,
         "Copper": 14,
-        "Graphite": 17
+        "Graphite": 17,
     };
     try {
         console.assert(rawData.match(/[<>\\;^]|(script)/gi));
-        var data = JSON.parse(rawData);
+        let data = JSON.parse(rawData);
         console.assert(typeof data.SaveVersion.Build == "number");
         console.assert(data.CompressedReactor);
-        var tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z);
-        for (var _i = 0, _a = Object.keys(ncmappings); _i < _a.length; _i++) {
-            var x = _a[_i];
+        let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z);
+        for (var x of Object.keys(ncmappings)) {
             if (data.CompressedReactor[x] instanceof Array) {
-                for (var _b = 0, _c = data.CompressedReactor[x]; _b < _c.length; _b++) {
-                    var pos = _c[_b];
+                for (var pos of data.CompressedReactor[x]) {
                     tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[x];
                 }
             }
@@ -825,7 +872,7 @@ var reactorLayers = document.getElementById("reactorlayers");
 var statspanel = document.getElementById('statspanel');
 var defaultReactor;
 function regenReactor() {
-    defaultReactor = new Reactor(document.getElementById("x_input").value, document.getElementById("y_input").value, document.getElementById("z_input").value);
+    defaultReactor = new Reactor(parseInt(document.getElementById("x_input").value), parseInt(document.getElementById("y_input").value), parseInt(document.getElementById("z_input").value));
     defaultReactor.update();
 }
 regenReactor();

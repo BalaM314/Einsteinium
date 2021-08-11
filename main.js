@@ -16,7 +16,7 @@ Beryllium Moderator: 18
 */
 const VERSION = "2.0.0";
 
-var idmappings = {
+const idmappings = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler",
@@ -37,7 +37,7 @@ var idmappings = {
   17: "Graphite Moderator"
 }
 
-var blockIDMappings = {
+const blockIDMappings = {
   0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
   1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
@@ -172,11 +172,11 @@ class Reactor {
   validate(){
     try {
       console.assert(this.contents.length == this.y);
-      for(var x of this.contents){
+      for(let x of this.contents){
         console.assert(x.length == this.x);
-        for(var y of x){
+        for(let y of x){
           console.assert(y.length == this.z);
-          for(var cell of y){
+          for(let cell of y){
             console.assert(typeof cell == "number");
             console.assert(cell >= 0 && cell <= 18);
           }
@@ -251,9 +251,9 @@ class Reactor {
     }
     function getStateIntArray(that){
       let cells = [];
-      for(var layer of that.contents){
-        for(var column of layer){
-          for(var cell of column){
+      for(let layer of that.contents){
+        for(let column of layer){
+          for(let cell of column){
             if(cell){cells.push(cell);}
           }
         }
@@ -262,9 +262,9 @@ class Reactor {
     }
     function getPosIntArray(that){
       let poss = [];
-      for(var y in that.contents){
-        for(var x in that.contents[y]){
-          for(var z in that.contents[y][x]){
+      for(let y in that.contents){
+        for(let x in that.contents[y]){
+          for(let z in that.contents[y][x]){
             if(that.contents[y][x][z] != 0){
               poss.push(65536*x + 256*y + 1*z);
             }
@@ -275,9 +275,9 @@ class Reactor {
     }
     function getMapIntState(that){
       let states = [];
-      for(var y in that.contents){
-        for(var x in that.contents[y]){
-          for(var z in that.contents[y][x]){
+      for(let y in that.contents){
+        for(let x in that.contents[y]){
+          for(let z in that.contents[y][x]){
             if(that.contents[y][x][z] != 0){
               states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}}`);
             }
@@ -418,10 +418,10 @@ class Reactor {
     let totalHeat = 0;
     let totalCooling = 0;
     let totalEnergyPerTick = 0;
-    var cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    for(var y in this.contents){
-      for(var x in this.contents[y]){
-        for(var z in this.contents[y][x]){
+    let cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    for(let y in this.contents){
+      for(let x in this.contents[y]){
+        for(let z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
           const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
           cellsCount[ccell] ++;
@@ -454,9 +454,9 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
   }
 
   updateCellsValidity(){
-    for(var y in this.contents){
-      for(var x in this.contents[y]){
-        for(var z in this.contents[y][x]){
+    for(let y in this.contents){
+      for(let x in this.contents[y]){
+        for(let z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
           const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
           switch(ccell){
@@ -588,7 +588,7 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
 
     function sum(arr){
       let sum = 0;
-      for(var x of arr){
+      for(let x of arr){
         sum += x;
       }
       return sum;
@@ -638,9 +638,9 @@ function squarifyCells(reactorLayers){
   const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
   const cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth/x;
   const cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight/z;
-  for(var reactorLayerOuter of reactorLayers.childNodes){
+  for(let reactorLayerOuter of reactorLayers.childNodes){
     let reactorLayer = reactorLayerOuter.firstChild;
-    for(var cell of reactorLayer.childNodes){
+    for(let cell of reactorLayer.childNodes){
       cell.style.setProperty("width", cellWidth + "px");
       cell.style.setProperty("height", cellHeight + "px");
     }
@@ -649,7 +649,7 @@ function squarifyCells(reactorLayers){
 
 function download(filename, text){
   //Self explanatory.
-  var temp2 = document.createElement('a');
+  let temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
   temp2.setAttribute('download', filename);
   temp2.style.display = 'none';
@@ -659,7 +659,7 @@ function download(filename, text){
 }
 
 function copyToClipboard(str){
-   var el = document.createElement('textarea');
+   let el = document.createElement('textarea');
    el.value = str;
    el.setAttribute('readonly', '');
    el.style = {position: 'absolute', left: '-9999px'};
@@ -669,18 +669,18 @@ function copyToClipboard(str){
    document.body.removeChild(el);
 }
 
-var baseHeat = 18;
-var basePower = 60;
-var fuelTime = 144000;
+let baseHeat = 18;
+let basePower = 60;
+let fuelTime = 144000;
 
-var uploadButton = document.getElementById('uploadButton');
+let uploadButton = document.getElementById('uploadButton');
 uploadButton.type = 'file';
 uploadButton.onchange = function(e){
-   var file = e.target.files[0];
-   var reader = new FileReader();
+   let file = e.target.files[0];
+   let reader = new FileReader();
    reader.readAsText(file);
    reader.onload = function(readerEvent){
-      var content = readerEvent.target.result;
+      let content = readerEvent.target.result;
       console.log(content);
       loadReactor(content);
    }

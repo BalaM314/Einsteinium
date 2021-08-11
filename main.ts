@@ -20,7 +20,11 @@ const VERSION = "2.0.0";
 
 type cell = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35;
 
-var idmappings = {
+type IDMappings = {
+  [index: number]: string;
+}
+
+var idmappings:IDMappings = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler",
@@ -56,7 +60,7 @@ var idmappings = {
   35: "Active Tin Cooler",
 }
 
-var blockIDMappings = {
+var blockIDMappings:IDMappings = {
   0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
   1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
@@ -142,30 +146,30 @@ function checkNaN(value:any, deefalt:any):any {
 }
 
 interface Reactor {
-  contents: cell[][][]
-  valids: boolean[][][]
-  x: number
-  y: number
-  z: number
-  name: string
-
+  contents: cell[][][] | null;
+  valids: boolean[][][] | null;
+  x: number;
+  y: number;
+  z: number;
+  name: string;
 }
 
 class Reactor {
+  
   constructor(x:number, y:number, z:number){
-    this.contents = [];
-    this.valids = [];
-    /*
-    Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
-    It is stored in the format Reactor.contents[y][x][z].
-    */
     this.y = constrain(y, 1, settings.maxReactorSize);
     this.x = constrain(x, 1, settings.maxReactorSize);
     this.z = constrain(z, 1, settings.maxReactorSize);
     //some input validation cus why not
-
+    
     this.name = hardSettings.defaultName;
-
+    
+    /*
+    Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
+    It is stored in the format Reactor.contents[y][x][z].
+    */
+    this.contents = [];
+    this.valids = [];
     //code to populate the this.contents array
     let temp1 = [];
     let temp11 = [];

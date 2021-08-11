@@ -16,6 +16,10 @@ Beryllium Moderator: 18
 */
 const VERSION = "2.0.0";
 
+
+
+type cell = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35;
+
 var idmappings = {
   0: "Air",
   1: "Fuel Cell",
@@ -35,6 +39,7 @@ var idmappings = {
   15: "Tin Cooler",
   16: "Magnesium Cooler",
   17: "Graphite Moderator",
+  18: "Beryllium Moderator",
   22: "Active Water Cooler",
   23: "Active Redstone Cooler",
   24: "Active Quartz Cooler",
@@ -137,7 +142,7 @@ function checkNaN(value:any, deefalt:any):any {
 }
 
 interface Reactor {
-  contents: number[][][]
+  contents: cell[][][]
   valids: boolean[][][]
   x: number
   y: number
@@ -167,7 +172,7 @@ class Reactor {
     let temp2 = [];
     let temp22 = [];
     for(let i = 0; i < this.z; i ++){
-      temp1.push(0);
+      temp1.push(0 as cell);
       temp11.push(false);
     }
     for(let i = 0; i < this.x; i ++){
@@ -180,13 +185,12 @@ class Reactor {
     }
   }
 
-  edit(x:number, y:number, z:number, id:number):boolean {
+  edit(x:number, y:number, z:number, id:cell):boolean {
     //Self explanatory.
     if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
-    id *= 1;//convert to number
     try {
       this.contents[y][x][z] = id;
       this.valids[y][x][z] = (id == 1);

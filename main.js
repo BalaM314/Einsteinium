@@ -34,7 +34,30 @@ const idmappings = {
   14: "Copper Cooler",
   15: "Tin Cooler",
   16: "Magnesium Cooler",
-  17: "Graphite Moderator"
+  17: "Graphite Moderator",
+  18: "Beryllium Moderator"
+}
+
+const tooltipmappings = {
+  0: "Air",
+  1: "Fuel Cell",
+  2: "Water Cooler\nRequires at least one fuel cell or active moderator",
+  3: "Redstone Cooler\nRequires at least one fuel cell",
+  4: "Quartz Cooler\nRequires at least one active moderator",
+  5: "Gold Cooler\nRequires at least one redstone cooler and water cooler",
+  6: "Glowstone Cooler\nRequires at least two moderators",
+  7: "Lapis Cooler\nRequires at least one fuel cell and casing",
+  8: "Diamond Cooler\nRequires at least one water cooler and quartz cooler",
+  9: "Helium Cooler\nRequires exactly one redstone cooler and one reactor casing",
+  10: "Enderium Cooler\nMust be placed in a corner",
+  11: "Cryotheum Cooler\nRequires at least two fuel cells",
+  12: "Iron Cooler\nRequires at least one gold cooler",
+  13: "Emerald Cooler\nRequires at least one moderator and fuel cell",
+  14: "Copper Cooler\nRequires at least one glowstone cooler",
+  15: "Tin Cooler\nRequires two lapis coolers on opposite sides",
+  16: "Magnesium Cooler\nRequires at least one casing and moderator",
+  17: "Graphite Moderator",
+  18: "Beryllium Moderator"
 }
 
 const blockIDMappings = {
@@ -213,7 +236,7 @@ class Reactor {
           onclick="defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());"
           oncontextmenu="defaultReactor.edit(${cX}, ${i}, ${cZ}, 0);return false;"
           style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
-          title="${idmappings[this.contents[i][cX][cZ]]}"
+          title="${tooltipmappings[this.contents[i][cX][cZ]]}"
         >
           <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
         </div>`;

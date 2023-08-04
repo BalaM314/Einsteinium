@@ -133,23 +133,16 @@ class Reactor {
 
     this.name = hardSettings.defaultName;
 
-    //code to populate the this.contents array
-    let temp1 = [];
-    let temp11 = [];
-    let temp2 = [];
-    let temp22 = [];
-    for(let i = 0; i < this.z; i ++){
-      temp1.push(0);
-      temp11.push(false);
-    }
-    for(let i = 0; i < this.x; i ++){
-      temp2.push(cp(temp1));
-      temp22.push(cp(temp11));
-    }
-    for(let i = 0; i < this.y; i ++){
-      this.contents.push(cp(temp2));
-      this.valids.push(cp(temp22));
-    }
+    this.contents = Array.from({length: y}, () =>
+      Array.from({length: x}, () => 
+        Array.from({length: z}, () => 0)
+      )
+    );
+    this.valids = Array.from({length: y}, () =>
+      Array.from({length: x}, () => 
+        Array.from({length: z}, () => false)
+      )
+    );
   }
 
   edit(x:number, y:number, z:number, id:number){
@@ -263,7 +256,7 @@ class Reactor {
     }
     //TODO cleanup
     function getStateIntArray(that:Reactor){
-      let cells = [];
+      let cells:number[] = [];
       for(let layer of that.contents){
         for(let column of layer){
           for(let cell of column){
@@ -274,7 +267,7 @@ class Reactor {
       return cells;
     }
     function getPosIntArray(that:Reactor){
-      let poss = [];
+      let poss:number[] = [];
       for(let y in that.contents){
         for(let x in that.contents[y]){
           for(let z in that.contents[y][x]){
@@ -287,7 +280,7 @@ class Reactor {
       return poss;
     }
     function getMapIntState(that:Reactor){
-      let states = [];
+      let states:string[] = [];
       for(let y in that.contents){
         for(let x in that.contents[y]){
           for(let z in that.contents[y][x]){

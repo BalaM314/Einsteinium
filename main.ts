@@ -1,22 +1,11 @@
 
 
 
+type CellID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
 
-
-/**
-Block IDs:
-Air: 0
-Fuel Cell: 1
-Water Cooler: 2
-
-Cryotheum Cooler: 11
-
-Beryllium Moderator: 18
-
-*/
 const VERSION = "2.0.0";
 
-const idmappings = {
+const idmappings:Record<CellID, string> = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler",
@@ -38,7 +27,7 @@ const idmappings = {
   18: "Beryllium Moderator"
 }
 
-const tooltipmappings = {
+const tooltipmappings:Record<CellID, string> = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler\nRequires at least one fuel cell or active moderator",
@@ -60,7 +49,7 @@ const tooltipmappings = {
   18: "Beryllium Moderator"
 }
 
-const blockIDMappings = {
+const blockIDMappings:Record<CellID, string> = {
   0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
   1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
@@ -80,9 +69,9 @@ const blockIDMappings = {
   16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
   17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
   18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
-}
+};
 
-var settings = {
+let settings = {
   "heatMult": 1.0,
   "neutronRadiationReach": 4,
   "maxReactorSize": 10,

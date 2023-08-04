@@ -88,8 +88,8 @@ let settings = {
   "coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110]
 };
 
-var hardSettings = {
-  "defaultName": "Unnamed Reactor"
+const consts = {
+  defaultName: "Unnamed Reactor"
 };
 
 //Util functions
@@ -145,7 +145,7 @@ class Reactor {
     this.z = constrain(z, 1, settings.maxReactorSize);
     //some input validation cus why not
 
-    this.name = hardSettings.defaultName;
+    this.name = consts.defaultName;
 
     this.contents = Array.from({length: y}, () =>
       Array.from({length: x}, () => 
@@ -775,31 +775,31 @@ function loadReactor(data:string){
     //Check for security reasons(why not) //TODO awful
     console.assert(data.match(/[<>\\;^]|(script)/gi) == null);
 
-    var x = JSON.parse(data);
+    const parsed = JSON.parse(data);
     // First some validation to make sure the data is valid.
-    console.assert(x.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    console.assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
     //hehe VV
-    console.assert(x.metadata.version == "1.0.2" || x.metadata.version == "1.0.1" || x.metadata.version == "1.0.0" || x.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
-    if(x.metadata.version != VERSION){
+    console.assert(parsed.metadata.version == "1.0.2" || parsed.metadata.version == "1.0.1" || parsed.metadata.version == "1.0.0" || parsed.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
+    if(parsed.metadata.version != VERSION){
       console.warn("Loading JSON file with a different data version.");
     }
 
-    console.assert(x.metadata.dimensions.length == 3);
-    console.assert(typeof x.metadata.dimensions[0] == "number");
-    console.assert(typeof x.metadata.dimensions[1] == "number");
-    console.assert(typeof x.metadata.dimensions[2] == "number");
+    console.assert(parsed.metadata.dimensions.length == 3);
+    console.assert(typeof parsed.metadata.dimensions[0] == "number");
+    console.assert(typeof parsed.metadata.dimensions[1] == "number");
+    console.assert(typeof parsed.metadata.dimensions[2] == "number");
 
     //The data's probably valid, load it now..
-    let tempReactor = new Reactor(x.metadata.dimensions[0], x.metadata.dimensions[1], x.metadata.dimensions[2]);
-    tempReactor.contents = x.content;
-    tempReactor.name = x.metadata.name;
+    let tempReactor = new Reactor(parsed.metadata.dimensions[0], parsed.metadata.dimensions[1], parsed.metadata.dimensions[2]);
+    tempReactor.contents = parsed.content;
+    tempReactor.name = parsed.metadata.name;
     console.assert(tempReactor.validate());
 
     //Validation passed, its good.
     defaultReactor = tempReactor;
-    x_input.value = x.metadata.dimensions[0];
-    y_input.value = x.metadata.dimensions[1];
-    z_input.value = x.metadata.dimensions[2];
+    x_input.value = parsed.metadata.dimensions[0];
+    y_input.value = parsed.metadata.dimensions[1];
+    z_input.value = parsed.metadata.dimensions[2];
     defaultReactor.update();
   } catch(err){
     loadNCReactorPlanner(data, "Imported Reactor");
@@ -807,7 +807,7 @@ function loadReactor(data:string){
 }
 
 function loadNCReactorPlanner(rawData:string, filename:string){
-  let ncmappings = {
+  const ncmappings = {
     "Redstone": 3,
     "Glowstone": 6,
     "Helium": 9,
@@ -836,10 +836,10 @@ function loadNCReactorPlanner(rawData:string, filename:string){
 
 
     let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
-    for(var x of ["Redstone","Glowstone","Helium","Iron","Tin","Beryllium","FuelCell","Quartz","Lapis","Enderium","Emerald","Magnesium","Water","Gold","Diamond","Cryotheum","Copper","Graphite"] as const){
-        if(data.CompressedReactor[x] instanceof Array){
-          for(var pos of data.CompressedReactor[x]){
-            tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[x];
+    for(const name of Object.keys(ncmappings)){
+        if(data.CompressedReactor[name] instanceof Array){
+          for(const pos of data.CompressedReactor[name]){
+            tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[name];
           }
         }
     }
@@ -857,7 +857,7 @@ function loadNCReactorPlanner(rawData:string, filename:string){
 }
 
 
-var defaultReactor;
+let defaultReactor:Reactor;
 function regenReactor(){
   defaultReactor = new Reactor(
     +x_input.value,

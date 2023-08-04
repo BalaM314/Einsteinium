@@ -1,5 +1,13 @@
 
-
+const reactorName = getElement("reactorName", HTMLInputElement);
+const uploadButton = getElement("uploadButton", HTMLInputElement);
+const hotbarCells = [...document.querySelectorAll(".hotbarcell")] as HTMLDivElement[];
+const x_input = getElement("x_input", HTMLInputElement);
+const y_input = getElement("y_input", HTMLInputElement);
+const z_input = getElement("z_input", HTMLInputElement);
+const reactorLayers = getElement("reactorLayers", HTMLDivElement);
+const statsPanel = getElement("statsPanel", HTMLDivElement);
+const titleText = getElement("title", HTMLDivElement);
 
 type CellID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
 
@@ -85,6 +93,12 @@ var hardSettings = {
 };
 
 //Util functions
+function getElement<T extends typeof HTMLElement>(id:string, type:T){
+	const element = <unknown>document.getElementById(id);
+	if(element instanceof type) return element as T["prototype"];
+	else if(element instanceof HTMLElement) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+	else throw new Error(`Element with id ${id} does not exist`);
+}
 function cp<T>(data:T){
   return JSON.parse(JSON.stringify(data));
 }
@@ -171,7 +185,7 @@ class Reactor {
     this.updateCellsValidity();
     //sure why not
     this.updateDOM(reactorLayers);
-    this.updateStats(statspanel);
+    this.updateStats(statsPanel);
   }
 
   validate(){
@@ -227,7 +241,7 @@ class Reactor {
       tempElement.innerHTML = layerInnerHTML;
       reactorLayers.appendChild(tempElement);
     }
-    (document.getElementById("reactorName") as HTMLInputElement).value = this.name;
+    reactorName.value = this.name;
     squarifyCells(reactorLayers);
   }
 
@@ -681,8 +695,6 @@ let baseHeat = 18;
 let basePower = 60;
 let fuelTime = 144000;
 
-let uploadButton = document.getElementById('uploadButton') as HTMLInputElement;
-uploadButton.type = 'file';
 uploadButton.onchange = function(e:Event){
    let file = (e.target as HTMLInputElement).files![0];
    let reader = new FileReader();
@@ -694,54 +706,55 @@ uploadButton.onchange = function(e:Event){
    }
 }
 
-document.body.onkeypress = e => {
+document.body.onkeydown = e => {
+  //TODO kill the switch
   switch(e.key){
     case "0":
-      selectCell(document.getElementsByClassName("hotbarcell")[18] as HTMLDivElement);break;
+      selectCell(hotbarCells[18]); break;
     case "1":
-      selectCell(document.getElementsByClassName("hotbarcell")[0] as HTMLDivElement);break;
+      selectCell(hotbarCells[0]); break;
     case "2":
-      selectCell(document.getElementsByClassName("hotbarcell")[1] as HTMLDivElement);break;
+      selectCell(hotbarCells[1]); break;
     case "3":
-      selectCell(document.getElementsByClassName("hotbarcell")[2] as HTMLDivElement);break;
+      selectCell(hotbarCells[2]); break;
     case "4":
-      selectCell(document.getElementsByClassName("hotbarcell")[3] as HTMLDivElement);break;
+      selectCell(hotbarCells[3]); break;
     case "5":
-      selectCell(document.getElementsByClassName("hotbarcell")[4] as HTMLDivElement);break;
+      selectCell(hotbarCells[4]); break;
     case "6":
-      selectCell(document.getElementsByClassName("hotbarcell")[5] as HTMLDivElement);break;
+      selectCell(hotbarCells[5]); break;
     case "7":
-      selectCell(document.getElementsByClassName("hotbarcell")[6] as HTMLDivElement);break;
+      selectCell(hotbarCells[6]); break;
     case "8":
-      selectCell(document.getElementsByClassName("hotbarcell")[7] as HTMLDivElement);break;
+      selectCell(hotbarCells[7]); break;
     case "9":
-      selectCell(document.getElementsByClassName("hotbarcell")[8] as HTMLDivElement);break;
+      selectCell(hotbarCells[8]); break;
     case "q":
-      selectCell(document.getElementsByClassName("hotbarcell")[9] as HTMLDivElement);break;
+      selectCell(hotbarCells[9]); break;
     case "w":
-      selectCell(document.getElementsByClassName("hotbarcell")[10] as HTMLDivElement);break;
+      selectCell(hotbarCells[10]); break;
     case "e":
-      selectCell(document.getElementsByClassName("hotbarcell")[11] as HTMLDivElement);break;
+      selectCell(hotbarCells[11]); break;
     case "r":
-      selectCell(document.getElementsByClassName("hotbarcell")[12] as HTMLDivElement);break;
+      selectCell(hotbarCells[12]); break;
     case "t":
-      selectCell(document.getElementsByClassName("hotbarcell")[13] as HTMLDivElement);break;
+      selectCell(hotbarCells[13]); break;
     case "y":
-      selectCell(document.getElementsByClassName("hotbarcell")[14] as HTMLDivElement);break;
+      selectCell(hotbarCells[14]); break;
     case "u":
-      selectCell(document.getElementsByClassName("hotbarcell")[15] as HTMLDivElement);break;
+      selectCell(hotbarCells[15]); break;
     case "i":
-      selectCell(document.getElementsByClassName("hotbarcell")[16] as HTMLDivElement);break;
+      selectCell(hotbarCells[16]); break;
     case "o":
-      selectCell(document.getElementsByClassName("hotbarcell")[17] as HTMLDivElement);break;
+      selectCell(hotbarCells[17]); break;
   }
 }
 
-function selectCell(cell:HTMLDivElement){
-  for(var x of document.getElementsByClassName("hotbarcell")){
-    x.classList.remove("hotbarcellselected");
+function selectCell(target:HTMLDivElement){
+  for(const cell of hotbarCells){
+    cell.classList.remove("hotbarcellselected");
   }
-  cell.classList.add("hotbarcellselected");
+  target.classList.add("hotbarcellselected");
 }
 
 function getSelectedId(){
@@ -784,9 +797,9 @@ function loadReactor(data:string){
 
     //Validation passed, its good.
     defaultReactor = tempReactor;
-    (document.getElementById("x_input") as HTMLInputElement).value = x.metadata.dimensions[0];
-    (document.getElementById("y_input") as HTMLInputElement).value = x.metadata.dimensions[1];
-    (document.getElementById("z_input") as HTMLInputElement).value = x.metadata.dimensions[2];
+    x_input.value = x.metadata.dimensions[0];
+    y_input.value = x.metadata.dimensions[1];
+    z_input.value = x.metadata.dimensions[2];
     defaultReactor.update();
   } catch(err){
     loadNCReactorPlanner(data, "Imported Reactor");
@@ -834,31 +847,29 @@ function loadNCReactorPlanner(rawData:string, filename:string){
     console.assert(tempReactor.validate());
 
     defaultReactor = tempReactor;
-    (document.getElementById("x_input") as HTMLInputElement).value = data.InteriorDimensions.X;
-    (document.getElementById("x_input") as HTMLInputElement).value = data.InteriorDimensions.X;
-    (document.getElementById("x_input") as HTMLInputElement).value = data.InteriorDimensions.X;
+    x_input.value = data.InteriorDimensions.X;
+    y_input.value = data.InteriorDimensions.Y;
+    z_input.value = data.InteriorDimensions.Z;
     defaultReactor.update();
   } catch(err){
     console.error("Invalid JSON!", err);
   }
 }
 
-var reactorLayers = document.getElementById("reactorlayers") as HTMLDivElement;
-var statspanel = document.getElementById('statspanel') as HTMLDivElement;
 
 var defaultReactor;
 function regenReactor(){
   defaultReactor = new Reactor(
-    +(document.getElementById("x_input") as HTMLInputElement).value,
-    +(document.getElementById("y_input") as HTMLInputElement).value,
-    +(document.getElementById("z_input") as HTMLInputElement).value);
-
+    +x_input.value,
+    +y_input.value,
+    +z_input.value
+  );
   defaultReactor.update();
 }
 regenReactor();
 
 
-document.getElementById("title")!.innerHTML = "<strong>Einsteinium</strong> beta v"+VERSION+": editing ";
+titleText.innerHTML = "<strong>Einsteinium</strong> beta v"+VERSION+": editing ";
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");

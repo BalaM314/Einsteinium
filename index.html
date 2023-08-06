@@ -8,10 +8,9 @@
   <!-- <script src="CLASSES.js" defer></script> -->
   <script src="main.js" defer></script>
   <script defer>
-  //in case I screw up
-    if(document.getElementsByClassName("errormessage")){
-      document.getElementsByClassName("errormessage")[0].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
-      document.getElementById("errormessage")[1].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
+    //if the main script doesnt load, this runs
+    if(document.getElementsByClassName("errormessage").length > 0){
+      document.getElementsByClassName("errormessage")[0].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
     }
   </script>
   <link rel="stylesheet" href="main.css">
@@ -25,7 +24,7 @@
       <span style="font-size: 20px; margin:auto;" class="errormessage"></span>
     </div>
     <div id="statspanel">
-      <span class="errormessage">Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.</span>
+      <span class="errormessage">Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.</span>
     </div>
     <div id="optionspanel">
       <div class="flex"><button onclick="this.innerHTML = (Math.random()*10000000).toString(36);">Do stuff!</button></div>

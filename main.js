@@ -447,7 +447,6 @@ ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells 
 Adjacent Moderators: ${adjacentModerators}
 Heat Multiplier: ${heatMultiplier * 100}%
 Energy Multiplier: ${energyMultiplier * 100}%`;
-                        console.log(this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z));
                     }
                     else if (ccell > 1 && ccell < 17) {
                         if (this.valids[pos.y][pos.x][pos.z]) {
@@ -494,7 +493,7 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
                             }
                             break;
                         case 5:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 3) {
+                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 3) >= 1) {
                                 this.valids[pos.y][pos.x][pos.z] = true;
                             }
                             else {

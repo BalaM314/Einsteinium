@@ -1,13 +1,13 @@
 "use strict";
-const reactorName = getElement("reactorName", HTMLInputElement);
-const uploadButton = getElement("uploadButton", HTMLInputElement);
+const reactorName = getElement("reactor-name", HTMLInputElement);
+const uploadButton = getElement("upload-button", HTMLInputElement);
 const hotbarCells = [...document.querySelectorAll(".hotbarcell")];
-const x_input = getElement("x_input", HTMLInputElement);
-const y_input = getElement("y_input", HTMLInputElement);
-const z_input = getElement("z_input", HTMLInputElement);
-const reactorLayers = getElement("reactorLayers", HTMLDivElement);
-const statsPanel = getElement("statsPanel", HTMLDivElement);
-const titleText = getElement("title", HTMLDivElement);
+const x_input = getElement("x-input", HTMLInputElement);
+const y_input = getElement("y-input", HTMLInputElement);
+const z_input = getElement("z-input", HTMLInputElement);
+const reactorLayers = getElement("reactor-layers", HTMLDivElement);
+const statsPanel = getElement("stats-panel", HTMLDivElement);
+const titleText = getElement("title", HTMLSpanElement);
 const VERSION = "2.0.0";
 const idmappings = {
     0: "Air",
@@ -108,7 +108,7 @@ function getElement(id, type) {
     if (element instanceof type)
         return element;
     else if (element instanceof HTMLElement)
-        throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+        throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
     else
         throw new Error(`Element with id ${id} does not exist`);
 }

@@ -1,13 +1,13 @@
 
-const reactorName = getElement("reactorName", HTMLInputElement);
-const uploadButton = getElement("uploadButton", HTMLInputElement);
+const reactorName = getElement("reactor-name", HTMLInputElement);
+const uploadButton = getElement("upload-button", HTMLInputElement);
 const hotbarCells = [...document.querySelectorAll(".hotbarcell")] as HTMLDivElement[];
-const x_input = getElement("x_input", HTMLInputElement);
-const y_input = getElement("y_input", HTMLInputElement);
-const z_input = getElement("z_input", HTMLInputElement);
-const reactorLayers = getElement("reactorLayers", HTMLDivElement);
-const statsPanel = getElement("statsPanel", HTMLDivElement);
-const titleText = getElement("title", HTMLDivElement);
+const x_input = getElement("x-input", HTMLInputElement);
+const y_input = getElement("y-input", HTMLInputElement);
+const z_input = getElement("z-input", HTMLInputElement);
+const reactorLayers = getElement("reactor-layers", HTMLDivElement);
+const statsPanel = getElement("stats-panel", HTMLDivElement);
+const titleText = getElement("title", HTMLSpanElement);
 
 type CellID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
 
@@ -116,7 +116,7 @@ const consts = {
 function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	const element = <unknown>document.getElementById(id);
 	if(element instanceof type) return element as T["prototype"];
-	else if(element instanceof HTMLElement) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
+	else if(element instanceof HTMLElement) throw new Error(`Element with id ${id} was fetched as type ${type.name}, but was of type ${element.constructor.name}`);
 	else throw new Error(`Element with id ${id} does not exist`);
 }
 function sum(arr:number[]){

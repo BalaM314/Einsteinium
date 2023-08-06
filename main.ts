@@ -78,6 +78,26 @@ const blockIDMappings:Record<CellID, string> = {
   17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
   18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
 };
+const ncmappings = {
+  "Redstone": 3,
+  "Glowstone": 6,
+  "Helium": 9,
+  "Iron": 12,
+  "Tin": 15,
+  "Beryllium": 18,
+  "FuelCell": 1,
+  "Quartz": 4,
+  "Lapis": 7,
+  "Enderium": 10,
+  "Emerald": 13,
+  "Magnesium": 16,
+  "Water": 2,
+  "Gold": 5,
+  "Diamond": 8,
+  "Cryotheum": 11,
+  "Copper": 14,
+  "Graphite": 17,
+};
 
 let settings = {
   "heatMult": 1.0,
@@ -98,6 +118,16 @@ function getElement<T extends typeof HTMLElement>(id:string, type:T){
 	if(element instanceof type) return element as T["prototype"];
 	else if(element instanceof HTMLElement) throw new Error(`Element with id was fetched as type ${type}, but was of type ${element.constructor.name}`);
 	else throw new Error(`Element with id ${id} does not exist`);
+}
+function sum(arr:number[]){
+  let sum = 0;
+  for(let x of arr){
+    sum += x;
+  }
+  return sum;
+}
+function assert(val:boolean, message = "Assertion failed, no further information"){
+  if(!val) throw new Error(message);
 }
 function cp<T>(data:T){
   return JSON.parse(JSON.stringify(data));
@@ -190,14 +220,14 @@ class Reactor {
 
   validate(){
     try {
-      console.assert(this.contents.length == this.y);
+      assert(this.contents.length == this.y, "Incorrect dimensions");
       for(let x of this.contents){
-        console.assert(x.length == this.x);
+        assert(x.length == this.x, "Incorrect dimensions");
         for(let y of x){
-          console.assert(y.length == this.z);
+          assert(y.length == this.z, "Incorrect dimensions");
           for(let cell of y){
-            console.assert(typeof cell == "number");
-            console.assert(cell >= 0 && cell <= 18);
+            assert(typeof cell == "number", "Invalid cell");
+            assert(cell >= 0 && cell <= 18, "Invalid cell");
           }
         }
       }
@@ -607,13 +637,6 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
     let spaceEfficiency = 1-(stats.cellcount[0]/(this.x*this.y*this.z));
     let numCasings = 2*this.x*this.y + 2*this.x*this.z + 2*this.y*this.z;
 
-    function sum(arr:number[]){
-      let sum = 0;
-      for(let x of arr){
-        sum += x;
-      }
-      return sum;
-    }
     DOMnode.innerHTML = `
     <h1>Reactor Stats</h1>
     <br>
@@ -680,15 +703,7 @@ function download(filename:string, text:string){
 }
 
 function copyToClipboard(str:string){
-    //TODO navigator.clipboard.writeText
-   let el = document.createElement('textarea');
-   el.value = str;
-   el.setAttribute('readonly', '');
-   el.style.visibility = "hidden";
-   document.body.appendChild(el);
-   el.select();
-   document.execCommand('copy');
-   document.body.removeChild(el);
+  return navigator.clipboard.writeText(str);
 }
 
 let baseHeat = 18;
@@ -773,27 +788,27 @@ function getSelectedId(){
 function loadReactor(data:string){
   try {
     //Check for security reasons(why not) //TODO awful
-    console.assert(data.match(/[<>\\;^]|(script)/gi) == null);
+    assert(data.match(/[<>\\;^]|(script)/gi) == null, "Security check failed");
 
     const parsed = JSON.parse(data);
     // First some validation to make sure the data is valid.
-    console.assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi));
+    assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi), "Invalid version");
     //hehe VV
-    console.assert(parsed.metadata.version == "1.0.2" || parsed.metadata.version == "1.0.1" || parsed.metadata.version == "1.0.0" || parsed.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.");
+    assert(parsed.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.", "Incorrect validation code");
     if(parsed.metadata.version != VERSION){
       console.warn("Loading JSON file with a different data version.");
     }
 
-    console.assert(parsed.metadata.dimensions.length == 3);
-    console.assert(typeof parsed.metadata.dimensions[0] == "number");
-    console.assert(typeof parsed.metadata.dimensions[1] == "number");
-    console.assert(typeof parsed.metadata.dimensions[2] == "number");
+    assert(parsed.metadata.dimensions.length == 3, "Invalid dimenions");
+    assert(typeof parsed.metadata.dimensions[0] == "number", "Invalid dimenions");
+    assert(typeof parsed.metadata.dimensions[1] == "number", "Invalid dimenions");
+    assert(typeof parsed.metadata.dimensions[2] == "number", "Invalid dimenions");
 
-    //The data's probably valid, load it now..
+    //The data's probably valid, try load it now..
     let tempReactor = new Reactor(parsed.metadata.dimensions[0], parsed.metadata.dimensions[1], parsed.metadata.dimensions[2]);
     tempReactor.contents = parsed.content;
     tempReactor.name = parsed.metadata.name;
-    console.assert(tempReactor.validate());
+    assert(tempReactor.validate(), "Invalid data");
 
     //Validation passed, its good.
     defaultReactor = tempReactor;
@@ -807,44 +822,25 @@ function loadReactor(data:string){
 }
 
 function loadNCReactorPlanner(rawData:string, filename:string){
-  const ncmappings = {
-    "Redstone": 3,
-    "Glowstone": 6,
-    "Helium": 9,
-    "Iron": 12,
-    "Tin": 15,
-    "Beryllium": 18,
-    "FuelCell": 1,
-    "Quartz": 4,
-    "Lapis": 7,
-    "Enderium": 10,
-    "Emerald": 13,
-    "Magnesium": 16,
-    "Water": 2,
-    "Gold": 5,
-    "Diamond": 8,
-    "Cryotheum": 11,
-    "Copper": 14,
-    "Graphite": 17,
-  };
+  
   try {
     //TODO awful
-    console.assert(rawData.match(/[<>\\;^]|(script)/gi) == null);
+    assert(rawData.match(/[<>\\;^]|(script)/gi) == null);
     let data = JSON.parse(rawData);
-    console.assert(typeof data.SaveVersion.Build == "number");
-    console.assert(data.CompressedReactor);
+    assert(typeof data.SaveVersion.Build == "number");
+    assert(data.CompressedReactor);
 
 
     let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
     for(const name of Object.keys(ncmappings)){
-        if(data.CompressedReactor[name] instanceof Array){
-          for(const pos of data.CompressedReactor[name]){
-            tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[name];
-          }
+      if(data.CompressedReactor[name] instanceof Array){
+        for(const pos of data.CompressedReactor[name]){
+          tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[name];
         }
+      }
     }
     tempReactor.name = filename;
-    console.assert(tempReactor.validate());
+    assert(tempReactor.validate());
 
     defaultReactor = tempReactor;
     x_input.value = data.InteriorDimensions.X;
@@ -869,7 +865,7 @@ function regenReactor(){
 regenReactor();
 
 
-titleText.innerHTML = "<strong>Einsteinium</strong> beta v"+VERSION+": editing ";
+titleText.innerHTML = `<strong>Einsteinium</strong> beta v${VERSION}: editing `;
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");

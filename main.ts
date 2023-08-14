@@ -100,7 +100,7 @@ const ncmappings = {
   "Cryotheum": 11,
   "Copper": 14,
   "Graphite": 17,
-};
+} satisfies Record<string, BlockID>;
 
 let settings = {
   "heatMult": 1.0,
@@ -173,7 +173,7 @@ const cellTypes = (d => d)([
 ]);
 
 class Reactor {
-  contents: number[][][];
+  contents: BlockID[][][];
   valids: boolean[][][];
   x:number; y:number; z:number;
   name:string;
@@ -203,7 +203,7 @@ class Reactor {
     );
   }
 
-  edit(x:number, y:number, z:number, id:number){
+  edit(x:number, y:number, z:number, id:BlockID){
     //Self explanatory.
     if(isNaN(id)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);

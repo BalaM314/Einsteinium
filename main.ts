@@ -265,24 +265,36 @@ class Reactor {
       let tempElement = document.createElement("div");
       tempElement.className = "layer";
       tempElement.setAttribute("y", i.toString()); //TODO what is this for?
-      let layerInnerHTML = `<div class="layerinner" onload="squarifyCells(this);">`;
+      const layerInner = document.createElement("div");
+      layerInner.classList.add("layerinner");
       for(let j = 0; j < this.x*this.z; j ++){
+        //TODO fix bad loop, unnecessary floor
         let cX = j % this.x;
         let cZ = Math.floor(j/this.x);
-        layerInnerHTML +=
-        `<div
-          class="cell${this.valids[i][cX][cZ] ? "" : " invalid"}"
-          ` + /*cellX="${Math.floor(j/this.x)}" cellZ="${j % this.x}" + */ `
-          onclick="defaultReactor.edit(${cX}, ${i}, ${cZ}, getSelectedId());"
-          oncontextmenu="defaultReactor.edit(${cX}, ${i}, ${cZ}, 0);return false;"
-          style="grid-row:${cZ + 1}; grid-column:${cX + 1};"
-          title="${tooltipmappings[this.contents[i][cX][cZ] as keyof typeof tooltipmappings]}"
-        >
-          <img src="assets/${this.contents[i][cX][cZ]}.png" alt="${this.contents[i][cX][cZ]}" width=100%>
-        </div>`;
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        if(!this.valids[i][cX][cZ]) cell.classList.add("invalid");
+        //TODO way too many duped functions
+        cell.addEventListener("click", e => {
+          defaultReactor.edit(cX, i, cZ, getSelectedId());
+        });
+        cell.addEventListener("contextmenu", e => {
+          if(!e.shiftKey){
+            defaultReactor.edit(cX, i, cZ, 0);
+            e.preventDefault();
+          }
+        });
+        cell.style.setProperty("grid-row", (cZ + 1).toString());
+        cell.style.setProperty("grid-column", (cX + 1).toString());
+        cell.title = tooltipmappings[this.contents[i][cX][cZ]];
+        const img = document.createElement("img");
+        img.src = `assets/${this.contents[i][cX][cZ]}.png`;
+        img.alt = this.contents[i][cX][cZ].toString();
+        img.style.width = "100%";
+        cell.appendChild(img);
+        layerInner.appendChild(cell);
       }
-      layerInnerHTML += "</div>";
-      tempElement.innerHTML = layerInnerHTML;
+      tempElement.appendChild(layerInner);
       reactorLayers.appendChild(tempElement);
     }
     reactorName.value = this.name;
@@ -783,12 +795,12 @@ function selectCell(target:HTMLDivElement){
   target.classList.add("hotbarcellselected");
 }
 
-function getSelectedId(){
+function getSelectedId():BlockID {
   try {
-    let calcedId = (document.getElementsByClassName("hotbarcellselected")[0].childNodes[1] as HTMLImageElement).src.split("/").pop()!.split(".")[0];
+    let calcedId = +(document.getElementsByClassName("hotbarcellselected")[0].childNodes[1] as HTMLImageElement).src.split("/").pop()!.split(".")[0];
     //who said the code had to be readable
-    if(typeof calcedId == "number" || !isNaN(parseInt(calcedId))){
-      return calcedId;
+    if(calcedId in idmappings){
+      return calcedId as BlockID;
     }
   } catch(err){
 

@@ -28,7 +28,8 @@ const idmappings = {
     15: "Tin Cooler",
     16: "Magnesium Cooler",
     17: "Graphite Moderator",
-    18: "Beryllium Moderator"
+    18: "Beryllium Moderator",
+    19: "Casing",
 };
 const tooltipmappings = {
     0: "Air",
@@ -49,7 +50,8 @@ const tooltipmappings = {
     15: "Tin Cooler\nRequires two lapis coolers on opposite sides",
     16: "Magnesium Cooler\nRequires at least one casing and moderator",
     17: "Graphite Moderator",
-    18: "Beryllium Moderator"
+    18: "Beryllium Moderator",
+    19: "Casing",
 };
 const blockIDMappings = {
     0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
@@ -70,7 +72,8 @@ const blockIDMappings = {
     15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"',
     16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
     17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
-    18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
+    18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"',
+    19: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
 };
 const ncmappings = {
     "Redstone": 3,
@@ -154,6 +157,15 @@ function constrain(val, min, max) {
 function checkNaN(value, deefalt) {
     return isNaN(value) ? deefalt : value;
 }
+const cellTypes = (d => d)([
+    {
+        displayedName: "Air",
+        description: "",
+        blockData: ""
+    }, {
+        name: "Fuel Cell"
+    }
+]);
 class Reactor {
     constructor(x, y, z) {
         this.contents = [];
@@ -413,12 +425,9 @@ class Reactor {
         return adjacentCells;
     }
     tinCoolerValid(x, y, z) {
-        return (gna(this.contents, y + 1, x, z) == 7) &&
-            (gna(this.contents, y - 1, x, z) == 7) ||
-            (gna(this.contents, y, x + 1, z) == 7) &&
-                (gna(this.contents, y, x - 1, z) == 7) ||
-            (gna(this.contents, y, x, z + 1) == 7) &&
-                (gna(this.contents, y, x, z - 1) == 7);
+        return (gna(this.contents, y + 1, x, z) == 7 && gna(this.contents, y - 1, x, z) == 7 ||
+            gna(this.contents, y, x + 1, z) == 7 && gna(this.contents, y, x - 1, z) == 7 ||
+            gna(this.contents, y, x, z + 1) == 7 && gna(this.contents, y, x, z - 1) == 7);
     }
     calculateStats() {
         let totalHeat = 0;

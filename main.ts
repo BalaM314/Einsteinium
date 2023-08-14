@@ -9,11 +9,11 @@ const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
 
-type CellID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
+type BlockID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19;
 
 const VERSION = "2.0.0";
 
-const idmappings:Record<CellID, string> = {
+const idmappings:Record<BlockID, string> = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler",
@@ -32,10 +32,11 @@ const idmappings:Record<CellID, string> = {
   15: "Tin Cooler",
   16: "Magnesium Cooler",
   17: "Graphite Moderator",
-  18: "Beryllium Moderator"
+  18: "Beryllium Moderator",
+  19: "Casing",
 }
 
-const tooltipmappings:Record<CellID, string> = {
+const tooltipmappings:Record<BlockID, string> = {
   0: "Air",
   1: "Fuel Cell",
   2: "Water Cooler\nRequires at least one fuel cell or active moderator",
@@ -54,10 +55,11 @@ const tooltipmappings:Record<CellID, string> = {
   15: "Tin Cooler\nRequires two lapis coolers on opposite sides",
   16: "Magnesium Cooler\nRequires at least one casing and moderator",
   17: "Graphite Moderator",
-  18: "Beryllium Moderator"
+  18: "Beryllium Moderator",
+  19: "Casing",
 }
 
-const blockIDMappings:Record<CellID, string> = {
+const blockIDMappings:Record<BlockID, string> = {
   0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
   1: 'Name:"nuclearcraft:cell_block"',
   2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
@@ -76,7 +78,8 @@ const blockIDMappings:Record<CellID, string> = {
   15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"',
   16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
   17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
-  18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"'
+  18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"',
+  19: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
 };
 const ncmappings = {
   "Redstone": 3,
@@ -157,6 +160,17 @@ function constrain(val:number, min:number, max:number){
 function checkNaN(value:number, deefalt:number){
   return isNaN(value) ? deefalt : value;
 }
+
+const cellTypes = (d => d)([
+  {
+    displayedName: "Air",
+    description: "",
+    blockData: ""
+  },{
+    name: "Fuel Cell"
+  }
+  
+]);
 
 class Reactor {
   contents: number[][][];
@@ -456,13 +470,11 @@ class Reactor {
   }
 
   tinCoolerValid(x:number, y:number, z:number){
-    //becuase the Tin Cooler wanted to be sPeCiAl.
-    return (gna(this.contents, y + 1, x, z) == 7)&&
-    (gna(this.contents, y - 1, x, z) == 7)||
-    (gna(this.contents, y, x + 1, z) == 7)&&
-    (gna(this.contents, y, x - 1, z) == 7)||
-    (gna(this.contents, y, x, z + 1) == 7)&&
-    (gna(this.contents, y, x, z - 1) == 7);
+    return (
+      gna(this.contents, y + 1, x, z) == 7 && gna(this.contents, y - 1, x, z) == 7 ||
+      gna(this.contents, y, x + 1, z) == 7 && gna(this.contents, y, x - 1, z) == 7 ||
+      gna(this.contents, y, x, z + 1) == 7 && gna(this.contents, y, x, z - 1) == 7
+    );
   }
 
   calculateStats(){

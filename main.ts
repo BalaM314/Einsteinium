@@ -239,9 +239,10 @@ const cellTypes = [
   
 ] satisfies CellData[];
 
-const ncmappings = Object.fromEntries(
+const ncrpMappings = Object.fromEntries(
   cellTypes.map((t, i) => [t.ncrpName, i as BlockID] as const).filter((x):x is [string, BlockID] => x[0] != undefined)
 ) satisfies Record<string, BlockID>;
+const moderatorIds = cellTypes.map((t, i) => [t, i] as const).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);
 
 let settings = {
   "heatMult": 1.0,
@@ -339,29 +340,22 @@ class Reactor {
 
   edit(x:number, y:number, z:number, id:BlockID){
     //Self explanatory.
-    if(isNaN(id)){
+    if(isNaN(id) || !(id in cellTypes)){
       console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
       return false;
     }
-    try {
-    //TODO bad
-      this.contents[y][x][z] = id;
-      this.valids[y][x][z] = (id == 1);
-    } catch(err){
-      console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
-      return false;
-    }
+    this.contents[y][x][z] = id;
+    this.valids[y][x][z] = (cellTypes[id].type == "misc");
     this.update();
     return true;
   }
 
   update(){
-    //TODO wtf
+    //necessary because: on first update moderators will become valid, then on the next update redstone coolers, then on the next update gold coolers, then on the fourth update tin coolers
     this.updateCellsValidity();
     this.updateCellsValidity();
     this.updateCellsValidity();
     this.updateCellsValidity();
-    //sure why not
     this.updateDOM(reactorLayers);
     this.updateStats(statsPanel);
   }
@@ -380,8 +374,9 @@ class Reactor {
         }
       }
       return true;
-    } catch(err){}
-    return false;
+    } catch(err){
+      return false;
+    }
   }
 
   getDOMCell(reactorLayers:HTMLDivElement, x:number, y:number, z:number){
@@ -876,10 +871,10 @@ function loadNCReactorPlanner(rawData:string, filename:string){
 
 
     let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
-    for(const name of Object.keys(ncmappings)){
+    for(const name of Object.keys(ncrpMappings)){
       if(data.CompressedReactor[name] instanceof Array){
         for(const pos of data.CompressedReactor[name]){
-          tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[name];
+          tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncrpMappings[name];
         }
       }
     }

@@ -204,7 +204,8 @@ const cellTypes = [
         blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
     }
 ];
-const ncmappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
+const ncrpMappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
+const moderatorIds = cellTypes.map((t, i) => [t, i]).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);
 let settings = {
     "heatMult": 1.0,
     "neutronRadiationReach": 4,
@@ -285,18 +286,12 @@ class Reactor {
         this.valids = Array.from({ length: y }, () => Array.from({ length: x }, () => Array.from({ length: z }, () => false)));
     }
     edit(x, y, z, id) {
-        if (isNaN(id)) {
+        if (isNaN(id) || !(id in cellTypes)) {
             console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
             return false;
         }
-        try {
-            this.contents[y][x][z] = id;
-            this.valids[y][x][z] = (id == 1);
-        }
-        catch (err) {
-            console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
-            return false;
-        }
+        this.contents[y][x][z] = id;
+        this.valids[y][x][z] = (cellTypes[id].type == "misc");
         this.update();
         return true;
     }
@@ -323,8 +318,9 @@ class Reactor {
             }
             return true;
         }
-        catch (err) { }
-        return false;
+        catch (err) {
+            return false;
+        }
     }
     getDOMCell(reactorLayers, x, y, z) {
         return reactorLayers.childNodes[y].firstChild.childNodes[(z * this.x) + x];
@@ -791,10 +787,10 @@ function loadNCReactorPlanner(rawData, filename) {
         assert(typeof data.SaveVersion.Build == "number");
         assert(data.CompressedReactor);
         let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z);
-        for (const name of Object.keys(ncmappings)) {
+        for (const name of Object.keys(ncrpMappings)) {
             if (data.CompressedReactor[name] instanceof Array) {
                 for (const pos of data.CompressedReactor[name]) {
-                    tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncmappings[name];
+                    tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncrpMappings[name];
                 }
             }
         }

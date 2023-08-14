@@ -132,9 +132,11 @@ const cellTypes = [
         blockData: `Properties:{type:"enderium"},Name:"nuclearcraft:cooler"`,
         ncrpName: "Enderium",
         coolAmount: 120,
-        valid: {
-            casing: 3,
-        }
+        valid(reactor, [x, y, z]) {
+            return ((x == 0 || x == reactor.x - 1) &&
+                (y == 0 || x == reactor.y - 1) &&
+                (z == 0 || x == reactor.z - 1));
+        },
     }, {
         displayedName: "Cryotheum Cooler",
         type: "cooler",

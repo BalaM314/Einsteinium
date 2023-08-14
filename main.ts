@@ -13,6 +13,28 @@ type BlockID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 
 
 const VERSION = "2.0.0";
 
+type CellData = BasicCellData & (MiscCellData | CoolerCellData | ModeratorCellData);
+
+interface BasicCellData {
+  displayedName: string;
+  description: string;
+  blockData?: string;
+  ncrpName?: string;
+}
+interface MiscCellData {
+  type: "misc";
+}
+interface CoolerCellData {
+  coolAmount: number;
+  type: "cooler";
+  valid: {
+    [_ in BlockID | "moderator" | "casing"]?: number | [min:number, max:number];
+  } | ((reactor:Reactor, cell:[x:number, y:number, z:number]) => boolean);
+}
+interface ModeratorCellData {
+  type: "moderator";
+}
+
 const idmappings:Record<BlockID, string> = {
   0: "Air",
   1: "Fuel Cell",
@@ -54,8 +76,8 @@ const tooltipmappings:Record<BlockID, string> = {
   14: "Copper Cooler\nRequires at least one glowstone cooler",
   15: "Tin Cooler\nRequires two lapis coolers on opposite sides",
   16: "Magnesium Cooler\nRequires at least one casing and moderator",
-  17: "Graphite Moderator",
-  18: "Beryllium Moderator",
+  17: "Graphite Moderator\nBoosts the fission reaction in adjacent cells, increasing power but also heat.",
+  18: "Beryllium Moderator\nBoosts the fission reaction in adjacent cells, increasing power but also heat.",
   19: "Casing",
 }
 
@@ -160,17 +182,6 @@ function constrain(val:number, min:number, max:number){
 function checkNaN(value:number, deefalt:number){
   return isNaN(value) ? deefalt : value;
 }
-
-const cellTypes = (d => d)([
-  {
-    displayedName: "Air",
-    description: "",
-    blockData: ""
-  },{
-    name: "Fuel Cell"
-  }
-  
-]);
 
 class Reactor {
   contents: BlockID[][][];
@@ -330,7 +341,7 @@ class Reactor {
       for(let layer of that.contents){
         for(let column of layer){
           for(let cell of column){
-            if(cell){cells.push(cell);}
+            if(cell != 0){cells.push(cell);}
           }
         }
       }

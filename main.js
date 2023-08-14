@@ -9,28 +9,6 @@ const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
 const VERSION = "2.0.0";
-const idmappings = {
-    0: "Air",
-    1: "Fuel Cell",
-    2: "Water Cooler",
-    3: "Redstone Cooler",
-    4: "Quartz Cooler",
-    5: "Gold Cooler",
-    6: "Glowstone Cooler",
-    7: "Lapis Cooler",
-    8: "Diamond Cooler",
-    9: "Helium Cooler",
-    10: "Enderium Cooler",
-    11: "Cryotheum Cooler",
-    12: "Iron Cooler",
-    13: "Emerald Cooler",
-    14: "Copper Cooler",
-    15: "Tin Cooler",
-    16: "Magnesium Cooler",
-    17: "Graphite Moderator",
-    18: "Beryllium Moderator",
-    19: "Casing",
-};
 const cellTypes = [
     {
         displayedName: "Air",
@@ -50,7 +28,7 @@ const cellTypes = [
         ncrpName: "Water",
         coolAmount: 60,
         valid(reactor, [x, y, z]) {
-            return reactor.getAdjacentCells(x, y, z) >= 1 || reactor.getAdjacentModerators(x, y, z) >= 1;
+            return reactor.getAdjacentFuelCells(x, y, z) >= 1 || reactor.getAdjacentModerators(x, y, z) >= 1;
         },
     }, {
         displayedName: "Redstone Cooler",
@@ -112,7 +90,7 @@ const cellTypes = [
         coolAmount: 150,
         valid: {
             2: 1,
-            4: 2,
+            4: 1,
         }
     }, {
         displayedName: "Helium Cooler",
@@ -189,7 +167,7 @@ const cellTypes = [
             return (gna(reactor.contents, y + 1, x, z) == 7 && gna(reactor.contents, y - 1, x, z) == 7 ||
                 gna(reactor.contents, y, x + 1, z) == 7 && gna(reactor.contents, y, x - 1, z) == 7 ||
                 gna(reactor.contents, y, x, z + 1) == 7 && gna(reactor.contents, y, x, z - 1) == 7);
-        },
+        }
     }, {
         displayedName: "Magnesium Cooler",
         type: "cooler",
@@ -207,12 +185,18 @@ const cellTypes = [
         description: "Boosts the fission reaction in adjacent cells, increasing power but also heat.",
         blockData: `Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"`,
         ncrpName: "Graphite",
+        valid: {
+            1: 1,
+        }
     }, {
         displayedName: "Beryllium Moderator",
         type: "moderator",
         description: "Boosts the fission reaction in adjacent cells, increasing power but also heat.",
         blockData: `Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"`,
         ncrpName: "Beryllium",
+        valid: {
+            1: 1,
+        }
     }, {
         displayedName: "Casing",
         description: "",
@@ -220,70 +204,7 @@ const cellTypes = [
         blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
     }
 ];
-const tooltipmappings = {
-    0: "Air",
-    1: "Fuel Cell",
-    2: "Water Cooler\nRequires at least one fuel cell or active moderator",
-    3: "Redstone Cooler\nRequires at least one fuel cell",
-    4: "Quartz Cooler\nRequires at least one active moderator",
-    5: "Gold Cooler\nRequires at least one redstone cooler and water cooler",
-    6: "Glowstone Cooler\nRequires at least two moderators",
-    7: "Lapis Cooler\nRequires at least one fuel cell and casing",
-    8: "Diamond Cooler\nRequires at least one water cooler and quartz cooler",
-    9: "Helium Cooler\nRequires exactly one redstone cooler and one reactor casing",
-    10: "Enderium Cooler\nMust be placed in a corner",
-    11: "Cryotheum Cooler\nRequires at least two fuel cells",
-    12: "Iron Cooler\nRequires at least one gold cooler",
-    13: "Emerald Cooler\nRequires at least one moderator and fuel cell",
-    14: "Copper Cooler\nRequires at least one glowstone cooler",
-    15: "Tin Cooler\nRequires two lapis coolers on opposite sides",
-    16: "Magnesium Cooler\nRequires at least one casing and moderator",
-    17: "Graphite Moderator\nBoosts the fission reaction in adjacent cells, increasing power but also heat.",
-    18: "Beryllium Moderator\nBoosts the fission reaction in adjacent cells, increasing power but also heat.",
-    19: "Casing",
-};
-const blockIDMappings = {
-    0: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
-    1: 'Name:"nuclearcraft:cell_block"',
-    2: 'Properties:{type:"water"},Name:"nuclearcraft:cooler"',
-    3: 'Properties:{type:"redstone"},Name:"nuclearcraft:cooler"',
-    4: 'Properties:{type:"quartz"},Name:"nuclearcraft:cooler"',
-    5: 'Properties:{type:"gold"},Name:"nuclearcraft:cooler"',
-    6: 'Properties:{type:"glowstone"},Name:"nuclearcraft:cooler"',
-    7: 'Properties:{type:"lapis"},Name:"nuclearcraft:cooler"',
-    8: 'Properties:{type:"diamond"},Name:"nuclearcraft:cooler"',
-    9: 'Properties:{type:"helium"},Name:"nuclearcraft:cooler"',
-    10: 'Properties:{type:"enderium"},Name:"nuclearcraft:cooler"',
-    11: 'Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"',
-    12: 'Properties:{type:"iron"},Name:"nuclearcraft:cooler"',
-    13: 'Properties:{type:"emerald"},Name:"nuclearcraft:cooler"',
-    14: 'Properties:{type:"copper"},Name:"nuclearcraft:cooler"',
-    15: 'Properties:{type:"tin"},Name:"nuclearcraft:cooler"',
-    16: 'Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"',
-    17: 'Properties:{type:"graphite"},Name:"nuclearcraft:ingot_block"',
-    18: 'Properties:{type:"beryllium"},Name:"nuclearcraft:ingot_block"',
-    19: 'Properties:{type:"casing"},Name:"nuclearcraft:fission_block"',
-};
-const ncmappings = {
-    "Redstone": 3,
-    "Glowstone": 6,
-    "Helium": 9,
-    "Iron": 12,
-    "Tin": 15,
-    "Beryllium": 18,
-    "FuelCell": 1,
-    "Quartz": 4,
-    "Lapis": 7,
-    "Enderium": 10,
-    "Emerald": 13,
-    "Magnesium": 16,
-    "Water": 2,
-    "Gold": 5,
-    "Diamond": 8,
-    "Cryotheum": 11,
-    "Copper": 14,
-    "Graphite": 17,
-};
+const ncmappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
 let settings = {
     "heatMult": 1.0,
     "neutronRadiationReach": 4,
@@ -314,6 +235,12 @@ function sum(arr) {
 function assert(val, message = "Assertion failed, no further information") {
     if (!val)
         throw new Error(message);
+}
+function inRange(value, range) {
+    if (typeof range == "number")
+        return value >= range;
+    else
+        return value >= range[0] && value <= range[1];
 }
 function cp(data) {
     return JSON.parse(JSON.stringify(data));
@@ -390,7 +317,7 @@ class Reactor {
                     assert(y.length == this.z, "Incorrect dimensions");
                     for (let cell of y) {
                         assert(typeof cell == "number", "Invalid cell");
-                        assert(cell >= 0 && cell <= 18, "Invalid cell");
+                        assert(cell in cellTypes, "Invalid cell");
                     }
                 }
             }
@@ -430,10 +357,11 @@ class Reactor {
                 });
                 cell.style.setProperty("grid-row", (cZ + 1).toString());
                 cell.style.setProperty("grid-column", (cX + 1).toString());
-                cell.title = tooltipmappings[this.contents[i][cX][cZ]];
+                const id = this.contents[i][cX][cZ];
+                cell.title = `${cellTypes[id].displayedName}\n${cellTypes[id].description}`;
                 const img = document.createElement("img");
-                img.src = `assets/${this.contents[i][cX][cZ]}.png`;
-                img.alt = this.contents[i][cX][cZ].toString();
+                img.src = `assets/${id}.png`;
+                img.alt = id.toString();
                 img.style.width = "100%";
                 cell.appendChild(img);
                 layerInner.appendChild(cell);
@@ -492,8 +420,8 @@ class Reactor {
             for (let y in that.contents) {
                 for (let x in that.contents[y]) {
                     for (let z in that.contents[y][x]) {
-                        if (that.contents[y][x][z] != 0) {
-                            states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${blockIDMappings[that.contents[y][x][z]]}}}`);
+                        if (cellTypes[that.contents[y][x][z]].blockData) {
+                            states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${cellTypes[that.contents[y][x][z]].blockData}}}`);
                         }
                     }
                 }
@@ -503,7 +431,7 @@ class Reactor {
         let exportString = `{stateIntArray:[I;${getStateIntArray(this).join(",")}],dim:0,posIntArray:[I;${getPosIntArray(this).join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${getMapIntState(this).join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
         return exportString;
     }
-    getAdjacentCells(x, y, z) {
+    getAdjacentFuelCells(x, y, z) {
         let adjacentCells = 0;
         adjacentCells += +(gna(this.contents, y + 1, x, z) == 1);
         adjacentCells += +(gna(this.contents, y, x + 1, z) == 1);
@@ -615,11 +543,6 @@ class Reactor {
         adjacentCells += +(gna(this.contents, y, x, z - 1) == id && (gna(this.valids, y, x, z - 1) != false));
         return adjacentCells;
     }
-    tinCoolerValid(x, y, z) {
-        return (gna(this.contents, y + 1, x, z) == 7 && gna(this.contents, y - 1, x, z) == 7 ||
-            gna(this.contents, y, x + 1, z) == 7 && gna(this.contents, y, x - 1, z) == 7 ||
-            gna(this.contents, y, x, z + 1) == 7 && gna(this.contents, y, x, z - 1) == 7);
-    }
     calculateStats() {
         let totalHeat = 0;
         let totalCooling = 0;
@@ -632,7 +555,7 @@ class Reactor {
                     const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
                     cellsCount[ccell]++;
                     if (ccell == 1) {
-                        let adjacentCells = this.getAdjacentCells(pos.x, pos.y, pos.z);
+                        let adjacentCells = this.getAdjacentFuelCells(pos.x, pos.y, pos.z);
                         let distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
                         let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
                         let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
@@ -658,143 +581,32 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
         }
         return { "heatgen": totalHeat, "cooling": totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount };
     }
+    checkValidation(check, [x, y, z]) {
+        if (typeof check == "object") {
+            for (const [key, value] of Object.entries(check)) {
+                const checkPassed = key == "moderator" ? inRange(this.getAdjacentModerators(x, y, z), value) :
+                    key == "casing" ? inRange(this.getAdjacentCell(x, y, z, null), value) :
+                        inRange(this.getAdjacentCell(x, y, z, key), value);
+                if (!checkPassed)
+                    return false;
+            }
+            return true;
+        }
+        else {
+            return check(this, [x, y, z]);
+        }
+    }
     updateCellsValidity() {
         for (let y in this.contents) {
             for (let x in this.contents[y]) {
                 for (let z in this.contents[y][x]) {
-                    const ccell = this.contents[y][x][z];
+                    const cellType = cellTypes[this.contents[y][x][z]];
                     const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
-                    switch (ccell) {
-                        case 1:
-                            this.valids[pos.y][pos.x][pos.z] = true;
-                            break;
-                        case 2:
-                            if (this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 || this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 3:
-                            if (this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 4:
-                            if (this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 5:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 3) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 6:
-                            if (this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 2) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 7:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 8:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 2) >= 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, 4) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 9:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 3) == 1 && this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 10:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 3) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 11:
-                            if (this.getAdjacentCells(pos.x, pos.y, pos.z) >= 2) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 12:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 5) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 13:
-                            if (this.getAdjacentCells(pos.x, pos.y, pos.z) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 14:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, 6) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 15:
-                            if (this.tinCoolerValid(pos.x, pos.y, pos.z)) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 16:
-                            if (this.getAdjacentCell(pos.x, pos.y, pos.z, null) >= 1 && this.getAdjacentModerators(pos.x, pos.y, pos.z) >= 1) {
-                                this.valids[pos.y][pos.x][pos.z] = true;
-                            }
-                            else {
-                                this.valids[pos.y][pos.x][pos.z] = false;
-                            }
-                            break;
-                        case 17:
-                        case 18:
-                            this.valids[y][x][z] = !!(this.getAdjacentCells(pos.x, pos.y, pos.z));
-                            break;
-                        case 0:
-                            this.valids[pos.y][pos.x][pos.z] = true;
-                            break;
+                    if (cellType.type == "misc") {
+                        this.valids[pos.y][pos.x][pos.z] = true;
+                    }
+                    else {
+                        this.valids[pos.y][pos.x][pos.z] = this.checkValidation(cellType.valid, [pos.x, pos.y, pos.z]);
                     }
                 }
             }
@@ -825,21 +637,7 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
     Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
     Space Efficiency: ${spaceEfficiency}%
     <h3>Coolers</h3>
-    ${(stats.cellcount[2]) ? idmappings[2] + ": " + stats.cellcount[2] + "<br>" : ""}
-    ${(stats.cellcount[3]) ? idmappings[3] + ": " + stats.cellcount[3] + "<br>" : ""}
-    ${(stats.cellcount[4]) ? idmappings[4] + ": " + stats.cellcount[4] + "<br>" : ""}
-    ${(stats.cellcount[5]) ? idmappings[5] + ": " + stats.cellcount[5] + "<br>" : ""}
-    ${(stats.cellcount[6]) ? idmappings[6] + ": " + stats.cellcount[6] + "<br>" : ""}
-    ${(stats.cellcount[7]) ? idmappings[7] + ": " + stats.cellcount[7] + "<br>" : ""}
-    ${(stats.cellcount[8]) ? idmappings[8] + ": " + stats.cellcount[8] + "<br>" : ""}
-    ${(stats.cellcount[9]) ? idmappings[9] + ": " + stats.cellcount[9] + "<br>" : ""}
-    ${(stats.cellcount[10]) ? idmappings[10] + ": " + stats.cellcount[10] + "<br>" : ""}
-    ${(stats.cellcount[11]) ? idmappings[11] + ": " + stats.cellcount[11] + "<br>" : ""}
-    ${(stats.cellcount[12]) ? idmappings[12] + ": " + stats.cellcount[12] + "<br>" : ""}
-    ${(stats.cellcount[13]) ? idmappings[13] + ": " + stats.cellcount[13] + "<br>" : ""}
-    ${(stats.cellcount[14]) ? idmappings[14] + ": " + stats.cellcount[14] + "<br>" : ""}
-    ${(stats.cellcount[15]) ? idmappings[15] + ": " + stats.cellcount[15] + "<br>" : ""}
-    ${(stats.cellcount[16]) ? idmappings[16] + ": " + stats.cellcount[16] + "<br>" : ""}
+    ${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) => `${t.displayedName}: ${stats.cellcount[i]}<br>`).join("\n")}
     `;
     }
 }
@@ -951,7 +749,7 @@ function selectCell(target) {
 function getSelectedId() {
     try {
         let calcedId = +document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
-        if (calcedId in idmappings) {
+        if (calcedId in cellTypes) {
             return calcedId;
         }
     }

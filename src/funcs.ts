@@ -60,7 +60,7 @@ function add(pos:Pos, amount:Pos){
   pos[2] += amount[2];
 }
 function download(filename:string, text:string){
-  //TODO there must be a better way...
+  //there is no better way...
   let temp2 = document.createElement('a');
   temp2.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
   temp2.setAttribute('download', filename);

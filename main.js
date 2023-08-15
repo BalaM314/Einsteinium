@@ -12,7 +12,9 @@ const VERSION = "2.0.0";
 const cellTypes = ((d) => d.map((t, i) => ({
     ...t,
     id: i,
-    imagePath: `assets/${i}.png`
+    imagePath: `assets/${i}.png`,
+    placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
+    tooltipText: `${t.displayedName}\n${t.description}`
 })))([
     {
         displayedName: "Air",
@@ -24,6 +26,7 @@ const cellTypes = ((d) => d.map((t, i) => ({
         description: "",
         blockData: `Name:"nuclearcraft:cell_block"`,
         ncrpName: "FuelCell",
+        placeable: true,
     }, {
         displayedName: "Water Cooler",
         type: "cooler",
@@ -410,7 +413,7 @@ class Reactor {
                 cell.style.setProperty("grid-row", (cZ + 1).toString());
                 cell.style.setProperty("grid-column", (cX + 1).toString());
                 const type = cellTypes[this.contents[i][cX][cZ]];
-                cell.title = `${type.displayedName}\n${type.description}`;
+                cell.title = type.tooltipText;
                 const img = document.createElement("img");
                 img.src = type.imagePath;
                 img.alt = type.displayedName;

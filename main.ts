@@ -25,6 +25,7 @@ interface PreprocessedBasicCellData {
   description: string;
   blockData?: string;
   ncrpName?: string;
+  placeable?: boolean;
 }
 interface PreprocessedMiscCellData {
   type: "misc";
@@ -41,12 +42,16 @@ interface PreprocessedModeratorCellData {
 type CellData = PreprocessedCellData & {
   imagePath: string;
   id: number;
+  placeable: boolean;
+  tooltipText: string;
 };
 
 const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
   ...t,
   id: i,
-  imagePath: `assets/${i}.png`
+  imagePath: `assets/${i}.png`,
+  placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
+  tooltipText: `${t.displayedName}\n${t.description}`
 })))([
   {
     displayedName: "Air",
@@ -58,6 +63,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
     description: "",
     blockData: `Name:"nuclearcraft:cell_block"`,
     ncrpName: "FuelCell",
+    placeable: true,
   },{
     displayedName: "Water Cooler",
     type: "cooler",
@@ -476,7 +482,7 @@ class Reactor {
         cell.style.setProperty("grid-row", (cZ + 1).toString());
         cell.style.setProperty("grid-column", (cX + 1).toString());
         const type = cellTypes[this.contents[i][cX][cZ]];
-        cell.title = `${type.displayedName}\n${type.description}`;
+        cell.title = type.tooltipText;
         const img = document.createElement("img");
         img.src = type.imagePath;
         img.alt = type.displayedName;

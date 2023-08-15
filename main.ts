@@ -13,12 +13,13 @@ type BlockID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 
 
 const VERSION = "2.0.0";
 
+type Pos = [x:number, y:number, z:number];
 type PreprocessedCellData = PreprocessedBasicCellData & (PreprocessedMiscCellData | PreprocessedCoolerCellData | PreprocessedModeratorCellData);
 type RangeSpecifier = number | [min:number, max:number];
 type CellValidCheckObject = {
   [_ in BlockID | "moderator" | "casing"]?: RangeSpecifier;
 };
-type CellValidCheck = CellValidCheckObject | ((reactor:Reactor, cell:[x:number, y:number, z:number]) => boolean);
+type CellValidCheck = CellValidCheckObject | ((reactor:Reactor, cell:Pos) => boolean);
 interface PreprocessedBasicCellData {
   displayedName: string;
   description: string;
@@ -64,8 +65,8 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
     blockData: `Properties:{type:"water"},Name:"nuclearcraft:cooler"`,
     ncrpName: "Water",
     coolAmount: 60,
-    valid(reactor, [x, y, z]){
-      return reactor.getAdjacentFuelCells(x, y, z) >= 1 || reactor.getAdjacentModerators(x, y, z) >= 1;
+    valid(reactor, pos){
+      return reactor.getAdjacentFuelCells(pos) >= 1 || reactor.getAdjacentModerators(pos) >= 1;
     },
   },{
     displayedName: "Redstone Cooler",
@@ -313,6 +314,16 @@ function constrain(val:number, min:number, max:number){
 function checkNaN(value:number, deefalt:number){
   return isNaN(value) ? deefalt : value;
 }
+function adjacentPositions([x, y, z]:Pos):Pos[]{
+  return [
+    [y + 1, x, z],
+    [y, x + 1, z],
+    [y, x, z + 1],
+    [y - 1, x, z],
+    [y, x - 1, z],
+    [y, x, z - 1],
+  ];
+}
 
 class Reactor {
   contents: BlockID[][][];
@@ -344,7 +355,26 @@ class Reactor {
       )
     );
   }
-
+  get([x, y, z]:Pos):BlockID | null {
+    if(
+      (x >= 0 && x < this.x) &&
+      (y >= 0 && y < this.y) &&
+      (z >= 0 && z < this.z)
+    ) return this.contents[y][x][z];
+    else return null;
+  }
+  getData([x, y, z]:Pos):CellData | null {
+    const xInRange = x >= 0 && x < this.x;
+    const yInRange = y >= 0 && y < this.y;
+    const zInRange = z >= 0 && z < this.z;
+    if(xInRange && yInRange && zInRange) return cellTypes[this.contents[y][x][z]];
+    else if(
+      ((x == -1 || x == this.x) && yInRange && zInRange) ||
+      ((y == -1 || y == this.y) && xInRange && zInRange) ||
+      ((z == -1 || z == this.z) && xInRange && yInRange)
+    ) return cellTypes[19];
+    else return null;
+  }
   edit(x:number, y:number, z:number, id:BlockID){
     //Self explanatory.
     if(isNaN(id) || !(id in cellTypes)){
@@ -472,19 +502,11 @@ class Reactor {
     //It just works.
   }
 
-  getAdjacentFuelCells(x:number, y:number, z:number){
-    //Does what it says.
-    let adjacentCells = 0;
-    adjacentCells += +(gna(this.contents, y + 1, x, z) == 1);
-    adjacentCells += +(gna(this.contents, y, x + 1, z) == 1);
-    adjacentCells += +(gna(this.contents, y, x, z + 1) == 1);
-    adjacentCells += +(gna(this.contents, y - 1, x, z) == 1);
-    adjacentCells += +(gna(this.contents, y, x - 1, z) == 1);
-    adjacentCells += +(gna(this.contents, y, x, z - 1) == 1);
-    return adjacentCells;
+  getAdjacentFuelCells(pos:Pos){
+    return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == 1), 0);
   }
 
-  getAdjacentModerators(x:number, y:number, z:number){
+  getAdjacentModerators([x, y, z]:Pos){
     //Also does what it says.
     let adjacentModerators = 0;
     //TODO generic-ify and clean up this DRY abomination
@@ -497,7 +519,7 @@ class Reactor {
     return adjacentModerators;
   }
 
-  getDistantAdjacentCells(x:number, y:number, z:number){
+  getDistantAdjacentCells([x, y, z]:Pos){
     /*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
     Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
     This is because IRL this causes neutron flux to be shared.
@@ -574,7 +596,7 @@ class Reactor {
     return adjacentCells;
   }
 
-  getAdjacentCell(x:number, y:number, z:number, id:number | null){
+  getAdjacentCell([x, y, z]:Pos, id:number | null){
     //Gets the number of a specified adjacent cell.
     let adjacentCells = 0;
     adjacentCells += +(gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
@@ -595,12 +617,13 @@ class Reactor {
       for(let x in this.contents[y]){
         for(let z in this.contents[y][x]){
           const ccell = this.contents[y][x][z];
+          //TODO bad loop
           const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
           cellsCount[ccell] ++;
           if(ccell == 1){
-            let adjacentCells = this.getAdjacentFuelCells(pos.x, pos.y, pos.z);
-            let distantAdjacentCells = this.getDistantAdjacentCells(pos.x, pos.y, pos.z);
-            let adjacentModerators = this.getAdjacentModerators(pos.x, pos.y, pos.z);
+            let adjacentCells = this.getAdjacentFuelCells([pos.x, pos.y, pos.z]);
+            let distantAdjacentCells = this.getDistantAdjacentCells([pos.x, pos.y, pos.z]);
+            let adjacentModerators = this.getAdjacentModerators([pos.x, pos.y, pos.z]);
             let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
             let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
             energyMultiplier += adjacentModerators * (settings.moderatorExtraPower/6) * (adjacentCells + distantAdjacentCells + 1);
@@ -624,18 +647,18 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
     return {"heatgen":totalHeat, "cooling":totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount};
   }
 
-  checkValidation(check:CellValidCheck, [x, y, z]:[x:number, y:number, z:number]){
+  checkValidation(check:CellValidCheck, pos:Pos){
     if(typeof check == "object"){
       for(const [key, value] of Object.entries(check) as [keyof CellValidCheckObject, RangeSpecifier][]){
         const checkPassed =
-          key == "moderator" ? inRange(this.getAdjacentModerators(x, y, z), value) :
-          key == "casing" ? inRange(this.getAdjacentCell(x, y, z, null), value) :
-          inRange(this.getAdjacentCell(x, y, z, key), value);
+          key == "moderator" ? inRange(this.getAdjacentModerators(pos), value) :
+          key == "casing" ? inRange(this.getAdjacentCell(pos, null), value) :
+          inRange(this.getAdjacentCell(pos, key), value);
         if(!checkPassed) return false;
       }
       return true;
     } else {
-      return check(this, [x, y, z]);
+      return check(this, pos);
     }
   }
 

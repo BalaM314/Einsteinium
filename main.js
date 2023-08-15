@@ -288,6 +288,19 @@ function adjacentPositions([x, y, z]) {
         [x, y, z - 1],
     ];
 }
+const directions = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [-1, 0, 0],
+    [0, -1, 0],
+    [0, 0, -1],
+];
+function add(pos, amount) {
+    pos[0] += amount[0];
+    pos[1] += amount[1];
+    pos[2] += amount[2];
+}
 class Reactor {
     constructor(x, y, z) {
         this.contents = [];
@@ -440,86 +453,20 @@ class Reactor {
         return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.getData(pos)?.type == "moderator"), 0);
     }
     getDistantAdjacentCells([x, y, z]) {
-        let adjacentCells = 0;
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y + i, x, z);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
+        return directions.reduce((acc, direction) => {
+            let pos = [x, y, z];
+            for (let i = 0; i <= settings.neutronRadiationReach; i++) {
+                add(pos, direction);
+                const cell = this.getData(pos);
+                if (cell?.id == 1 && i > 0)
+                    return acc + 1;
+                else if (cell?.type == "moderator")
+                    continue;
+                else
+                    return acc;
             }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y, x + i, z);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
-            }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y, x, z + i);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
-            }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y - i, x, z);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
-            }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y, x - i, z);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
-            }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        for (let i = 1; i <= settings.neutronRadiationReach; i++) {
-            let currentCell = gna(this.contents, y, x, z - i);
-            if (currentCell == 1 && i > 1) {
-                adjacentCells++;
-                break;
-            }
-            else if (currentCell == 17 || currentCell == 18) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-        return adjacentCells;
+            return acc;
+        }, 0);
     }
     getAdjacentValidCells(pos, id) {
         return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == id && this.cellValid(pos)), 0);

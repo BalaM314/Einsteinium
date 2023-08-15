@@ -324,6 +324,20 @@ function adjacentPositions([x, y, z]:Pos):Pos[]{
     [x, y, z - 1],
   ];
 }
+const directions:Pos[] = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+  [-1, 0, 0],
+  [0, -1, 0],
+  [0, 0, -1],
+];
+/** Adds `amount` to `pos`. */
+function add(pos:Pos, amount:Pos){
+  pos[0] += amount[0];
+  pos[1] += amount[1];
+  pos[2] += amount[2];
+}
 
 class Reactor {
   contents: BlockID[][][];
@@ -522,78 +536,22 @@ class Reactor {
   getDistantAdjacentCells([x, y, z]:Pos){
     /*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
     Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
-    This is because IRL this causes neutron flux to be shared.
+    This is because IRL this causes neutron flux to be shared. //TODO is this even right
     It makes the logic far more complicated.
     */
-    //TODO aaaaaaaaaa, commit [x, y, z] and generic-ify
-    let adjacentCells = 0;
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y + i, x, z);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
+    
+    return directions.reduce((acc, direction) => {
+      let pos:Pos = [x, y, z];
+      for(let i = 0; i <= settings.neutronRadiationReach; i ++){
+        //Move the search position out by one block, starting at 0 blocks in between and ending at `neutronRadiationReach` blocks in between
+        add(pos, direction);
+        const cell = this.getData(pos);
+        if(cell?.id == 1 && i > 0) return acc + 1; //If the cell is a fuel cell and there is at least one block in between, search success
+        else if(cell?.type == "moderator") continue; //If the cell is a moderator, keep looking
+        else return acc; //Something else, search failed
       }
-    }
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y, x + i, z);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
-      }
-    }
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y, x, z + i);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
-      }
-    }
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y - i, x, z);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
-      }
-    }
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y, x - i, z);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
-      }
-    }
-    for(let i = 1; i <= settings.neutronRadiationReach; i ++){
-      let currentCell = gna(this.contents, y, x, z - i);
-      if(currentCell == 1 && i > 1){
-        adjacentCells ++;
-        break;
-      } else if(currentCell == 17 || currentCell == 18){
-        continue;
-      } else {
-        break;
-      }
-    }
-    return adjacentCells;
+      return acc; //Limit reached, search failed
+    }, 0);
   }
 
   /** Gets the number of valid cells of a specific id or type adjacent to a position. */

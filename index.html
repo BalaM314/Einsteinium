@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible">
-  <title>Einsteinium- a portable NuclearCraft reactor planner.</title>
-  <script src="src/cell_data.js"></script>
-  <script src="src/funcs.js"></script>
-  <script src="src/main.js" defer></script>
-  <script defer>
-    //if the main script doesnt load, this runs
-    //TODO broken
-    if(document.getElementsByClassName("errormessage").length > 0){
-      document.getElementsByClassName("errormessage")[0].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
-    }
-  </script>
-  <link rel="stylesheet" href="main.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible">
+	<title>Einsteinium- a portable NuclearCraft reactor planner.</title>
+	<script src="src/cell_data.js"></script>
+	<script src="src/funcs.js"></script>
+	<script src="src/main.js" defer></script>
+	<script defer>
+		//if the main script doesnt load, this runs
+		//TODO broken
+		if(document.getElementsByClassName("errormessage").length > 0){
+			document.getElementsByClassName("errormessage")[0].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
+		}
+	</script>
+	<link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <div id="page-wrapper">
-    <div id="title-bar">
-      <span id="title-text"><span id="title">Einsteinium: editing</span><input type="text" id="reactor-name" value="Unnamed Reactor" onchange="defaultReactor.name = this.value;"></span>
-    </div>
-    <div id="reactor-layers">
-      <span style="font-size: 20px; margin:auto;" class="errormessage"></span>
-    </div>
-    <div id="stats-panel">
-      <span class="errormessage">Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.</span>
-    </div>
-    <div id="options-panel">
-      <div class="flex"><button onclick="this.innerHTML = (Math.random()*10000000).toString(36);">Do stuff!</button></div>
-      <div class="flex"><button onclick="copyToClipboard(defaultReactor.exportToBG());">Export to BG string</button></div>
-      <div class="flex"><input type="number" id="x-input" value="5">x<input type="number" id="y-input" value="5">x<input type="number" id="z-input" value="5"></div>
-      <div class="flex"><button onclick="regenReactor()">Regenerate reactor with above values</button></div>
-      <div class="flex"><button onclick="defaultReactor.export()">Download reactor as JSON</button></div>
-      <div class="noflex"><br><label for="upload-button" style="font-size: 17px;">Upload reactor from file</label><br><input id="upload-button" name="upload-button" type="file"></input></div>
-      <div class="noflex"><label for="heat_input">Fuel base heat:</label><input type="number" id="heat_input" onchange="baseHeat = this.value;" value="18"></div>
-      <div class="noflex"><label for="power_input">Fuel base power:</label><input type="number" id="power_input" onchange="basePower = this.value;" value="60"></div>
-    </div>
-    <div id="hotbar">
-      <!-- Generated -->
-    </div>
-  </div>
+	<div id="page-wrapper">
+		<div id="title-bar">
+			<span id="title-text"><span id="title">Einsteinium: editing</span><input type="text" id="reactor-name" value="Unnamed Reactor" onchange="defaultReactor.name = this.value;"></span>
+		</div>
+		<div id="reactor-layers">
+			<span style="font-size: 20px; margin:auto;" class="errormessage"></span>
+		</div>
+		<div id="stats-panel">
+			<span class="errormessage">Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.</span>
+		</div>
+		<div id="options-panel">
+			<div class="flex"><button onclick="this.innerHTML = (Math.random()*10000000).toString(36);">Do stuff!</button></div>
+			<div class="flex"><button onclick="copyToClipboard(defaultReactor.exportToBG());">Export to BG string</button></div>
+			<div class="flex"><input type="number" id="x-input" value="5">x<input type="number" id="y-input" value="5">x<input type="number" id="z-input" value="5"></div>
+			<div class="flex"><button onclick="regenReactor()">Regenerate reactor with above values</button></div>
+			<div class="flex"><button onclick="defaultReactor.export()">Download reactor as JSON</button></div>
+			<div class="noflex"><br><label for="upload-button" style="font-size: 17px;">Upload reactor from file</label><br><input id="upload-button" name="upload-button" type="file"></input></div>
+			<div class="noflex"><label for="heat_input">Fuel base heat:</label><input type="number" id="heat_input" onchange="baseHeat = this.value;" value="18"></div>
+			<div class="noflex"><label for="power_input">Fuel base power:</label><input type="number" id="power_input" onchange="basePower = this.value;" value="60"></div>
+		</div>
+		<div id="hotbar">
+			<!-- Generated -->
+		</div>
+	</div>
 </body>
 </html>

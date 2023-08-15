@@ -171,16 +171,16 @@ class Reactor {
     }
     export() {
         download(this.name.replace(/[./\\;"?]/, "_") + ".json", `{
-        "readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
-        "READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
-        "content": ` + JSON.stringify(this.contents) + `,
-        "metadata":{
-          "version":"${VERSION}",
-          "dimensions":[${this.x},${this.y},${this.z}],
-          "name": "${this.name}",
-          "validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
-        }
-      }`);
+				"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
+				"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
+				"content": ` + JSON.stringify(this.contents) + `,
+				"metadata":{
+					"version":"${VERSION}",
+					"dimensions":[${this.x},${this.y},${this.z}],
+					"name": "${this.name}",
+					"validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
+				}
+			}`);
     }
     exportToBG(includeCasings) {
         if (includeCasings) {
@@ -291,27 +291,27 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
         let spaceEfficiency = 1 - (stats.cellcount[0] / (this.x * this.y * this.z));
         let numCasings = 2 * this.x * this.y + 2 * this.x * this.z + 2 * this.y * this.z;
         DOMnode.innerHTML = `
-    <h1>Reactor Stats</h1>
-    <br>
-    <h2>Heat and Power</h2>
-    Total heat: ${Math.round(10 * stats.heatgen) / 10} HU/t<br>
-    Total cooling: ${Math.round(10 * stats.cooling) / 10} HU/t<br>
-    Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10 * netHeat) / 10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
-    ${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000 * this.x * this.y * this.z) * 0.05 / netHeat)} s<br>` : ""}
-    Max base heat: ${checkNaN(Math.floor(-stats.cooling / (stats.heatgen / baseHeat)), 0)}<br>
-    Efficiency: ${checkNaN(Math.round(1000 * stats.power / (stats.cellcount[1] * basePower)) / 10, 100)}%<br>
-    Total Power: ${stats.power} RF/t<br>
-    Fuel Pellet Duration: ${Math.round(fuelTime / stats.cellcount[1]) / 20} s<br>
-    Energy Per Pellet: ${checkNaN(stats.power * (fuelTime / stats.cellcount[1]), 0)} RF<br>
-    <h2>Materials</h2>
-    Casings: ${numCasings}<br>
-    Fuel cells: ${stats.cellcount[1]}<br>
-    Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
-    Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
-    Space Efficiency: ${spaceEfficiency}%
-    <h3>Coolers</h3>
-    ${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) => `${t.displayedName}: ${stats.cellcount[i]}<br>`).join("\n")}
-    `;
+		<h1>Reactor Stats</h1>
+		<br>
+		<h2>Heat and Power</h2>
+		Total heat: ${Math.round(10 * stats.heatgen) / 10} HU/t<br>
+		Total cooling: ${Math.round(10 * stats.cooling) / 10} HU/t<br>
+		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10 * netHeat) / 10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
+		${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000 * this.x * this.y * this.z) * 0.05 / netHeat)} s<br>` : ""}
+		Max base heat: ${checkNaN(Math.floor(-stats.cooling / (stats.heatgen / baseHeat)), 0)}<br>
+		Efficiency: ${checkNaN(Math.round(1000 * stats.power / (stats.cellcount[1] * basePower)) / 10, 100)}%<br>
+		Total Power: ${stats.power} RF/t<br>
+		Fuel Pellet Duration: ${Math.round(fuelTime / stats.cellcount[1]) / 20} s<br>
+		Energy Per Pellet: ${checkNaN(stats.power * (fuelTime / stats.cellcount[1]), 0)} RF<br>
+		<h2>Materials</h2>
+		Casings: ${numCasings}<br>
+		Fuel cells: ${stats.cellcount[1]}<br>
+		Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
+		Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
+		Space Efficiency: ${spaceEfficiency}%
+		<h3>Coolers</h3>
+		${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) => `${t.displayedName}: ${stats.cellcount[i]}<br>`).join("\n")}
+		`;
     }
 }
 function squarifyCells(reactorLayers) {

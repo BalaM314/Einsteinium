@@ -1,181 +1,181 @@
 /*Main stylesheet for Einsteinium.*/
 html, body {
-  margin: 0px;
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(to bottom right, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0);
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	background-image: linear-gradient(to bottom right, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0, #000, #000, #AA0, #AA0);
 }
 
 #page-wrapper {
-  margin: auto;
-  display: grid;
-  width: 99%;
-  height: 99%;
-  grid-template-columns: 15% 65% 20%;
-  grid-template-rows: 6% 85% 10%;
-  background-color: #3a0;
+	margin: auto;
+	display: grid;
+	width: 99%;
+	height: 99%;
+	grid-template-columns: 15% 65% 20%;
+	grid-template-rows: 6% 85% 10%;
+	background-color: #3a0;
 }
 #title-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  grid-row: 1;
-  grid-column: span 3;
-  background-color: #280;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	grid-row: 1;
+	grid-column: span 3;
+	background-color: #280;
 }
 #title-text {
-  font-family: "Helvetica",sans-serif;
-  font-size: 225%;
-  color: #FF0;
-  display:flex;
-  align-content: center;
+	font-family: "Helvetica",sans-serif;
+	font-size: 225%;
+	color: #FF0;
+	display:flex;
+	align-content: center;
 }
 #title {
-  margin-right: 10px;
+	margin-right: 10px;
 }
 #title-text input {
-  text-align: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
+	text-align: center;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 #reactor-layers {
-  display: grid;
-  padding: 1rem;
-  gap: 1rem;
-  grid-row: 2;
-  grid-column: 2;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  background-color: #000;
-  color: #7A0;
-  border: 2px ridge blue;
-  padding-right: 50px;
+	display: grid;
+	padding: 1rem;
+	gap: 1rem;
+	grid-row: 2;
+	grid-column: 2;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat(5, 1fr);
+	background-color: #000;
+	color: #7A0;
+	border: 2px ridge blue;
+	padding-right: 50px;
 }
 
 
 #reactor-layers .layer {
-  background-color: #330;/*DEBUG*/
-  aspect-ratio: 1;
+	background-color: #330;/*DEBUG*/
+	aspect-ratio: 1;
 }
 
 #reactor-layers .layerinner {
-  background-color: yellow;
-  width: 99%;
-  height: 99%;
-  display: grid;
-  grid-template-columns: repeat(var(--cells-x), 1fr);
-  grid-template-rows: repeat(var(--cells-z), 1fr);
-  /*I'm so glad this worked :D*/
+	background-color: yellow;
+	width: 99%;
+	height: 99%;
+	display: grid;
+	grid-template-columns: repeat(var(--cells-x), 1fr);
+	grid-template-rows: repeat(var(--cells-z), 1fr);
+	/*I'm so glad this worked :D*/
 }
 
 #reactor-layers .cell {
-  border: 1px solid black;
-  background-color: #FFF;
+	border: 1px solid black;
+	background-color: #FFF;
 }
 #reactor-layers .cell:hover {
-  border: 1px solid black;
-  background-color: #D4D4D4;
+	border: 1px solid black;
+	background-color: #D4D4D4;
 }
 #reactor-layers .cell:active {
-  border: 1px solid black;
-  background-color: #AAA;
+	border: 1px solid black;
+	background-color: #AAA;
 }
 
 #reactor-layers .cell.invalid {
-  border: 1px solid #FF0000;
+	border: 1px solid #FF0000;
 }
 
 #reactor-layers .cell.validmoderator {
-  background-color: #FAA;
+	background-color: #FAA;
 }
 
 #x-input, #y-input, #z-input {
-  width: 40px;
-  margin: 5px;
+	width: 40px;
+	margin: 5px;
 }
 
 #hotbar {
-  grid-row: 3;
-  grid-column: 2;
-  display: flex;
-  background-color: #333;
-  border: 2px ridge blue;
+	grid-row: 3;
+	grid-column: 2;
+	display: flex;
+	background-color: #333;
+	border: 2px ridge blue;
 }
 .hotbarcell {
-  margin: 0.3%;
-  align-self: center;
-  width: 4.5%;
+	margin: 0.3%;
+	align-self: center;
+	width: 4.5%;
 }
 .hotbarcell img {
-  width: 99.9%;
+	width: 99.9%;
 }
 
 .hotbarcellselected {
-  border: 5px ridge green;
+	border: 5px ridge green;
 }
 #idpicker {
-  margin: auto;
-  height: 60%;
-  font-size: 30px;
+	margin: auto;
+	height: 60%;
+	font-size: 30px;
 }
 #stats-panel {
-  grid-row: 2;
-  grid-column: 3;
-  background-color: #015;
-  color: whitesmoke;
-  font-family: monospace;
-  font-size: 14px;
-  border: 2px ridge blue;
-  padding: 5px;
-  overflow-y: scroll;
+	grid-row: 2;
+	grid-column: 3;
+	background-color: #015;
+	color: whitesmoke;
+	font-family: monospace;
+	font-size: 14px;
+	border: 2px ridge blue;
+	padding: 5px;
+	overflow-y: scroll;
 }
 #stats-panel h3 {
-  margin-top: 5px;
-  margin-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 #options-panel {
-  display: grid;
-  grid-template-columns: 95%;
-  grid-template-rows: 1fr 1fr 0.3fr 1fr 1fr 0.4fr 0.4fr;
-  grid-row: 2;
-  grid-column: 1;
-  text-align: center;
+	display: grid;
+	grid-template-columns: 95%;
+	grid-template-rows: 1fr 1fr 0.3fr 1fr 1fr 0.4fr 0.4fr;
+	grid-row: 2;
+	grid-column: 1;
+	text-align: center;
 }
 #options-panel div.flex {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* border: 5px ridge darkblue; */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* border: 5px ridge darkblue; */
 }
 #options-panel div.noflex {
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  font-family: "Helvetica",sans-serif;
-  font-size: 20px;
+	padding-left: 15px;
+	padding-right: 15px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	font-family: "Helvetica",sans-serif;
+	font-size: 20px;
 }
 #options-panel input {
-  /* background-color: #68F;
-  border-color: #32B; */
-  background-color: #BCF;
-  color: darkblue;
-  border: 2px solid #347;
-  border-radius: 3px;
-  box-shadow: 3px 2px 2px gray;
-  width: 90%;
+	/* background-color: #68F;
+	border-color: #32B; */
+	background-color: #BCF;
+	color: darkblue;
+	border: 2px solid #347;
+	border-radius: 3px;
+	box-shadow: 3px 2px 2px gray;
+	width: 90%;
 }
 #options-panel button {
-  padding: 1%;
-  border: 1%;
-  margin: auto;
-  width: 78%;
-  height: 78%;
-  font-family: "Helvetica",sans-serif;
-  font-size: 15px;
-  background-color: #BCF;
-  color: darkblue;
-  border: 2px solid #347;
-  border-radius: 5px;
-  box-shadow: 3px 2px 2px gray;
+	padding: 1%;
+	border: 1%;
+	margin: auto;
+	width: 78%;
+	height: 78%;
+	font-family: "Helvetica",sans-serif;
+	font-size: 15px;
+	background-color: #BCF;
+	color: darkblue;
+	border: 2px solid #347;
+	border-radius: 5px;
+	box-shadow: 3px 2px 2px gray;
 }

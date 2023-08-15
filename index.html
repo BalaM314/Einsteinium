@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible">
   <title>Einsteinium- a portable NuclearCraft reactor planner.</title>
-  <!-- <script src="CLASSES.js" defer></script> -->
-  <script src="main.js" defer></script>
+  <script src="src/cell_data.js"></script>
+  <script src="src/funcs.js"></script>
+  <script src="src/main.js" defer></script>
   <script defer>
     //if the main script doesnt load, this runs
+    //TODO broken
     if(document.getElementsByClassName("errormessage").length > 0){
       document.getElementsByClassName("errormessage")[0].innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to my github and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`;
     }

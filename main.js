@@ -280,12 +280,12 @@ function checkNaN(value, deefalt) {
 }
 function adjacentPositions([x, y, z]) {
     return [
-        [y + 1, x, z],
-        [y, x + 1, z],
-        [y, x, z + 1],
-        [y - 1, x, z],
-        [y, x - 1, z],
-        [y, x, z - 1],
+        [x + 1, y, z],
+        [x, y + 1, z],
+        [x, y, z + 1],
+        [x - 1, y, z],
+        [x, y - 1, z],
+        [x, y, z - 1],
     ];
 }
 class Reactor {

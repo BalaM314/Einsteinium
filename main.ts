@@ -316,12 +316,12 @@ function checkNaN(value:number, deefalt:number){
 }
 function adjacentPositions([x, y, z]:Pos):Pos[]{
   return [
-    [y + 1, x, z],
-    [y, x + 1, z],
-    [y, x, z + 1],
-    [y - 1, x, z],
-    [y, x - 1, z],
-    [y, x, z - 1],
+    [x + 1, y, z],
+    [x, y + 1, z],
+    [x, y, z + 1],
+    [x - 1, y, z],
+    [x, y - 1, z],
+    [x, y, z - 1],
   ];
 }
 

@@ -522,6 +522,9 @@ hotbar.append(...hotbarCells = [
 	getHotbarCell("assets/00.png", "Remove")
 ]);
 selectCell.call(hotbarCells[0]);
+document.querySelector("#options-panel>.flex button")?.addEventListener("click", function(this:HTMLElement){
+	open(atob("aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1kUXc0dzlXZ1hjUQ==")); this.innerText = "what did you think would happen";
+});
 
 let defaultReactor:Reactor;
 function regenReactor(){

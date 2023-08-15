@@ -389,47 +389,10 @@ class Reactor {
         if (includeCasings) {
             console.warn("includeCasings is not yet implemented.");
         }
-        function getStateIntArray(that) {
-            let cells = [];
-            for (let layer of that.contents) {
-                for (let column of layer) {
-                    for (let cell of column) {
-                        if (cell != 0) {
-                            cells.push(cell);
-                        }
-                    }
-                }
-            }
-            return cells;
-        }
-        function getPosIntArray(that) {
-            let poss = [];
-            for (let y in that.contents) {
-                for (let x in that.contents[y]) {
-                    for (let z in that.contents[y][x]) {
-                        if (that.contents[y][x][z] != 0) {
-                            poss.push(65536 * (+x) + 256 * (+y) + 1 * (+z));
-                        }
-                    }
-                }
-            }
-            return poss;
-        }
-        function getMapIntState(that) {
-            let states = [];
-            for (let y in that.contents) {
-                for (let x in that.contents[y]) {
-                    for (let z in that.contents[y][x]) {
-                        if (cellTypes[that.contents[y][x][z]].blockData) {
-                            states.push(`{mapSlot:${that.contents[y][x][z]}s,mapState:{${cellTypes[that.contents[y][x][z]].blockData}}}`);
-                        }
-                    }
-                }
-            }
-            return states;
-        }
-        let exportString = `{stateIntArray:[I;${getStateIntArray(this).join(",")}],dim:0,posIntArray:[I;${getPosIntArray(this).join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${getMapIntState(this).join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
-        return exportString;
+        const stateIntArray = this.contents.map(l => l.map(r => r.filter(c => cellTypes[c].blockData))).flat(2);
+        const posIntArray = this.contents.map((l, y) => l.map((r, x) => r.map((c, z) => [c, z]).filter(([c]) => cellTypes[c].blockData).map(([, z]) => 65536 * x + 256 * y + z))).flat(2);
+        const mapIntState = this.contents.map(l => l.map(r => r.map(c => cellTypes[c].blockData).filter((c) => c != undefined))).flat(2);
+        return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
     }
     getAdjacentFuelCells(x, y, z) {
         let adjacentCells = 0;

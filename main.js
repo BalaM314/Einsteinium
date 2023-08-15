@@ -307,6 +307,14 @@ class Reactor {
         else
             return null;
     }
+    cellValid([x, y, z]) {
+        if ((x >= 0 && x < this.x) &&
+            (y >= 0 && y < this.y) &&
+            (z >= 0 && z < this.z))
+            return this.valids[y][x][z];
+        else
+            return true;
+    }
     getData([x, y, z]) {
         const xInRange = x >= 0 && x < this.x;
         const yInRange = y >= 0 && y < this.y;
@@ -428,15 +436,8 @@ class Reactor {
     getAdjacentFuelCells(pos) {
         return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == 1), 0);
     }
-    getAdjacentModerators([x, y, z]) {
-        let adjacentModerators = 0;
-        adjacentModerators += +((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
-        adjacentModerators += +((gna(this.contents, y, x + 1, z) == 17 || gna(this.contents, y, x + 1, z) == 18) && (gna(this.valids, y, x + 1, z) != false));
-        adjacentModerators += +((gna(this.contents, y, x, z + 1) == 17 || gna(this.contents, y, x, z + 1) == 18) && (gna(this.valids, y, x, z + 1) != false));
-        adjacentModerators += +((gna(this.contents, y - 1, x, z) == 17 || gna(this.contents, y - 1, x, z) == 18) && (gna(this.valids, y - 1, x, z) != false));
-        adjacentModerators += +((gna(this.contents, y, x - 1, z) == 17 || gna(this.contents, y, x - 1, z) == 18) && (gna(this.valids, y, x - 1, z) != false));
-        adjacentModerators += +((gna(this.contents, y, x, z - 1) == 17 || gna(this.contents, y, x, z - 1) == 18) && (gna(this.valids, y, x, z - 1) != false));
-        return adjacentModerators;
+    getAdjacentModerators(pos) {
+        return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.getData(pos)?.type == "moderator"), 0);
     }
     getDistantAdjacentCells([x, y, z]) {
         let adjacentCells = 0;
@@ -520,15 +521,8 @@ class Reactor {
         }
         return adjacentCells;
     }
-    getAdjacentCell([x, y, z], id) {
-        let adjacentCells = 0;
-        adjacentCells += +(gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
-        adjacentCells += +(gna(this.contents, y, x + 1, z) == id && (gna(this.valids, y, x + 1, z) != false));
-        adjacentCells += +(gna(this.contents, y, x, z + 1) == id && (gna(this.valids, y, x, z + 1) != false));
-        adjacentCells += +(gna(this.contents, y - 1, x, z) == id && (gna(this.valids, y - 1, x, z) != false));
-        adjacentCells += +(gna(this.contents, y, x - 1, z) == id && (gna(this.valids, y, x - 1, z) != false));
-        adjacentCells += +(gna(this.contents, y, x, z - 1) == id && (gna(this.valids, y, x, z - 1) != false));
-        return adjacentCells;
+    getAdjacentValidCells(pos, id) {
+        return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == id && this.cellValid(pos)), 0);
     }
     calculateStats() {
         let totalHeat = 0;
@@ -572,8 +566,8 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
         if (typeof check == "object") {
             for (const [key, value] of Object.entries(check)) {
                 const checkPassed = key == "moderator" ? inRange(this.getAdjacentModerators(pos), value) :
-                    key == "casing" ? inRange(this.getAdjacentCell(pos, null), value) :
-                        inRange(this.getAdjacentCell(pos, key), value);
+                    key == "casing" ? inRange(this.getAdjacentValidCells(pos, null), value) :
+                        inRange(this.getAdjacentValidCells(pos, key), value);
                 if (!checkPassed)
                     return false;
             }

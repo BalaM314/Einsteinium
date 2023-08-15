@@ -363,6 +363,15 @@ class Reactor {
     ) return this.contents[y][x][z];
     else return null;
   }
+  /** Returns true if the cell is outside the reactor. */
+  cellValid([x, y, z]:Pos):boolean {
+    if(
+      (x >= 0 && x < this.x) &&
+      (y >= 0 && y < this.y) &&
+      (z >= 0 && z < this.z)
+    ) return this.valids[y][x][z];
+    else return true;
+  }
   getData([x, y, z]:Pos):CellData | null {
     const xInRange = x >= 0 && x < this.x;
     const yInRange = y >= 0 && y < this.y;
@@ -506,17 +515,8 @@ class Reactor {
     return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == 1), 0);
   }
 
-  getAdjacentModerators([x, y, z]:Pos){
-    //Also does what it says.
-    let adjacentModerators = 0;
-    //TODO generic-ify and clean up this DRY abomination
-    adjacentModerators += +((gna(this.contents, y + 1, x, z) == 17 || gna(this.contents, y + 1, x, z) == 18) && (gna(this.valids, y + 1, x, z) != false));
-    adjacentModerators += +((gna(this.contents, y, x + 1, z) == 17 || gna(this.contents, y, x + 1, z) == 18) && (gna(this.valids, y, x + 1, z) != false));
-    adjacentModerators += +((gna(this.contents, y, x, z + 1) == 17 || gna(this.contents, y, x, z + 1) == 18) && (gna(this.valids, y, x, z + 1) != false));
-    adjacentModerators += +((gna(this.contents, y - 1, x, z) == 17 || gna(this.contents, y - 1, x, z) == 18) && (gna(this.valids, y - 1, x, z) != false));
-    adjacentModerators += +((gna(this.contents, y, x - 1, z) == 17 || gna(this.contents, y, x - 1, z) == 18) && (gna(this.valids, y, x - 1, z) != false));
-    adjacentModerators += +((gna(this.contents, y, x, z - 1) == 17 || gna(this.contents, y, x, z - 1) == 18) && (gna(this.valids, y, x, z - 1) != false));
-    return adjacentModerators;
+  getAdjacentModerators(pos:Pos){
+    return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.getData(pos)?.type == "moderator"), 0)
   }
 
   getDistantAdjacentCells([x, y, z]:Pos){
@@ -596,16 +596,9 @@ class Reactor {
     return adjacentCells;
   }
 
-  getAdjacentCell([x, y, z]:Pos, id:number | null){
-    //Gets the number of a specified adjacent cell.
-    let adjacentCells = 0;
-    adjacentCells += +(gna(this.contents, y + 1, x, z) == id && (gna(this.valids, y + 1, x, z) != false));
-    adjacentCells += +(gna(this.contents, y, x + 1, z) == id && (gna(this.valids, y, x + 1, z) != false));
-    adjacentCells += +(gna(this.contents, y, x, z + 1) == id && (gna(this.valids, y, x, z + 1) != false));
-    adjacentCells += +(gna(this.contents, y - 1, x, z) == id && (gna(this.valids, y - 1, x, z) != false));
-    adjacentCells += +(gna(this.contents, y, x - 1, z) == id && (gna(this.valids, y, x - 1, z) != false));
-    adjacentCells += +(gna(this.contents, y, x, z - 1) == id && (gna(this.valids, y, x, z - 1) != false));
-    return adjacentCells;
+  /** Gets the number of valid cells of a specific id or type adjacent to a position. */
+  getAdjacentValidCells(pos:Pos, id:BlockID | null){
+    return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == id && this.cellValid(pos)), 0);
   }
 
   calculateStats(){
@@ -652,8 +645,8 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
       for(const [key, value] of Object.entries(check) as [keyof CellValidCheckObject, RangeSpecifier][]){
         const checkPassed =
           key == "moderator" ? inRange(this.getAdjacentModerators(pos), value) :
-          key == "casing" ? inRange(this.getAdjacentCell(pos, null), value) :
-          inRange(this.getAdjacentCell(pos, key), value);
+          key == "casing" ? inRange(this.getAdjacentValidCells(pos, null), value) :
+          inRange(this.getAdjacentValidCells(pos, key), value);
         if(!checkPassed) return false;
       }
       return true;

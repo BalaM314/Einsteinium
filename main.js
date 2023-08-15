@@ -1,13 +1,14 @@
 "use strict";
 const reactorName = getElement("reactor-name", HTMLInputElement);
 const uploadButton = getElement("upload-button", HTMLInputElement);
-const hotbarCells = [...document.querySelectorAll(".hotbarcell")];
 const x_input = getElement("x-input", HTMLInputElement);
 const y_input = getElement("y-input", HTMLInputElement);
 const z_input = getElement("z-input", HTMLInputElement);
 const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
+const hotbar = getElement("hotbar", HTMLDivElement);
+let hotbarCells = [];
 const VERSION = "2.0.0";
 const cellTypes = ((d) => d.map((t, i) => ({
     ...t,
@@ -211,6 +212,28 @@ const cellTypes = ((d) => d.map((t, i) => ({
         blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
     }
 ]);
+const keybindMapping = {
+    "0": 18,
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4,
+    "6": 5,
+    "7": 6,
+    "8": 7,
+    "9": 8,
+    "q": 9,
+    "w": 10,
+    "e": 11,
+    "r": 12,
+    "t": 13,
+    "y": 14,
+    "u": 15,
+    "i": 16,
+    "o": 17,
+    "p": 18,
+};
 const ncrpMappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
 const moderatorIds = cellTypes.map((t, i) => [t, i]).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);
 let settings = {
@@ -611,75 +634,22 @@ uploadButton.onchange = function (e) {
     };
 };
 document.body.onkeydown = e => {
-    switch (e.key) {
-        case "0":
-            selectCell(hotbarCells[18]);
-            break;
-        case "1":
-            selectCell(hotbarCells[0]);
-            break;
-        case "2":
-            selectCell(hotbarCells[1]);
-            break;
-        case "3":
-            selectCell(hotbarCells[2]);
-            break;
-        case "4":
-            selectCell(hotbarCells[3]);
-            break;
-        case "5":
-            selectCell(hotbarCells[4]);
-            break;
-        case "6":
-            selectCell(hotbarCells[5]);
-            break;
-        case "7":
-            selectCell(hotbarCells[6]);
-            break;
-        case "8":
-            selectCell(hotbarCells[7]);
-            break;
-        case "9":
-            selectCell(hotbarCells[8]);
-            break;
-        case "q":
-            selectCell(hotbarCells[9]);
-            break;
-        case "w":
-            selectCell(hotbarCells[10]);
-            break;
-        case "e":
-            selectCell(hotbarCells[11]);
-            break;
-        case "r":
-            selectCell(hotbarCells[12]);
-            break;
-        case "t":
-            selectCell(hotbarCells[13]);
-            break;
-        case "y":
-            selectCell(hotbarCells[14]);
-            break;
-        case "u":
-            selectCell(hotbarCells[15]);
-            break;
-        case "i":
-            selectCell(hotbarCells[16]);
-            break;
-        case "o":
-            selectCell(hotbarCells[17]);
-            break;
+    if (e.key in keybindMapping) {
+        const cell = hotbarCells[keybindMapping[e.key]];
+        if (!cell)
+            throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${keybindMapping[e.key]}`);
+        cell.click();
     }
 };
-function selectCell(target) {
+function selectCell() {
     for (const cell of hotbarCells) {
         cell.classList.remove("hotbarcellselected");
     }
-    target.classList.add("hotbarcellselected");
+    this.classList.add("hotbarcellselected");
 }
 function getSelectedId() {
     try {
-        let calcedId = +document.getElementsByClassName("hotbarcellselected")[0].childNodes[1].src.split("/").pop().split(".")[0];
+        let calcedId = +document.getElementsByClassName("hotbarcellselected")[0].firstChild.src.split("/").pop().split(".")[0];
         if (calcedId in cellTypes) {
             return calcedId;
         }
@@ -741,6 +711,23 @@ function loadNCReactorPlanner(rawData, filename) {
         console.error("Invalid JSON!", err);
     }
 }
+function getHotbarCell(image, tooltip) {
+    const div = document.createElement("div");
+    div.classList.add("hotbarcell");
+    div.addEventListener("click", selectCell);
+    div.title = tooltip;
+    const img = document.createElement("img");
+    img.src = image;
+    div.append(img);
+    return div;
+}
+hotbar.append(...hotbarCells = [
+    ...cellTypes
+        .filter(cellType => cellType.placeable)
+        .map(cellType => getHotbarCell(cellType.imagePath, cellType.tooltipText)),
+    getHotbarCell("assets/00.png", "Remove")
+]);
+selectCell.call(hotbarCells[0]);
 let defaultReactor;
 function regenReactor() {
     defaultReactor = new Reactor(+x_input.value, +y_input.value, +z_input.value);

@@ -13,32 +13,40 @@ type BlockID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 
 
 const VERSION = "2.0.0";
 
-type CellData = BasicCellData & (MiscCellData | CoolerCellData | ModeratorCellData);
+type PreprocessedCellData = PreprocessedBasicCellData & (PreprocessedMiscCellData | PreprocessedCoolerCellData | PreprocessedModeratorCellData);
 type RangeSpecifier = number | [min:number, max:number];
 type CellValidCheckObject = {
   [_ in BlockID | "moderator" | "casing"]?: RangeSpecifier;
 };
 type CellValidCheck = CellValidCheckObject | ((reactor:Reactor, cell:[x:number, y:number, z:number]) => boolean);
-interface BasicCellData {
+interface PreprocessedBasicCellData {
   displayedName: string;
   description: string;
   blockData?: string;
   ncrpName?: string;
 }
-interface MiscCellData {
+interface PreprocessedMiscCellData {
   type: "misc";
 }
-interface CoolerCellData {
+interface PreprocessedCoolerCellData {
   coolAmount: number;
   type: "cooler";
   valid: CellValidCheck;
 }
-interface ModeratorCellData {
+interface PreprocessedModeratorCellData {
   type: "moderator";
   valid: CellValidCheck;
 }
+type CellData = PreprocessedCellData & {
+  imagePath: string;
+  id: number;
+};
 
-const cellTypes = [
+const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
+  ...t,
+  id: i,
+  imagePath: `assets/${i}.png`
+})))([
   {
     displayedName: "Air",
     type: "misc",
@@ -236,8 +244,7 @@ const cellTypes = [
     type: "misc",
     blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
   }
-  
-] satisfies CellData[];
+]);
 
 const ncrpMappings = Object.fromEntries(
   cellTypes.map((t, i) => [t.ncrpName, i as BlockID] as const).filter((x):x is [string, BlockID] => x[0] != undefined)
@@ -415,12 +422,11 @@ class Reactor {
         });
         cell.style.setProperty("grid-row", (cZ + 1).toString());
         cell.style.setProperty("grid-column", (cX + 1).toString());
-        const id = this.contents[i][cX][cZ];
-        cell.title = `${cellTypes[id].displayedName}\n${cellTypes[id].description}`;
+        const type = cellTypes[this.contents[i][cX][cZ]];
+        cell.title = `${type.displayedName}\n${type.description}`;
         const img = document.createElement("img");
-        img.src = `assets/${id}.png`;
-        //TODO store src string in cellTypes
-        img.alt = id.toString();
+        img.src = type.imagePath;
+        img.alt = type.displayedName;
         img.style.width = "100%";
         cell.appendChild(img);
         layerInner.appendChild(cell);

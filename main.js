@@ -9,7 +9,11 @@ const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
 const VERSION = "2.0.0";
-const cellTypes = [
+const cellTypes = ((d) => d.map((t, i) => ({
+    ...t,
+    id: i,
+    imagePath: `assets/${i}.png`
+})))([
     {
         displayedName: "Air",
         type: "misc",
@@ -203,7 +207,7 @@ const cellTypes = [
         type: "misc",
         blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
     }
-];
+]);
 const ncrpMappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
 const moderatorIds = cellTypes.map((t, i) => [t, i]).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);
 let settings = {
@@ -353,11 +357,11 @@ class Reactor {
                 });
                 cell.style.setProperty("grid-row", (cZ + 1).toString());
                 cell.style.setProperty("grid-column", (cX + 1).toString());
-                const id = this.contents[i][cX][cZ];
-                cell.title = `${cellTypes[id].displayedName}\n${cellTypes[id].description}`;
+                const type = cellTypes[this.contents[i][cX][cZ]];
+                cell.title = `${type.displayedName}\n${type.description}`;
                 const img = document.createElement("img");
-                img.src = `assets/${id}.png`;
-                img.alt = id.toString();
+                img.src = type.imagePath;
+                img.alt = type.displayedName;
                 img.style.width = "100%";
                 cell.appendChild(img);
                 layerInner.appendChild(cell);

@@ -28,18 +28,6 @@ function inRange(value, range) {
 function cp(data) {
     return JSON.parse(JSON.stringify(data));
 }
-function gna(arr, x, y, z) {
-    if (arr) {
-        if (arr[x]) {
-            if (arr[x][y]) {
-                if (arr[x][y][z] != undefined) {
-                    return arr[x][y][z];
-                }
-            }
-        }
-    }
-    return null;
-}
 function constrain(val, min, max) {
     if (isNaN(val))
         return 0;

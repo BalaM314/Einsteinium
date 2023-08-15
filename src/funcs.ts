@@ -22,18 +22,6 @@ function inRange(value:number, range:RangeSpecifier){
 function cp<T>(data:T){
   return JSON.parse(JSON.stringify(data));
 }
-function gna<T>(arr:T[][][], x:number, y:number, z:number){//Safely get a value from nested arrays, have to use this until we get the .? operator in browsers :(
-  if(arr){
-    if(arr[x]){
-      if(arr[x][y]){
-        if(arr[x][y][z] != undefined){
-          return arr[x][y][z];
-        }
-      }
-    }
-  }
-  return null;
-}
 function constrain(val:number, min:number, max:number){
   if(isNaN(val)) return 0;
   if(val < min){

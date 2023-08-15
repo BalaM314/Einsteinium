@@ -197,9 +197,9 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
     coolAmount: 120,
     valid(reactor, [x, y, z]){
       return (
-        gna(reactor.contents, y + 1, x, z) == 7 && gna(reactor.contents, y - 1, x, z) == 7 ||
-        gna(reactor.contents, y, x + 1, z) == 7 && gna(reactor.contents, y, x - 1, z) == 7 ||
-        gna(reactor.contents, y, x, z + 1) == 7 && gna(reactor.contents, y, x, z - 1) == 7
+        reactor.get([y + 1, x, z]) == 7 && reactor.get([y - 1, x, z]) == 7 ||
+        reactor.get([y, x + 1, z]) == 7 && reactor.get([y, x - 1, z]) == 7 ||
+        reactor.get([y, x, z + 1]) == 7 && reactor.get([y, x, z - 1]) == 7
       );
     }
   },{

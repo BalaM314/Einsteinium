@@ -443,3 +443,4 @@ console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");
 console.warn("Einsteinium is currently in beta. This means there will probably be a few bugs, and features will be added regularly. If you find a bug please report it on this project's GitHub.");
+window.everythingIsFine = true;

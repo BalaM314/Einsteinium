@@ -58,12 +58,12 @@ html, body {
 	display: grid;
 	grid-template-columns: repeat(var(--cells-x), 1fr);
 	grid-template-rows: repeat(var(--cells-z), 1fr);
-	/*I'm so glad this worked :D*/
 }
 
 #reactor-layers .cell {
 	aspect-ratio: 1;
 	border: 1px solid black;
+	background-size: cover;
 	background-color: #FFF;
 }
 #reactor-layers .cell:hover {

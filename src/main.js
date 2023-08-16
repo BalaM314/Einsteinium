@@ -156,11 +156,7 @@ class Reactor {
                     cell.style.setProperty("grid-column", (x + 1).toString());
                     const type = this.getData(pos);
                     cell.title = type.tooltipText;
-                    const img = document.createElement("img");
-                    img.src = type.imagePath;
-                    img.alt = type.displayedName;
-                    img.style.width = "100%";
-                    cell.appendChild(img);
+                    cell.style.backgroundImage = `url(${type.imagePath})`;
                     layer.appendChild(cell);
                 }
             }

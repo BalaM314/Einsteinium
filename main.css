@@ -45,6 +45,7 @@ html, body {
 	grid-row: 2;
 	grid-column: 2;
 	grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+	grid-template-rows: min-content; /* For some bizarre reason this makes it work */
 	background-color: #000;
 	color: #7A0;
 	border: 2px ridge blue;

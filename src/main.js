@@ -130,38 +130,37 @@ class Reactor {
         reactorLayers.innerHTML = "";
         reactorLayers.style.setProperty("--cells-z", this.z.toString());
         reactorLayers.style.setProperty("--cells-x", this.x.toString());
-        for (let i = 0; i < this.y; i++) {
+        for (let y = 0; y < this.y; y++) {
             let tempElement = document.createElement("div");
             tempElement.className = "layer";
-            tempElement.setAttribute("y", i.toString());
             const layerInner = document.createElement("div");
             layerInner.classList.add("layerinner");
-            for (let j = 0; j < this.x * this.z; j++) {
-                let cX = j % this.x;
-                let cZ = Math.floor(j / this.x);
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-                if (!this.valids[i][cX][cZ])
-                    cell.classList.add("invalid");
-                cell.addEventListener("click", e => {
-                    defaultReactor.edit(cX, i, cZ, getSelectedId());
-                });
-                cell.addEventListener("contextmenu", e => {
-                    if (!e.shiftKey) {
-                        defaultReactor.edit(cX, i, cZ, 0);
-                        e.preventDefault();
-                    }
-                });
-                cell.style.setProperty("grid-row", (cZ + 1).toString());
-                cell.style.setProperty("grid-column", (cX + 1).toString());
-                const type = cellTypes[this.contents[i][cX][cZ]];
-                cell.title = type.tooltipText;
-                const img = document.createElement("img");
-                img.src = type.imagePath;
-                img.alt = type.displayedName;
-                img.style.width = "100%";
-                cell.appendChild(img);
-                layerInner.appendChild(cell);
+            for (let x = 0; x < this.x; x++) {
+                for (let z = 0; z < this.z; z++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    if (!this.cellValid([x, y, z]))
+                        cell.classList.add("invalid");
+                    cell.addEventListener("click", e => {
+                        defaultReactor.edit(x, y, z, getSelectedId());
+                    });
+                    cell.addEventListener("contextmenu", e => {
+                        if (!e.shiftKey) {
+                            defaultReactor.edit(x, y, z, 0);
+                            e.preventDefault();
+                        }
+                    });
+                    cell.style.setProperty("grid-row", (z + 1).toString());
+                    cell.style.setProperty("grid-column", (x + 1).toString());
+                    const type = this.getData([x, y, z]);
+                    cell.title = type.tooltipText;
+                    const img = document.createElement("img");
+                    img.src = type.imagePath;
+                    img.alt = type.displayedName;
+                    img.style.width = "100%";
+                    cell.appendChild(img);
+                    layerInner.appendChild(cell);
+                }
             }
             tempElement.appendChild(layerInner);
             reactorLayers.appendChild(tempElement);
@@ -221,32 +220,34 @@ class Reactor {
         let totalCooling = 0;
         let totalEnergyPerTick = 0;
         let cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        for (let y in this.contents) {
-            for (let x in this.contents[y]) {
-                for (let z in this.contents[y][x]) {
-                    const ccell = this.contents[y][x][z];
-                    const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
-                    cellsCount[ccell]++;
-                    if (ccell == 1) {
-                        let adjacentCells = this.getAdjacentFuelCells([pos.x, pos.y, pos.z]);
-                        let distantAdjacentCells = this.getDistantAdjacentCells([pos.x, pos.y, pos.z]);
-                        let adjacentModerators = this.getAdjacentModerators([pos.x, pos.y, pos.z]);
+        for (let y = 0; y < this.y; y++) {
+            for (let x = 0; x < this.x; x++) {
+                for (let z = 0; z < this.z; z++) {
+                    const pos = [x, y, z];
+                    const cell = this.get(pos);
+                    const cellData = cellTypes[cell];
+                    cellsCount[cell]++;
+                    if (cell == 1) {
+                        let adjacentCells = this.getAdjacentFuelCells(pos);
+                        let distantAdjacentCells = this.getDistantAdjacentCells(pos);
+                        let adjacentModerators = this.getAdjacentModerators(pos);
                         let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
                         let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
                         energyMultiplier += adjacentModerators * (settings.moderatorExtraPower / 6) * (adjacentCells + distantAdjacentCells + 1);
                         heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat / 6) * (adjacentCells + distantAdjacentCells + 1);
                         totalHeat += baseHeat * heatMultiplier;
                         totalEnergyPerTick += basePower * energyMultiplier;
-                        this.getDOMCell(reactorLayers, pos.x, pos.y, pos.z).title += `
+                        this.getDOMCell(reactorLayers, x, y, z).title += `
 Adjacent Cells: ${adjacentCells}
 ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
 Adjacent Moderators: ${adjacentModerators}
 Heat Multiplier: ${heatMultiplier * 100}%
 Energy Multiplier: ${energyMultiplier * 100}%`;
+                        console.log(`Set tooltip of cell ${pos} to: `, this.getDOMCell(reactorLayers, x, y, z).title);
                     }
-                    else if (ccell > 1 && ccell < 17) {
-                        if (this.valids[pos.y][pos.x][pos.z]) {
-                            totalCooling -= settings.coolers[ccell];
+                    else if (cellData.type == "cooler") {
+                        if (this.cellValid(pos)) {
+                            totalCooling -= settings.coolers[cell];
                         }
                     }
                 }

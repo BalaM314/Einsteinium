@@ -167,27 +167,29 @@ class Reactor {
 		reactorLayers.style.setProperty("--cells-x", this.x.toString());
 		//So glad this worked ^^
 
-		//This code is a bit messy, it generates the html for the reactor layer editor.
+		function cellClicked(this:HTMLDivElement, e:MouseEvent){
+			//this is pretty cursed but it works
+			const y = +this.parentElement!.getAttribute("y")!;
+			const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
+			if(e.buttons & 2 && !e.shiftKey){ //Right click
+				defaultReactor.edit([x, y, z], 0);
+			} else {
+				defaultReactor.edit([x, y, z], getSelectedId());
+			}
+		}
+
 		for(let y = 0; y < this.y; y ++){
 			let tempElement = document.createElement("div");
 			tempElement.className = "layer";
 			const layerInner = document.createElement("div");
 			layerInner.classList.add("layerinner");
+			layerInner.setAttribute("y", y.toString());
 			for(let z = 0; z < this.z; z ++){ for(let x = 0; x < this.x; x ++){
 				const pos:Pos = [x, y, z];
 				const cell = document.createElement("div");
 				cell.classList.add("cell");
 				if(!this.cellValid(pos)) cell.classList.add("invalid");
-				//TODO way too many duped functions
-				cell.addEventListener("click", e => {
-					defaultReactor.edit(pos, getSelectedId());
-				});
-				cell.addEventListener("contextmenu", e => {
-					if(!e.shiftKey){
-						defaultReactor.edit(pos, 0);
-						e.preventDefault();
-					}
-				});
+				cell.addEventListener("mousedown", cellClicked);
 				cell.style.setProperty("grid-row", (z + 1).toString());
 				cell.style.setProperty("grid-column", (x + 1).toString());
 				const type = this.getData(pos)!;

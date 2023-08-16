@@ -174,7 +174,7 @@ class Reactor {
 			tempElement.className = "layer";
 			const layerInner = document.createElement("div");
 			layerInner.classList.add("layerinner");
-			for(let x = 0; x < this.x; x ++){ for(let z = 0; z < this.z; z ++){
+			for(let z = 0; z < this.z; z ++){ for(let x = 0; x < this.x; x ++){
 				const cell = document.createElement("div");
 				cell.classList.add("cell");
 				if(!this.cellValid([x, y, z])) cell.classList.add("invalid");

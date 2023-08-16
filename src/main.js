@@ -133,7 +133,9 @@ class Reactor {
         function cellClicked(e) {
             const y = +this.parentElement.getAttribute("y");
             const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
-            if (e.buttons & 2 && !e.shiftKey) {
+            if (e.buttons & 2 && e.shiftKey) {
+            }
+            else if (e.buttons & 2 && !e.shiftKey) {
                 defaultReactor.edit([x, y, z], 0);
             }
             else {

@@ -171,7 +171,9 @@ class Reactor {
 			//this is pretty cursed but it works
 			const y = +this.parentElement!.getAttribute("y")!;
 			const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
-			if(e.buttons & 2 && !e.shiftKey){ //Right click
+			if(e.buttons & 2 && e.shiftKey){ //Shift right click
+				//do nothing
+			} else if(e.buttons & 2 && !e.shiftKey){ //Right click
 				defaultReactor.edit([x, y, z], 0);
 			} else {
 				defaultReactor.edit([x, y, z], getSelectedId());

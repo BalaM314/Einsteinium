@@ -141,11 +141,9 @@ class Reactor {
             }
         }
         for (let y = 0; y < this.y; y++) {
-            let tempElement = document.createElement("div");
-            tempElement.className = "layer";
-            const layerInner = document.createElement("div");
-            layerInner.classList.add("layerinner");
-            layerInner.setAttribute("y", y.toString());
+            const layer = document.createElement("div");
+            layer.classList.add("layer");
+            layer.setAttribute("y", y.toString());
             for (let z = 0; z < this.z; z++) {
                 for (let x = 0; x < this.x; x++) {
                     const pos = [x, y, z];
@@ -163,14 +161,12 @@ class Reactor {
                     img.alt = type.displayedName;
                     img.style.width = "100%";
                     cell.appendChild(img);
-                    layerInner.appendChild(cell);
+                    layer.appendChild(cell);
                 }
             }
-            tempElement.appendChild(layerInner);
-            reactorLayers.appendChild(tempElement);
+            reactorLayers.appendChild(layer);
         }
         reactorName.value = this.name;
-        squarifyCells(reactorLayers);
     }
     export() {
         download(this.name.replace(/[./\\;"?]/, "_") + ".json", `{
@@ -316,19 +312,6 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
 		<h3>Coolers</h3>
 		${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) => `${t.displayedName}: ${stats.cellcount[i]}<br>`).join("\n")}
 		`;
-    }
-}
-function squarifyCells(reactorLayers) {
-    const z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
-    const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
-    const cellWidth = reactorLayers.childNodes[0].firstChild.offsetWidth / x;
-    const cellHeight = reactorLayers.childNodes[0].firstChild.offsetHeight / z;
-    for (let reactorLayerOuter of reactorLayers.childNodes) {
-        let reactorLayer = reactorLayerOuter.firstChild;
-        for (let cell of reactorLayer.childNodes) {
-            cell.style.setProperty("width", cellWidth + "px");
-            cell.style.setProperty("height", cellHeight + "px");
-        }
     }
 }
 uploadButton.onchange = function (e) {

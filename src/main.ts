@@ -179,11 +179,9 @@ class Reactor {
 		}
 
 		for(let y = 0; y < this.y; y ++){
-			let tempElement = document.createElement("div");
-			tempElement.className = "layer";
-			const layerInner = document.createElement("div");
-			layerInner.classList.add("layerinner");
-			layerInner.setAttribute("y", y.toString());
+			const layer = document.createElement("div");
+			layer.classList.add("layer");
+			layer.setAttribute("y", y.toString());
 			for(let z = 0; z < this.z; z ++){ for(let x = 0; x < this.x; x ++){
 				const pos:Pos = [x, y, z];
 				const cell = document.createElement("div");
@@ -199,13 +197,11 @@ class Reactor {
 				img.alt = type.displayedName;
 				img.style.width = "100%";
 				cell.appendChild(img);
-				layerInner.appendChild(cell);
+				layer.appendChild(cell);
 			}}
-			tempElement.appendChild(layerInner);
-			reactorLayers.appendChild(tempElement);
+			reactorLayers.appendChild(layer);
 		}
 		reactorName.value = this.name;
-		squarifyCells(reactorLayers);
 	}
 
 	export(){
@@ -382,19 +378,6 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
 
 }
 
-function squarifyCells(reactorLayers:HTMLDivElement){
-	const z = parseInt(reactorLayers.style.getPropertyValue("--cells-z"));
-	const x = parseInt(reactorLayers.style.getPropertyValue("--cells-x"));
-	const cellWidth = (reactorLayers.childNodes[0].firstChild as HTMLDivElement).offsetWidth/x;
-	const cellHeight = (reactorLayers.childNodes[0].firstChild as HTMLDivElement).offsetHeight/z;
-	for(let reactorLayerOuter of reactorLayers.childNodes){
-		let reactorLayer = reactorLayerOuter.firstChild!;
-		for(let cell of reactorLayer.childNodes as NodeListOf<HTMLDivElement>){
-			cell.style.setProperty("width", cellWidth + "px");
-			cell.style.setProperty("height", cellHeight + "px");
-		}
-	}
-}
 
 uploadButton.onchange = function(e:Event){
 	 let file = (e.target as HTMLInputElement).files![0];

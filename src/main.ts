@@ -302,7 +302,6 @@ ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells 
 Adjacent Moderators: ${adjacentModerators}
 Heat Multiplier: ${heatMultiplier * 100}%
 Energy Multiplier: ${energyMultiplier * 100}%`;
-						console.log(`Set tooltip of cell ${pos} to: `, this.getDOMCell(reactorLayers, x, y, z).title);
 					} else if(cellData.type == "cooler"){
 						if(this.cellValid(pos)){
 							totalCooling -= settings.coolers[cell];

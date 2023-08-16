@@ -54,15 +54,15 @@ html, body {
 
 #reactor-layers .layer {
 	height: fit-content;
-	background-color: yellow;
+	background-color: black;
 	display: grid;
+	gap: 1.6px;
 	grid-template-columns: repeat(var(--cells-x), 1fr);
 	grid-template-rows: repeat(var(--cells-z), 1fr);
 }
 
 #reactor-layers .cell {
 	aspect-ratio: 1;
-	border: 1px solid black;
 	background-size: cover;
 	background-color: #FFF;
 }

@@ -116,7 +116,7 @@ class Reactor {
 		) return cellTypes[19];
 		else return null;
 	}
-	edit(x:number, y:number, z:number, id:BlockID){
+	edit([x, y, z]:Pos, id:BlockID){
 		//Self explanatory.
 		if(isNaN(id) || !(id in cellTypes)){
 			console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
@@ -157,8 +157,7 @@ class Reactor {
 		}
 	}
 
-	getDOMCell(reactorLayers:HTMLDivElement, x:number, y:number, z:number){
-		//TODO Pos
+	getDOMCell(reactorLayers:HTMLDivElement, [x, y, z]:Pos){
 		return reactorLayers.childNodes[y].firstChild!.childNodes[(z*this.x) + x] as HTMLDivElement;
 	}
 
@@ -175,22 +174,23 @@ class Reactor {
 			const layerInner = document.createElement("div");
 			layerInner.classList.add("layerinner");
 			for(let z = 0; z < this.z; z ++){ for(let x = 0; x < this.x; x ++){
+				const pos:Pos = [x, y, z];
 				const cell = document.createElement("div");
 				cell.classList.add("cell");
-				if(!this.cellValid([x, y, z])) cell.classList.add("invalid");
+				if(!this.cellValid(pos)) cell.classList.add("invalid");
 				//TODO way too many duped functions
 				cell.addEventListener("click", e => {
-					defaultReactor.edit(x, y, z, getSelectedId());
+					defaultReactor.edit(pos, getSelectedId());
 				});
 				cell.addEventListener("contextmenu", e => {
 					if(!e.shiftKey){
-						defaultReactor.edit(x, y, z, 0);
+						defaultReactor.edit(pos, 0);
 						e.preventDefault();
 					}
 				});
 				cell.style.setProperty("grid-row", (z + 1).toString());
 				cell.style.setProperty("grid-column", (x + 1).toString());
-				const type = this.getData([x, y, z])!;
+				const type = this.getData(pos)!;
 				cell.title = type.tooltipText;
 				const img = document.createElement("img");
 				img.src = type.imagePath;
@@ -296,7 +296,7 @@ class Reactor {
 						heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);
 						totalHeat += baseHeat * heatMultiplier;
 						totalEnergyPerTick += basePower * energyMultiplier;
-						this.getDOMCell(reactorLayers, x, y, z).title += `
+						this.getDOMCell(reactorLayers, pos).title += `
 Adjacent Cells: ${adjacentCells}
 ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
 Adjacent Moderators: ${adjacentModerators}

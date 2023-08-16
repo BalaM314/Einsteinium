@@ -86,7 +86,7 @@ class Reactor {
         else
             return null;
     }
-    edit(x, y, z, id) {
+    edit([x, y, z], id) {
         if (isNaN(id) || !(id in cellTypes)) {
             console.error(`Invalid attempt to edit reactor 1 at position ${x},${y},${z} with bad id ${id}`);
             return false;
@@ -123,7 +123,7 @@ class Reactor {
             return false;
         }
     }
-    getDOMCell(reactorLayers, x, y, z) {
+    getDOMCell(reactorLayers, [x, y, z]) {
         return reactorLayers.childNodes[y].firstChild.childNodes[(z * this.x) + x];
     }
     updateDOM(reactorLayers) {
@@ -137,22 +137,23 @@ class Reactor {
             layerInner.classList.add("layerinner");
             for (let z = 0; z < this.z; z++) {
                 for (let x = 0; x < this.x; x++) {
+                    const pos = [x, y, z];
                     const cell = document.createElement("div");
                     cell.classList.add("cell");
-                    if (!this.cellValid([x, y, z]))
+                    if (!this.cellValid(pos))
                         cell.classList.add("invalid");
                     cell.addEventListener("click", e => {
-                        defaultReactor.edit(x, y, z, getSelectedId());
+                        defaultReactor.edit(pos, getSelectedId());
                     });
                     cell.addEventListener("contextmenu", e => {
                         if (!e.shiftKey) {
-                            defaultReactor.edit(x, y, z, 0);
+                            defaultReactor.edit(pos, 0);
                             e.preventDefault();
                         }
                     });
                     cell.style.setProperty("grid-row", (z + 1).toString());
                     cell.style.setProperty("grid-column", (x + 1).toString());
-                    const type = this.getData([x, y, z]);
+                    const type = this.getData(pos);
                     cell.title = type.tooltipText;
                     const img = document.createElement("img");
                     img.src = type.imagePath;
@@ -237,7 +238,7 @@ class Reactor {
                         heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat / 6) * (adjacentCells + distantAdjacentCells + 1);
                         totalHeat += baseHeat * heatMultiplier;
                         totalEnergyPerTick += basePower * energyMultiplier;
-                        this.getDOMCell(reactorLayers, x, y, z).title += `
+                        this.getDOMCell(reactorLayers, pos).title += `
 Adjacent Cells: ${adjacentCells}
 ${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
 Adjacent Moderators: ${adjacentModerators}

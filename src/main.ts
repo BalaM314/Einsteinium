@@ -158,7 +158,7 @@ class Reactor {
 	}
 
 	getDOMCell(reactorLayers:HTMLDivElement, [x, y, z]:Pos){
-		return reactorLayers.childNodes[y].firstChild!.childNodes[(z*this.x) + x] as HTMLDivElement;
+		return reactorLayers.childNodes[y].childNodes[(z*this.x) + x] as HTMLDivElement;
 	}
 
 	updateDOM(reactorLayers:HTMLDivElement){

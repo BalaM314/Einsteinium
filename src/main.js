@@ -124,7 +124,7 @@ class Reactor {
         }
     }
     getDOMCell(reactorLayers, [x, y, z]) {
-        return reactorLayers.childNodes[y].firstChild.childNodes[(z * this.x) + x];
+        return reactorLayers.childNodes[y].childNodes[(z * this.x) + x];
     }
     updateDOM(reactorLayers) {
         reactorLayers.innerHTML = "";

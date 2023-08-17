@@ -77,16 +77,8 @@ class Reactor {
 
 		this.name = consts.defaultName;
 
-		this.contents = Array.from({length: y}, () =>
-			Array.from({length: x}, () => 
-				Array.from({length: z}, () => 0)
-			)
-		);
-		this.valids = Array.from({length: y}, () =>
-			Array.from({length: x}, () => 
-				Array.from({length: z}, () => false)
-			)
-		);
+		this.contents = array3D(y, x, z, 0);
+		this.valids = array3D(y, x, z, false);
 	}
 	get([x, y, z]:Pos):BlockID | null {
 		if(

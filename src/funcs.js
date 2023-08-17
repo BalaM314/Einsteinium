@@ -28,6 +28,9 @@ function inRange(value, range) {
 function cp(data) {
     return JSON.parse(JSON.stringify(data));
 }
+function array3D(a, b, c, value) {
+    return Array.from({ length: a }, () => Array.from({ length: b }, () => Array.from({ length: c }, () => value)));
+}
 function constrain(val, min, max) {
     if (isNaN(val))
         return 0;

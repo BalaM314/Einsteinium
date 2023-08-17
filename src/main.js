@@ -55,8 +55,8 @@ class Reactor {
         this.x = constrain(x, 1, settings.maxReactorSize);
         this.z = constrain(z, 1, settings.maxReactorSize);
         this.name = consts.defaultName;
-        this.contents = Array.from({ length: y }, () => Array.from({ length: x }, () => Array.from({ length: z }, () => 0)));
-        this.valids = Array.from({ length: y }, () => Array.from({ length: x }, () => Array.from({ length: z }, () => false)));
+        this.contents = array3D(y, x, z, 0);
+        this.valids = array3D(y, x, z, false);
     }
     get([x, y, z]) {
         if ((x >= 0 && x < this.x) &&

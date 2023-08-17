@@ -22,6 +22,13 @@ function inRange(value:number, range:RangeSpecifier){
 function cp<T>(data:T){
 	return JSON.parse(JSON.stringify(data));
 }
+function array3D<T = number>(a:number, b:number, c:number, value:T){
+	return Array.from({length: a}, () =>
+		Array.from({length: b}, () => 
+			Array.from({length: c}, () => value)
+		)
+	)
+}
 function constrain(val:number, min:number, max:number){
 	if(isNaN(val)) return 0;
 	if(val < min){

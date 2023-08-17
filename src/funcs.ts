@@ -80,3 +80,9 @@ function download(filename:string, text:string){
 function copyToClipboard(str:string){
 	return navigator.clipboard.writeText(str);
 }
+/** Does not do any actual checking. */
+function assertType<T>(value:unknown):asserts value is T {}
+function round(amount:number, places = 0):number {
+	const tenEplaces = 10 ** places;
+	return Math.round(amount * tenEplaces) / tenEplaces;
+}

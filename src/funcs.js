@@ -82,3 +82,8 @@ function download(filename, text) {
 function copyToClipboard(str) {
     return navigator.clipboard.writeText(str);
 }
+function assertType(value) { }
+function round(amount, places = 0) {
+    const tenEplaces = 10 ** places;
+    return Math.round(amount * tenEplaces) / tenEplaces;
+}

@@ -13,6 +13,8 @@ let hotbarCells:HTMLDivElement[] = [];
 
 
 const VERSION = "2.0.0";
+/** do not modify */
+const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
 
 let baseHeat = 18;
 let basePower = 60;
@@ -58,6 +60,10 @@ const consts = {
 
 
 class Reactor {
+	/**
+	 * A 3-dimensional array storing the id of each block(as a number).
+	 * It is stored in the format Reactor.contents[y][x][z].
+	 */
 	contents: BlockID[][][];
 	valids: boolean[][][];
 	x:number; y:number; z:number;
@@ -65,14 +71,9 @@ class Reactor {
 	constructor(x:number, y:number, z:number){
 		this.contents = [];
 		this.valids = [];
-		/*
-		Reactor.contents is a 3-dimensional array storing the id of each block(as a number).
-		It is stored in the format Reactor.contents[y][x][z].
-		*/
 		this.y = constrain(y, 1, settings.maxReactorSize);
 		this.x = constrain(x, 1, settings.maxReactorSize);
 		this.z = constrain(z, 1, settings.maxReactorSize);
-		//some input validation cus why not
 
 		this.name = consts.defaultName;
 
@@ -214,7 +215,7 @@ class Reactor {
 					"version":"${VERSION}",
 					"dimensions":[${this.x},${this.y},${this.z}],
 					"name": "${this.name}",
-					"validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
+					"validationCode": "${validationCode}"
 				}
 			}`
 		);
@@ -408,14 +409,11 @@ function getSelectedId():BlockID {
 
 function loadReactor(data:string){
 	try {
-		//Check for security reasons(why not) //TODO awful
-		assert(data.match(/[<>\\;^]|(script)/gi) == null, "Security check failed");
-
+		
 		const parsed = JSON.parse(data);
-		// First some validation to make sure the data is valid.
+		//Make sure the data is valid
 		assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi), "Invalid version");
-		//hehe VV
-		assert(parsed.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.", "Incorrect validation code");
+		assert(parsed.metadata.validationCode == validationCode, "Incorrect validation code");
 		if(parsed.metadata.version != VERSION){
 			console.warn("Loading JSON file with a different data version.");
 		}
@@ -425,18 +423,18 @@ function loadReactor(data:string){
 		assert(typeof parsed.metadata.dimensions[1] == "number", "Invalid dimenions");
 		assert(typeof parsed.metadata.dimensions[2] == "number", "Invalid dimenions");
 
-		//The data's probably valid, try load it now..
+		//The data seems valid, try to load it
 		let tempReactor = new Reactor(parsed.metadata.dimensions[0], parsed.metadata.dimensions[1], parsed.metadata.dimensions[2]);
 		tempReactor.contents = parsed.content;
 		tempReactor.name = parsed.metadata.name;
 		assert(tempReactor.validate(), "Invalid data");
 
-		//Validation passed, its good.
+		//Validation passed
+		tempReactor.update();
 		defaultReactor = tempReactor;
 		x_input.value = parsed.metadata.dimensions[0];
 		y_input.value = parsed.metadata.dimensions[1];
 		z_input.value = parsed.metadata.dimensions[2];
-		defaultReactor.update();
 	} catch(err){
 		loadNCReactorPlanner(data, "Imported Reactor");
 	}
@@ -445,15 +443,15 @@ function loadReactor(data:string){
 function loadNCReactorPlanner(rawData:string, filename:string){
 	
 	try {
-		//TODO awful
-		assert(rawData.match(/[<>\\;^]|(script)/gi) == null);
 		let data = JSON.parse(rawData);
 		assert(typeof data.SaveVersion.Build == "number");
 		assert(data.CompressedReactor);
 
-
+		assert(typeof data.InteriorDimensions.X == "number", "Invalid dimenions");
+		assert(typeof data.InteriorDimensions.Y == "number", "Invalid dimenions");
+		assert(typeof data.InteriorDimensions.Z == "number", "Invalid dimenions");
 		let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z)
-		for(const name of Object.keys(ncrpMappings)){
+		for(const name in ncrpMappings){
 			if(data.CompressedReactor[name] instanceof Array){
 				for(const pos of data.CompressedReactor[name]){
 					tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncrpMappings[name];
@@ -463,11 +461,11 @@ function loadNCReactorPlanner(rawData:string, filename:string){
 		tempReactor.name = filename;
 		assert(tempReactor.validate());
 
+		tempReactor.update();
 		defaultReactor = tempReactor;
 		x_input.value = data.InteriorDimensions.X;
 		y_input.value = data.InteriorDimensions.Y;
 		z_input.value = data.InteriorDimensions.Z;
-		defaultReactor.update();
 	} catch(err){
 		console.error("Invalid JSON!", err);
 	}

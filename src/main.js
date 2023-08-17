@@ -10,6 +10,7 @@ const titleText = getElement("title", HTMLSpanElement);
 const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells = [];
 const VERSION = "2.0.0";
+const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
 let baseHeat = 18;
 let basePower = 60;
 let fuelTime = 144000;
@@ -175,7 +176,7 @@ class Reactor {
 					"version":"${VERSION}",
 					"dimensions":[${this.x},${this.y},${this.z}],
 					"name": "${this.name}",
-					"validationCode": "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf."
+					"validationCode": "${validationCode}"
 				}
 			}`);
     }
@@ -345,10 +346,9 @@ function getSelectedId() {
 }
 function loadReactor(data) {
     try {
-        assert(data.match(/[<>\\;^]|(script)/gi) == null, "Security check failed");
         const parsed = JSON.parse(data);
         assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi), "Invalid version");
-        assert(parsed.metadata.validationCode == "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.", "Incorrect validation code");
+        assert(parsed.metadata.validationCode == validationCode, "Incorrect validation code");
         if (parsed.metadata.version != VERSION) {
             console.warn("Loading JSON file with a different data version.");
         }
@@ -360,11 +360,11 @@ function loadReactor(data) {
         tempReactor.contents = parsed.content;
         tempReactor.name = parsed.metadata.name;
         assert(tempReactor.validate(), "Invalid data");
+        tempReactor.update();
         defaultReactor = tempReactor;
         x_input.value = parsed.metadata.dimensions[0];
         y_input.value = parsed.metadata.dimensions[1];
         z_input.value = parsed.metadata.dimensions[2];
-        defaultReactor.update();
     }
     catch (err) {
         loadNCReactorPlanner(data, "Imported Reactor");
@@ -372,12 +372,14 @@ function loadReactor(data) {
 }
 function loadNCReactorPlanner(rawData, filename) {
     try {
-        assert(rawData.match(/[<>\\;^]|(script)/gi) == null);
         let data = JSON.parse(rawData);
         assert(typeof data.SaveVersion.Build == "number");
         assert(data.CompressedReactor);
+        assert(typeof data.InteriorDimensions.X == "number", "Invalid dimenions");
+        assert(typeof data.InteriorDimensions.Y == "number", "Invalid dimenions");
+        assert(typeof data.InteriorDimensions.Z == "number", "Invalid dimenions");
         let tempReactor = new Reactor(data.InteriorDimensions.X, data.InteriorDimensions.Y, data.InteriorDimensions.Z);
-        for (const name of Object.keys(ncrpMappings)) {
+        for (const name in ncrpMappings) {
             if (data.CompressedReactor[name] instanceof Array) {
                 for (const pos of data.CompressedReactor[name]) {
                     tempReactor.contents[pos.Y - 1][pos.X - 1][pos.Z - 1] = ncrpMappings[name];
@@ -386,11 +388,11 @@ function loadNCReactorPlanner(rawData, filename) {
         }
         tempReactor.name = filename;
         assert(tempReactor.validate());
+        tempReactor.update();
         defaultReactor = tempReactor;
         x_input.value = data.InteriorDimensions.X;
         y_input.value = data.InteriorDimensions.Y;
         z_input.value = data.InteriorDimensions.Z;
-        defaultReactor.update();
     }
     catch (err) {
         console.error("Invalid JSON!", err);

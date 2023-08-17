@@ -27,14 +27,14 @@ interface PreprocessedModeratorCellData {
 }
 type CellData = PreprocessedCellData & {
 	imagePath: string;
-	id: number;
+	id: BlockID;
 	placeable: boolean;
 	tooltipText: string;
 };
 
 const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 	...t,
-	id: i,
+	id: i as BlockID,
 	imagePath: `assets/${i}.png`,
 	placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
 	tooltipText: `${t.displayedName}\n${t.description}`

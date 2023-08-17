@@ -337,15 +337,11 @@ function selectCell() {
     this.classList.add("hotbarcellselected");
 }
 function getSelectedId() {
-    try {
-        let calcedId = +document.getElementsByClassName("hotbarcellselected")[0].firstChild.src.split("/").pop().split(".")[0];
-        if (calcedId in cellTypes) {
-            return calcedId;
-        }
-    }
-    catch (err) {
-    }
-    return 0;
+    let calcedId = +(hotbarCells.find(c => c.classList.contains("hotbarcellselected"))?.getAttribute("block-id") ?? 0);
+    if (calcedId in cellTypes)
+        return calcedId;
+    else
+        return 0;
 }
 function loadReactor(data) {
     try {
@@ -400,11 +396,12 @@ function loadNCReactorPlanner(rawData, filename) {
         console.error("Invalid JSON!", err);
     }
 }
-function getHotbarCell(image, tooltip) {
+function getHotbarCell(image, tooltip, id) {
     const div = document.createElement("div");
     div.classList.add("hotbarcell");
     div.addEventListener("click", selectCell);
     div.title = tooltip;
+    div.setAttribute("block-id", id.toString());
     const img = document.createElement("img");
     img.src = image;
     div.append(img);
@@ -413,8 +410,8 @@ function getHotbarCell(image, tooltip) {
 hotbar.append(...hotbarCells = [
     ...cellTypes
         .filter(cellType => cellType.placeable)
-        .map(cellType => getHotbarCell(cellType.imagePath, cellType.tooltipText)),
-    getHotbarCell("assets/00.png", "Remove")
+        .map(cellType => getHotbarCell(cellType.imagePath, cellType.tooltipText, cellType.id)),
+    getHotbarCell("assets/00.png", "Remove", 0)
 ]);
 selectCell.call(hotbarCells[0]);
 document.querySelector("#options-panel>.flex button")?.addEventListener("click", function () {

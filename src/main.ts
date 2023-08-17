@@ -245,12 +245,8 @@ class Reactor {
 	}
 
 	getDistantAdjacentCells([x, y, z]:Pos){
-		/*Nuclearcraft, why. I get the need for realism but this makes it so much more complicated!!.
-		Basically, any cells that are separated from a cell by only 4 or less moderator blocks are treated as adjacent.
-		This is because IRL this causes neutron flux to be shared. //TODO is this even right
-		It makes the logic far more complicated.
-		*/
-		
+		//Any cells that are separated from a cell by 1-4 moderator blocks are treated as adjacent.
+	
 		return directions.reduce((acc, direction) => {
 			let pos:Pos = [x, y, z];
 			for(let i = 0; i <= settings.neutronRadiationReach; i ++){
@@ -404,17 +400,10 @@ function selectCell(this:HTMLDivElement){
 }
 
 function getSelectedId():BlockID {
-	try {
-		let calcedId = +(document.getElementsByClassName("hotbarcellselected")[0].firstChild as HTMLImageElement).src.split("/").pop()!.split(".")[0];
-		//TODO wtf
-		//who said the code had to be readable
-		if(calcedId in cellTypes){
-			return calcedId as BlockID;
-		}
-	} catch(err){
-
-	}
-	return 0;
+	let calcedId = +(hotbarCells.find(c => c.classList.contains("hotbarcellselected"))?.getAttribute("block-id") ?? 0);
+	if(calcedId in cellTypes)
+		return calcedId as BlockID;
+	else return 0;
 }
 
 function loadReactor(data:string){
@@ -484,11 +473,12 @@ function loadNCReactorPlanner(rawData:string, filename:string){
 	}
 }
 
-function getHotbarCell(image:string, tooltip:string){
+function getHotbarCell(image:string, tooltip:string, id:BlockID){
 	const div = document.createElement("div");
 	div.classList.add("hotbarcell");
 	div.addEventListener("click", selectCell);
 	div.title = tooltip;
+	div.setAttribute("block-id", id.toString());
 	const img = document.createElement("img");
 	img.src = image;
 	div.append(img);
@@ -499,9 +489,9 @@ hotbar.append(...hotbarCells = [
 	...cellTypes
 		.filter(cellType => cellType.placeable)
 		.map(cellType =>
-		getHotbarCell(cellType.imagePath, cellType.tooltipText)
-	),
-	getHotbarCell("assets/00.png", "Remove")
+			getHotbarCell(cellType.imagePath, cellType.tooltipText, cellType.id)
+		),
+	getHotbarCell("assets/00.png", "Remove", 0)
 ]);
 selectCell.call(hotbarCells[0]);
 document.querySelector("#options-panel>.flex button")?.addEventListener("click", function(this:HTMLElement){

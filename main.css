@@ -67,10 +67,10 @@ html, body {
 	background-color: #FFF;
 }
 #reactor-layers .cell:hover {
-	background-color: #D4D4D4;
+	filter: brightness(0.9);
 }
 #reactor-layers .cell:active {
-	background-color: #AAA;
+	filter: brightness(0.7);
 }
 
 #reactor-layers .cell.invalid {

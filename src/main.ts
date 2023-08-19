@@ -57,7 +57,18 @@ let settings = {
 const consts = {
 	defaultName: "Unnamed Reactor"
 };
-
+type CellStats = BasicCellStats | FuelCellStats;
+interface BasicCellStats {
+	id: number;
+	type: CellData;
+}
+interface FuelCellStats extends BasicCellStats {
+	adjacentCells: number;
+	distantAdjacentCells: number;
+	adjacentModerators: number;
+	heatMultiplier: number;
+	energyMultiplier: number;
+}
 
 class Reactor {
 	/**
@@ -180,13 +191,21 @@ class Reactor {
 			for(let z = 0; z < this.z; z ++){ for(let x = 0; x < this.x; x ++){
 				const pos:Pos = [x, y, z];
 				const cell = document.createElement("div");
+				const stat = cellInfo[y][x][z];
+				const extraTooltip = ("adjacentCells" in stat) ?
+				`\nAdjacent Cells: ${stat.adjacentCells}
+				${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
+				Adjacent Moderators: ${stat.adjacentModerators}
+				Heat Multiplier: ${stat.heatMultiplier * 100}%
+				Energy Multiplier: ${stat.energyMultiplier * 100}%`
+				: ""
 				cell.classList.add("cell");
 				if(!this.cellValid(pos)) cell.classList.add("invalid");
 				cell.addEventListener("mousedown", cellClicked);
 				cell.style.setProperty("grid-row", (z + 1).toString());
 				cell.style.setProperty("grid-column", (x + 1).toString());
 				const type = this.getData(pos)!;
-				cell.title = type.tooltipText;
+				cell.title = type.tooltipText + extraTooltip;
 				cell.style.backgroundImage = `url(${type.imagePath})`;
 				layer.appendChild(cell);
 			}}
@@ -263,15 +282,19 @@ class Reactor {
 		let totalHeat = 0;
 		let totalCooling = 0;
 		let totalEnergyPerTick = 0;
-		let cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		let cellsCount = Array<number>(cellTypes.length).fill(0);
+		let cellInfo:(CellStats | null)[][][] = array3D(this.y, this.x, this.z, null);
 		for(let y = 0; y < this.y; y ++){
 			for(let x = 0; x < this.x; x ++){
 				for(let z = 0; z < this.z; z ++){
 					const pos:Pos = [x, y, z];
-					const cell = this.get(pos)!;
-					const cellData = cellTypes[cell];
-					cellsCount[cell] ++;
-					if(cell == 1){
+					const id = this.get(pos)!;
+					const type = cellTypes[id];
+					cellsCount[id] ++;
+					cellInfo[y][x][z] = {
+						id, type
+					};
+					if(id == 1){
 						let adjacentCells = this.getAdjacentFuelCells(pos);
 						let distantAdjacentCells = this.getDistantAdjacentCells(pos);
 						let adjacentModerators = this.getAdjacentModerators(pos);
@@ -281,23 +304,35 @@ class Reactor {
 						heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);
 						totalHeat += baseHeat * heatMultiplier;
 						totalEnergyPerTick += basePower * energyMultiplier;
-						this.getDOMCell(reactorLayers, pos).title += `
-Adjacent Cells: ${adjacentCells}
-${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
-Adjacent Moderators: ${adjacentModerators}
-Heat Multiplier: ${heatMultiplier * 100}%
-Energy Multiplier: ${energyMultiplier * 100}%`;
-					} else if(cellData.type == "cooler"){
+						cellInfo[y][x][z] = {
+							...cellInfo[y][x][z]!,
+							adjacentCells, adjacentModerators, distantAdjacentCells,
+							energyMultiplier, heatMultiplier
+						};
+					} else if(type.type == "cooler"){
 						if(this.cellValid(pos)){
-							totalCooling -= settings.coolers[cell];
+							totalCooling -= settings.coolers[id];
 							//TODO configurable coolant amount
 						}
 					}
 				}
 			}
 		}
-		//TODO ew what is this
-		return {"heatgen":totalHeat, "cooling":totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount};
+		assertType<CellStats[][][]>(cellInfo);
+
+		cellsCount[19] = 2 * (this.x*this.y + this.x*this.z + this.y*this.z);
+		const netHeat = totalHeat + totalCooling;
+		const spaceEfficiency = 1 - cellsCount[0] / (this.x * this.y * this.z);
+
+		return {
+			totalHeat,
+			totalCooling,
+			netHeat,
+			totalEnergyPerTick,
+			cellsCount,
+			spaceEfficiency,
+			cellInfo,
+		};
 	}
 
 	checkValidation(check:CellValidCheck, pos:Pos){

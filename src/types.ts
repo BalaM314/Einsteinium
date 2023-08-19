@@ -12,3 +12,6 @@ type BlockID = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 
 type Pos = [x:number, y:number, z:number];
 type RangeSpecifier = number | [min:number, max:number];
 
+interface Array<T> {
+	at(index: number): T | undefined;
+}

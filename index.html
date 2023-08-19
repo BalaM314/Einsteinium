@@ -9,9 +9,14 @@
 	<script src="src/funcs.js"></script>
 	<script src="src/main.js" defer></script>
 	<script>
-		//if the main script doesnt load, this runs
+		//Ponyfills
+		Array.prototype.at = function(i){
+			return this[i < 0 ? this.length + i : i];
+		}
+
 		window.addEventListener("DOMContentLoaded", () => {
 			if(window.everythingIsFine !== true){
+				//if the main script doesnt load, this runs
 				Array.from(document.getElementsByClassName("errormessage")).forEach(e =>
 					e.innerHTML = `Whoops! If you're seeing this, something went wrong. Please go to this project's Github page and create an <a href="https://github.com/BalaM314/Einsteinium/issues/new/choose">issue</a>. Screenshot the output of the dev console(press F12 or Ctrl+Shift+I, then click the Console tab) and add it to the issue so I can fix it.`
 				);

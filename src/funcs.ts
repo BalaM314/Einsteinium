@@ -39,8 +39,8 @@ function constrain(val:number, min:number, max:number){
 		return val;
 	}
 }
-function checkNaN(value:number, deefalt:number){
-	return isNaN(value) ? deefalt : value;
+function checkNaN(value:number, deefalt:number, failInfinity = false){
+	return isNaN(value) || (failInfinity && !Number.isFinite(value)) ? deefalt : value;
 }
 function adjacentPositions([x, y, z]:Pos):Pos[]{
 	return [

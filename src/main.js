@@ -155,10 +155,10 @@ class Reactor {
                     const stat = cellInfo[y][x][z];
                     const extraTooltip = ("adjacentCells" in stat) ?
                         `\nAdjacent Cells: ${stat.adjacentCells}
-				${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
-				Adjacent Moderators: ${stat.adjacentModerators}
-				Heat Multiplier: ${stat.heatMultiplier * 100}%
-				Energy Multiplier: ${stat.energyMultiplier * 100}%`
+${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
+Adjacent Moderators: ${stat.adjacentModerators}
+Heat Multiplier: ${stat.heatMultiplier * 100}%
+Energy Multiplier: ${stat.energyMultiplier * 100}%`
                         : "";
                     cell.classList.add("cell");
                     if (!this.cellValid(pos))

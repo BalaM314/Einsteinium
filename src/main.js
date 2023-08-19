@@ -102,8 +102,9 @@ class Reactor {
         this.updateCellsValidity();
         this.updateCellsValidity();
         this.updateCellsValidity();
-        this.updateDOM(reactorLayers);
-        this.updateStats(statsPanel);
+        const stats = this.calculateStats();
+        this.updateStats(statsPanel, stats);
+        this.updateDOM(reactorLayers, stats);
     }
     validate() {
         try {
@@ -127,7 +128,7 @@ class Reactor {
     getDOMCell(reactorLayers, [x, y, z]) {
         return reactorLayers.childNodes[y].childNodes[(z * this.x) + x];
     }
-    updateDOM(reactorLayers) {
+    updateDOM(reactorLayers, { cellInfo }) {
         reactorLayers.innerHTML = "";
         reactorLayers.style.setProperty("--cells-z", this.z.toString());
         reactorLayers.style.setProperty("--cells-x", this.x.toString());
@@ -151,6 +152,14 @@ class Reactor {
                 for (let x = 0; x < this.x; x++) {
                     const pos = [x, y, z];
                     const cell = document.createElement("div");
+                    const stat = cellInfo[y][x][z];
+                    const extraTooltip = ("adjacentCells" in stat) ?
+                        `\nAdjacent Cells: ${stat.adjacentCells}
+				${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
+				Adjacent Moderators: ${stat.adjacentModerators}
+				Heat Multiplier: ${stat.heatMultiplier * 100}%
+				Energy Multiplier: ${stat.energyMultiplier * 100}%`
+                        : "";
                     cell.classList.add("cell");
                     if (!this.cellValid(pos))
                         cell.classList.add("invalid");
@@ -158,7 +167,7 @@ class Reactor {
                     cell.style.setProperty("grid-row", (z + 1).toString());
                     cell.style.setProperty("grid-column", (x + 1).toString());
                     const type = this.getData(pos);
-                    cell.title = type.tooltipText;
+                    cell.title = type.tooltipText + extraTooltip;
                     cell.style.backgroundImage = `url(${type.imagePath})`;
                     layer.appendChild(cell);
                 }
@@ -218,15 +227,19 @@ class Reactor {
         let totalHeat = 0;
         let totalCooling = 0;
         let totalEnergyPerTick = 0;
-        let cellsCount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let cellsCount = Array(cellTypes.length).fill(0);
+        let cellInfo = array3D(this.y, this.x, this.z, null);
         for (let y = 0; y < this.y; y++) {
             for (let x = 0; x < this.x; x++) {
                 for (let z = 0; z < this.z; z++) {
                     const pos = [x, y, z];
-                    const cell = this.get(pos);
-                    const cellData = cellTypes[cell];
-                    cellsCount[cell]++;
-                    if (cell == 1) {
+                    const id = this.get(pos);
+                    const type = cellTypes[id];
+                    cellsCount[id]++;
+                    cellInfo[y][x][z] = {
+                        id, type
+                    };
+                    if (id == 1) {
                         let adjacentCells = this.getAdjacentFuelCells(pos);
                         let distantAdjacentCells = this.getDistantAdjacentCells(pos);
                         let adjacentModerators = this.getAdjacentModerators(pos);
@@ -236,22 +249,33 @@ class Reactor {
                         heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat / 6) * (adjacentCells + distantAdjacentCells + 1);
                         totalHeat += baseHeat * heatMultiplier;
                         totalEnergyPerTick += basePower * energyMultiplier;
-                        this.getDOMCell(reactorLayers, pos).title += `
-Adjacent Cells: ${adjacentCells}
-${distantAdjacentCells ? ("Distant \"adjacent\" cells: " + distantAdjacentCells + "\n") : ""}\
-Adjacent Moderators: ${adjacentModerators}
-Heat Multiplier: ${heatMultiplier * 100}%
-Energy Multiplier: ${energyMultiplier * 100}%`;
+                        cellInfo[y][x][z] = {
+                            ...cellInfo[y][x][z],
+                            adjacentCells, adjacentModerators, distantAdjacentCells,
+                            energyMultiplier, heatMultiplier
+                        };
                     }
-                    else if (cellData.type == "cooler") {
+                    else if (type.type == "cooler") {
                         if (this.cellValid(pos)) {
-                            totalCooling -= settings.coolers[cell];
+                            totalCooling -= settings.coolers[id];
                         }
                     }
                 }
             }
         }
-        return { "heatgen": totalHeat, "cooling": totalCooling, "power": totalEnergyPerTick, "cellcount": cellsCount };
+        assertType(cellInfo);
+        cellsCount[19] = 2 * (this.x * this.y + this.x * this.z + this.y * this.z);
+        const netHeat = totalHeat + totalCooling;
+        const spaceEfficiency = 1 - cellsCount[0] / (this.x * this.y * this.z);
+        return {
+            totalHeat,
+            totalCooling,
+            netHeat,
+            totalEnergyPerTick,
+            cellsCount,
+            spaceEfficiency,
+            cellInfo,
+        };
     }
     checkValidation(check, pos) {
         if (typeof check == "object") {
@@ -284,32 +308,28 @@ Energy Multiplier: ${energyMultiplier * 100}%`;
             }
         }
     }
-    updateStats(DOMnode) {
-        let stats = this.calculateStats();
-        let netHeat = stats.heatgen + stats.cooling;
-        let spaceEfficiency = 1 - (stats.cellcount[0] / (this.x * this.y * this.z));
-        let numCasings = 2 * this.x * this.y + 2 * this.x * this.z + 2 * this.y * this.z;
-        DOMnode.innerHTML = `
+    updateStats(DOMnode, { cellInfo, cellsCount, totalCooling, totalEnergyPerTick, totalHeat, netHeat, spaceEfficiency }) {
+        DOMnode.innerHTML = `\
 		<h1>Reactor Stats</h1>
 		<br>
 		<h2>Heat and Power</h2>
-		Total heat: ${Math.round(10 * stats.heatgen) / 10} HU/t<br>
-		Total cooling: ${Math.round(10 * stats.cooling) / 10} HU/t<br>
-		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10 * netHeat) / 10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
+		Total heat: ${round(totalHeat, 10)} HU/t<br>
+		Total cooling: ${round(totalCooling, 10)} HU/t<br>
+		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
 		${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000 * this.x * this.y * this.z) * 0.05 / netHeat)} s<br>` : ""}
-		Max base heat: ${checkNaN(Math.floor(-stats.cooling / (stats.heatgen / baseHeat)), 0)}<br>
-		Efficiency: ${checkNaN(Math.round(1000 * stats.power / (stats.cellcount[1] * basePower)) / 10, 100)}%<br>
-		Total Power: ${stats.power} RF/t<br>
-		Fuel Pellet Duration: ${Math.round(fuelTime / stats.cellcount[1]) / 20} s<br>
-		Energy Per Pellet: ${checkNaN(stats.power * (fuelTime / stats.cellcount[1]), 0)} RF<br>
+		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
+		Efficiency: ${checkNaN(round(totalEnergyPerTick / (cellsCount[1] * basePower) * 100, 2), 100)}%<br>
+		Total Power: ${round(totalEnergyPerTick)} RF/t<br>
+		Fuel Pellet Duration: ${checkNaN(round(fuelTime / cellsCount[1] / 20, 1), 0, true)} s<br>
+		Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * fuelTime / cellsCount[1]), 0)} RF<br>
+		Space Efficiency: ${round(spaceEfficiency * 100, 2)}%
 		<h2>Materials</h2>
-		Casings: ${numCasings}<br>
-		Fuel cells: ${stats.cellcount[1]}<br>
-		Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
-		Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
-		Space Efficiency: ${spaceEfficiency}%
+		Casings: ${cellsCount[19]}<br>
+		Fuel cells: ${cellsCount[1]}<br>
+		Moderators: ${cellsCount[17] + cellsCount[18]}<br>
 		<h3>Coolers</h3>
-		${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) => `${t.displayedName}: ${stats.cellcount[i]}<br>`).join("\n")}
+		${cellTypes.map((t, i) => [i, t]).filter(([i, t]) => t.type == "cooler" && cellsCount[i] > 0).map(([i, t]) => `${t.displayedName}: ${cellsCount[i]}<br>`).join("\n")}
+		Total coolers: ${sum(cellsCount.slice(2, 17))}<br>
 		`;
     }
 }

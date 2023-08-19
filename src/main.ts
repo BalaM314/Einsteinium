@@ -138,8 +138,9 @@ class Reactor {
 		this.updateCellsValidity();
 		this.updateCellsValidity();
 		this.updateCellsValidity();
-		this.updateDOM(reactorLayers);
-		this.updateStats(statsPanel);
+		const stats = this.calculateStats();
+		this.updateStats(statsPanel, stats);
+		this.updateDOM(reactorLayers, stats);
 	}
 
 	validate(){
@@ -165,7 +166,7 @@ class Reactor {
 		return reactorLayers.childNodes[y].childNodes[(z*this.x) + x] as HTMLDivElement;
 	}
 
-	updateDOM(reactorLayers:HTMLDivElement){
+	updateDOM(reactorLayers:HTMLDivElement, {cellInfo}:ReturnType<(typeof Reactor)["prototype"]["calculateStats"]>){
 		reactorLayers.innerHTML = "";
 		reactorLayers.style.setProperty("--cells-z", this.z.toString());
 		reactorLayers.style.setProperty("--cells-x", this.x.toString());
@@ -355,6 +356,7 @@ class Reactor {
 			for(let x in this.contents[y]){
 				for(let z in this.contents[y][x]){
 					const cellType = cellTypes[this.contents[y][x][z]];
+					//TODO bad loop
 					const pos = {x: parseInt(x), y: parseInt(y), z: parseInt(z)};
 					if(cellType.type == "misc"){
 						this.valids[pos.y][pos.x][pos.z] = true;
@@ -366,36 +368,37 @@ class Reactor {
 		}
 	}
 
-	updateStats(DOMnode:HTMLDivElement){
-		let stats = this.calculateStats();
-		let netHeat = stats.heatgen + stats.cooling;
-		let spaceEfficiency = 1-(stats.cellcount[0]/(this.x*this.y*this.z));
-		let numCasings = 2*this.x*this.y + 2*this.x*this.z + 2*this.y*this.z;
+	updateStats(DOMnode:HTMLDivElement, {
+		cellInfo, cellsCount, totalCooling, totalEnergyPerTick, totalHeat, netHeat, spaceEfficiency
+	}:ReturnType<(typeof Reactor)["prototype"]["calculateStats"]>){
 
-		DOMnode.innerHTML = `
+		//TODO fix handling of heat settings
+		//TODO remove magic numbers
+		DOMnode.innerHTML = `\
 		<h1>Reactor Stats</h1>
 		<br>
 		<h2>Heat and Power</h2>
-		Total heat: ${Math.round(10*stats.heatgen)/10} HU/t<br>
-		Total cooling: ${Math.round(10*stats.cooling)/10} HU/t<br>
-		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${Math.round(10*netHeat)/10} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
+		Total heat: ${round(totalHeat, 10)} HU/t<br>
+		Total cooling: ${round(totalCooling, 10)} HU/t<br>
+		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
 		${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
-		Max base heat: ${checkNaN(Math.floor(-stats.cooling/(stats.heatgen/baseHeat)), 0)}<br>
-		Efficiency: ${checkNaN(Math.round(1000*stats.power/(stats.cellcount[1]*basePower))/10, 100)}%<br>
-		Total Power: ${stats.power} RF/t<br>
-		Fuel Pellet Duration: ${Math.round(fuelTime/stats.cellcount[1])/20} s<br>
-		Energy Per Pellet: ${checkNaN(stats.power * (fuelTime/stats.cellcount[1]), 0)} RF<br>
+		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
+		Efficiency: ${checkNaN(round(totalEnergyPerTick / (cellsCount[1] * basePower) * 100, 2), 100)}%<br>
+		Total Power: ${round(totalEnergyPerTick)} RF/t<br>
+		Fuel Pellet Duration: ${checkNaN(round(fuelTime/cellsCount[1] / 20, 1), 0, true)} s<br>
+		Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * fuelTime / cellsCount[1]), 0)} RF<br>
+		Space Efficiency: ${round(spaceEfficiency * 100, 2)}%
 		<h2>Materials</h2>
-		Casings: ${numCasings}<br>
-		Fuel cells: ${stats.cellcount[1]}<br>
-		Moderators: ${stats.cellcount[17] + stats.cellcount[18]}<br>
-		Total coolers: ${sum(stats.cellcount.slice(2, 17))}<br>
-		Space Efficiency: ${spaceEfficiency}%
+		Casings: ${cellsCount[19]}<br>
+		Fuel cells: ${cellsCount[1]}<br>
+		Moderators: ${cellsCount[17] + cellsCount[18]}<br>
 		<h3>Coolers</h3>
-		${cellTypes.map((t, i) => [i, t] as const).filter(([i, t]) => t.type == "cooler" && stats.cellcount[i] > 0).map(([i, t]) =>
-			`${t.displayedName}: ${stats.cellcount[i]}<br>`
+		${cellTypes.map((t, i) => [i, t] as const).filter(([i, t]) => t.type == "cooler" && cellsCount[i] > 0).map(([i, t]) =>
+		`${t.displayedName}: ${cellsCount[i]}<br>`
 		).join("\n")}
+		Total coolers: ${sum(cellsCount.slice(2, 17))}<br>
 		`;
+
 	}
 
 }

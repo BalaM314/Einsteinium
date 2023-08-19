@@ -180,6 +180,11 @@ class Reactor {
 				//do nothing
 			} else if(e.buttons & 2 && !e.shiftKey){ //Right click
 				defaultReactor.edit([x, y, z], 0);
+			} else if(e.buttons & 4){
+				const id = defaultReactor.get([x, y, z]);
+				if(id != null){
+					selectCell.call(hotbarCells.at(id - 1)!);
+				}
 			} else {
 				defaultReactor.edit([x, y, z], getSelectedId());
 			}

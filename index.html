@@ -10,9 +10,10 @@
 	<script src="src/main.js" defer></script>
 	<script>
 		//Ponyfills
-		Array.prototype.at = function(i){
-			return this[i < 0 ? this.length + i : i];
-		}
+		if(Array.prototype.at === undefined)
+			Array.prototype.at = function(i){
+				return this[i < 0 ? this.length + i : i];
+			}
 
 		window.addEventListener("DOMContentLoaded", () => {
 			if(window.everythingIsFine !== true){

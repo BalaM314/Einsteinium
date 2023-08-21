@@ -299,16 +299,16 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
         }
     }
     updateCellsValidity() {
-        for (let y in this.contents) {
-            for (let x in this.contents[y]) {
-                for (let z in this.contents[y][x]) {
-                    const cellType = cellTypes[this.contents[y][x][z]];
-                    const pos = { x: parseInt(x), y: parseInt(y), z: parseInt(z) };
+        for (let y = 0; y < this.y; y++) {
+            for (let x = 0; x < this.x; x++) {
+                for (let z = 0; z < this.z; z++) {
+                    const pos = [x, y, z];
+                    const cellType = this.getData(pos);
                     if (cellType.type == "misc") {
-                        this.valids[pos.y][pos.x][pos.z] = true;
+                        this.valids[y][x][z] = true;
                     }
                     else {
-                        this.valids[pos.y][pos.x][pos.z] = this.checkValidation(cellType.valid, [pos.x, pos.y, pos.z]);
+                        this.valids[y][x][z] = this.checkValidation(cellType.valid, pos);
                     }
                 }
             }

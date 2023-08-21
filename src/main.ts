@@ -361,7 +361,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 			for(let x = 0; x < this.x; x ++){
 				for(let z = 0; z < this.z; z ++){
 					const pos:Pos = [x, y, z];
-					const cellType = this.getData(pos);
+					const cellType = this.getData(pos)!;
 					if(cellType.type == "misc"){
 						this.valids[y][x][z] = true;
 					} else {

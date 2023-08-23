@@ -189,7 +189,15 @@ class Reactor {
 			} else {
 				defaultReactor.edit([x, y, z], getSelectedId());
 			}
-			e.preventDefault();
+			//Calling any function on the event here does nothing to stop the menu from being fired
+		}
+		function cellContextMenued(this:HTMLDivElement, e:MouseEvent){
+			//no menu
+			if(e.buttons & 2 && e.shiftKey){
+				//unless shift right click
+			} else {
+				e.preventDefault();
+			}
 		}
 
 		for(let y = 0; y < this.y; y ++){
@@ -210,6 +218,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 				cell.classList.add("cell");
 				if(!this.cellValid(pos)) cell.classList.add("invalid");
 				cell.addEventListener("mousedown", cellClicked);
+				cell.addEventListener("contextmenu", cellContextMenued);
 				cell.style.setProperty("grid-row", (z + 1).toString());
 				cell.style.setProperty("grid-column", (x + 1).toString());
 				const type = this.getData(pos)!;

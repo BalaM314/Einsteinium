@@ -151,7 +151,13 @@ class Reactor {
             else {
                 defaultReactor.edit([x, y, z], getSelectedId());
             }
-            e.preventDefault();
+        }
+        function cellContextMenued(e) {
+            if (e.buttons & 2 && e.shiftKey) {
+            }
+            else {
+                e.preventDefault();
+            }
         }
         for (let y = 0; y < this.y; y++) {
             const layer = document.createElement("div");
@@ -173,6 +179,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
                     if (!this.cellValid(pos))
                         cell.classList.add("invalid");
                     cell.addEventListener("mousedown", cellClicked);
+                    cell.addEventListener("contextmenu", cellContextMenued);
                     cell.style.setProperty("grid-row", (z + 1).toString());
                     cell.style.setProperty("grid-column", (x + 1).toString());
                     const type = this.getData(pos);

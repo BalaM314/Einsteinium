@@ -177,7 +177,7 @@ class Reactor {
 			const y = +this.parentElement!.getAttribute("y")!;
 			const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
 			if(e.buttons & 2 && e.shiftKey){ //Shift right click
-				//do nothing
+				return;
 			} else if(e.buttons & 2 && !e.shiftKey){ //Right click
 				defaultReactor.edit([x, y, z], 0);
 			} else if(e.buttons & 4){
@@ -188,6 +188,7 @@ class Reactor {
 			} else {
 				defaultReactor.edit([x, y, z], getSelectedId());
 			}
+			e.preventDefault();
 		}
 
 		for(let y = 0; y < this.y; y ++){

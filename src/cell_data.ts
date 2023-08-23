@@ -17,7 +17,7 @@ interface PreprocessedMiscCellData {
 	type: "misc";
 }
 interface PreprocessedCoolerCellData {
-	coolAmount: number;
+	coolAmount: [passive:number, active:number];
 	type: "cooler";
 	valid: CellValidCheck;
 }
@@ -56,7 +56,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one fuel cell or active moderator.",
 		blockData: `Properties:{type:"water"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Water",
-		coolAmount: 60,
+		coolAmount: [60, 150],
 		valid(reactor, pos){
 			return reactor.getAdjacentFuelCells(pos) >= 1 || reactor.getAdjacentModerators(pos) >= 1;
 		},
@@ -66,7 +66,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one fuel cell.",
 		blockData: `Properties:{type:"redstone"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Redstone",
-		coolAmount: 90,
+		coolAmount: [90, 3200],
 		valid: {
 			1: 1
 		}
@@ -76,7 +76,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one active moderator.",
 		blockData: `Properties:{type:"redstone"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Quartz",
-		coolAmount: 90,
+		coolAmount: [90, 3000],
 		valid: {
 			moderator: 1
 		}
@@ -86,7 +86,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one redstone cooler and water cooler.",
 		blockData: `Properties:{type:"gold"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Gold",
-		coolAmount: 120,
+		coolAmount: [120, 4800],
 		valid: {
 			2: 1, 3: 1
 		}
@@ -96,7 +96,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least two active moderators.",
 		blockData: `Properties:{type:"glowstone"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Glowstone",
-		coolAmount: 130,
+		coolAmount: [130, 4000],
 		valid: {
 			moderator: 2
 		}
@@ -106,7 +106,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one fuel cell and casing.",
 		blockData: `Properties:{type:"lapis"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Lapis",
-		coolAmount: 120,
+		coolAmount: [120, 2800],
 		valid: {
 			1: 1,
 			casing: 1
@@ -117,7 +117,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one water cooler and quartz cooler",
 		blockData: `Properties:{type:"diamond"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Diamond",
-		coolAmount: 150,
+		coolAmount: [150, 7000],
 		valid: {
 			2: 1,
 			4: 1,
@@ -128,7 +128,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires exactly one redstone cooler and at least one reactor casing.",
 		blockData: `Properties:{type:"helium"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Helium",
-		coolAmount: 140,
+		coolAmount: [140, 6600],
 		valid: {
 			3: [1, 1],
 			casing: 1,
@@ -139,7 +139,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Must be placed in a corner.",
 		blockData: `Properties:{type:"enderium"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Enderium",
-		coolAmount: 120,
+		coolAmount: [120, 5400],
 		valid(reactor, [x, y, z]){
 			return (
 				(x == 0 || x == reactor.x - 1) &&
@@ -153,7 +153,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least two fuel cells.",
 		blockData: `Properties:{type:"cryotheum"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Cryotheum",
-		coolAmount: 160,
+		coolAmount: [160, 6400],
 		valid: {
 			1: 2,
 		}
@@ -163,7 +163,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one gold cooler.",
 		blockData: `Properties:{type:"iron"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Iron",
-		coolAmount: 80,
+		coolAmount: [80, 2400],
 		valid: {
 			5: 1,
 		}
@@ -173,7 +173,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one moderator and fuel cell.",
 		blockData: `Properties:{type:"emerald"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Emerald",
-		coolAmount: 160,
+		coolAmount: [160, 3600],
 		valid: {
 			moderator: 1,
 			1: 1,
@@ -184,7 +184,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one glowstone cooler.",
 		blockData: `Properties:{type:"copper"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Copper",
-		coolAmount: 80,
+		coolAmount: [80, 2600],
 		valid: {
 			6: 1,
 		}
@@ -194,7 +194,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires two lapis coolers on opposite sides.",
 		blockData: `Properties:{type:"tin"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Tin",
-		coolAmount: 120,
+		coolAmount: [120, 3000],
 		valid(reactor, [x, y, z]){
 			return (
 				reactor.get([y + 1, x, z]) == 7 && reactor.get([y - 1, x, z]) == 7 ||
@@ -208,7 +208,7 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 		description: "Requires at least one casing and moderator.",
 		blockData: `Properties:{type:"magnesium"},Name:"nuclearcraft:cooler"`,
 		ncrpName: "Magnesium",
-		coolAmount: 110,
+		coolAmount: [110, 3600],
 		valid: {
 			casing: 1,
 			moderator: 1,

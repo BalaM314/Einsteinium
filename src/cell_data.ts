@@ -162,8 +162,8 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => {
 		valid(reactor, [x, y, z]){
 			return (
 				(x == 0 || x == reactor.x - 1) &&
-				(y == 0 || x == reactor.y - 1) &&
-				(z == 0 || x == reactor.z - 1)
+				(y == 0 || y == reactor.y - 1) &&
+				(z == 0 || z == reactor.z - 1)
 			);
 		},
 	},{

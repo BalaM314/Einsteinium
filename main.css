@@ -155,7 +155,8 @@ html, body {
 	font-family: "Helvetica",sans-serif;
 	font-size: 20px;
 }
-#options-panel input {
+#options-panel input[type="number"],
+#options-panel input[type="file"] {
 	/* background-color: #68F;
 	border-color: #32B; */
 	background-color: #BCF;
@@ -164,6 +165,10 @@ html, body {
 	border-radius: 3px;
 	box-shadow: 3px 2px 2px gray;
 	width: 90%;
+}
+#options-panel input[type="checkbox"] {
+	transform: scale(2);
+	margin-left: 5%;
 }
 #options-panel button {
 	padding: 1%;

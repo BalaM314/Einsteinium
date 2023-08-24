@@ -18,7 +18,7 @@ const validationCode = "This is a string of text that only Einsteinium's data fi
 
 let baseHeat = 18;
 let basePower = 60;
-let fuelTime = 144000;
+let placingActiveCooler = false;
 
 /** Maps a key to the index of the hotbar element to click. */
 const keybindMapping:Record<string, number> = {
@@ -53,8 +53,10 @@ let settings = {
 	"moderatorExtraPower": 1,
 	"coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110],
 	"activeCoolers": [0, 0, 150, 3200, 3000, 4800, 4000, 2800, 7000, 6600, 5400, 6400, 2400, 3600, 2600, 3000, 3600],
+	"fuelTime": 144000,
+	"heatCapacityPerBlock": 25000,
+	"ticksPerSecond": 20,
 };
-let placingActiveCooler = false; //TODO gui element
 const consts = {
 	defaultName: "Unnamed Reactor"
 };
@@ -392,7 +394,6 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 	}:ReturnType<(typeof Reactor)["prototype"]["calculateStats"]>){
 
 		//TODO fix handling of heat settings
-		//TODO remove magic numbers
 		DOMnode.innerHTML = `\
 		<h1>Reactor Stats</h1>
 		<br>
@@ -400,13 +401,13 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		Total heat: ${round(totalHeat, 10)} HU/t<br>
 		Total cooling: ${round(totalCooling, 10)} HU/t<br>
 		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
-		${(netHeat > 0) ? `Meltdown time: ${Math.floor((25000*this.x*this.y*this.z)*0.05/netHeat)} s<br>` : ""}
+		${(netHeat > 0) ? `Meltdown time: ${round((settings.heatCapacityPerBlock * this.x * this.y * this.z) / netHeat / settings.ticksPerSecond, 1)} s<br>` : ""}
 		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
-		Efficiency: ${checkNaN(round(totalEnergyPerTick / (cellsCount[1] * basePower) * 100, 2), 100)}%<br>
+		Efficiency: ${percentage(checkNaN(totalEnergyPerTick / (cellsCount[1] * basePower), 1), 2)}<br>
 		Total Power: ${round(totalEnergyPerTick)} RF/t<br>
-		Fuel Pellet Duration: ${checkNaN(round(fuelTime/cellsCount[1] / 20, 1), 0, true)} s<br>
-		Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * fuelTime / cellsCount[1]), 0)} RF<br>
-		Space Efficiency: ${round(spaceEfficiency * 100, 2)}%
+		Fuel Pellet Duration: ${checkNaN(round(settings.fuelTime/cellsCount[1] / 20, 1), 0, true)} s<br>
+		Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1]), 0)} RF<br>
+		Space Efficiency: ${percentage(spaceEfficiency, 2)}
 		<h2>Materials</h2>
 		Casings: ${cellsCount[19]}<br>
 		Fuel cells: ${cellsCount[1]}<br>

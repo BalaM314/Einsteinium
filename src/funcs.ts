@@ -86,3 +86,7 @@ function round(amount:number, places = 0):number {
 	const tenEplaces = 10 ** places;
 	return Math.round(amount * tenEplaces) / tenEplaces;
 }
+/** Displays a number as a percentage. */
+function percentage(amount:number, places = 0):string {
+	return `${round(amount * 100, places)}%`;
+}

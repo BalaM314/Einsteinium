@@ -87,3 +87,6 @@ function round(amount, places = 0) {
     const tenEplaces = 10 ** places;
     return Math.round(amount * tenEplaces) / tenEplaces;
 }
+function percentage(amount, places = 0) {
+    return `${round(amount * 100, places)}%`;
+}

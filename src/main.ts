@@ -395,24 +395,24 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 
 		//TODO fix handling of heat settings
 		DOMnode.innerHTML = `\
-		<h1>Reactor Stats</h1>
+		<h1 style="color: #FF4; border-bottom: 1px dashed white;">Reactor Stats</h1>
 		<br>
 		<h2>Heat and Power</h2>
-		Total heat: ${round(totalHeat, 10)} HU/t<br>
-		Total cooling: ${round(totalCooling, 10)} HU/t<br>
+		<span style="color: #FAA">Total heat: ${round(totalHeat, 10)} HU/t</span><br>
+		<span style="color: #AAF">Total cooling: ${round(totalCooling, 10)} HU/t</span><br>
 		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
 		${(netHeat > 0) ? `Meltdown time: ${round((settings.heatCapacityPerBlock * this.x * this.y * this.z) / netHeat / settings.ticksPerSecond, 1)} s<br>` : ""}
 		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
-		Efficiency: ${percentage(checkNaN(totalEnergyPerTick / (cellsCount[1] * basePower), 1), 2)}<br>
-		Total Power: ${round(totalEnergyPerTick)} RF/t<br>
+		<span style="color: #AFA">Efficiency: ${percentage(checkNaN(totalEnergyPerTick / (cellsCount[1] * basePower), 1), 2)}</span><br>
+		<span style="color: #FF8">Total Power: ${round(totalEnergyPerTick)} RF/t</span><br>
 		Fuel Pellet Duration: ${checkNaN(round(settings.fuelTime/cellsCount[1] / 20, 1), 0, true)} s<br>
-		Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1]), 0)} RF<br>
+		<span style="color: #FF8">Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1]), 0)} RF</span><br>
 		Space Efficiency: ${percentage(spaceEfficiency, 2)}
 		<h2>Materials</h2>
 		Casings: ${cellsCount[19]}<br>
 		Fuel cells: ${cellsCount[1]}<br>
 		Moderators: ${cellsCount[17] + cellsCount[18]}<br>
-		<h3>Coolers</h3>
+		<h3 style="color: #BBF">Coolers</h3>
 		${cellTypes.map((t, i) => [i, t] as const).filter(([i, t]) => t.type == "cooler" && cellsCount[i] > 0).map(([i, t]) =>
 		`${t.displayedName}: ${cellsCount[i]}<br>`
 		).join("\n")}

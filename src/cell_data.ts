@@ -216,9 +216,9 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => {
 		coolAmount: [120, 3000],
 		valid(reactor, [x, y, z]){
 			return (
-				reactor.get([y + 1, x, z]) == 7 && reactor.get([y - 1, x, z]) == 7 ||
-				reactor.get([y, x + 1, z]) == 7 && reactor.get([y, x - 1, z]) == 7 ||
-				reactor.get([y, x, z + 1]) == 7 && reactor.get([y, x, z - 1]) == 7
+				(reactor.get([x + 1, y, z]) == 7 && reactor.get([x - 1, y, z]) == 7) ||
+				(reactor.get([x, y + 1, z]) == 7 && reactor.get([x, y - 1, z]) == 7) ||
+				(reactor.get([x, y, z + 1]) == 7 && reactor.get([x, y, z - 1]) == 7)
 			);
 		}
 	},{

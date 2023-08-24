@@ -12,7 +12,7 @@ let hotbarCells:HTMLDivElement[] = [];
 
 
 
-const VERSION = "2.0.0";
+const VERSION = "2.1.0";
 /** do not modify */
 const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
 

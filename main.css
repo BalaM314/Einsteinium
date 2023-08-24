@@ -66,6 +66,14 @@ html, body {
 	background-size: cover;
 	background-color: #FFF;
 }
+#reactor-layers .cell.active-cooler::after {
+	content: "";
+	background-image: url("assets/active-overlay.png");
+	width: 100%;
+	height: 100%;
+	display: block;
+	background-size: cover;
+}
 #reactor-layers .cell:hover {
 	filter: brightness(0.9);
 }

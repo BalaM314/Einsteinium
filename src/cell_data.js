@@ -1,11 +1,28 @@
 "use strict";
-const cellTypes = ((d) => d.map((t, i) => ({
-    ...t,
-    id: i,
-    imagePath: `assets/${i}.png`,
-    placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
-    tooltipText: `${t.displayedName}\n${t.description}`
-})))([
+const removeActiveBitmask = ~32;
+const activeCoolerBlockData = `Name:"nuclearcraft:active_cooler"`;
+const cellTypes = ((d) => {
+    d.forEach((t, i) => {
+        if (t.type == "cooler") {
+            d[i + 32] = {
+                ...t,
+                coolAmount: [t.coolAmount[1], t.coolAmount[1]],
+                displayedName: `Active ${t.displayedName}`,
+                ncrpName: `Active ${t.ncrpName}`,
+                blockData: activeCoolerBlockData,
+            };
+        }
+    });
+    return d.map((t, i) => ({
+        ...t,
+        coolAmount: "coolAmount" in t ? t.coolAmount[0] : undefined,
+        id: i,
+        imagePath: `assets/${i & removeActiveBitmask}.png`,
+        placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
+        tooltipText: `${t.displayedName}\n${t.description}`,
+        activeCooler: t.type == "cooler" ? t.coolAmount[0] == t.coolAmount[1] : undefined
+    }));
+})([
     {
         displayedName: "Air",
         type: "misc",
@@ -201,5 +218,7 @@ const cellTypes = ((d) => d.map((t, i) => ({
         blockData: `Properties:{type:"casing"},Name:"nuclearcraft:fission_block"`,
     }
 ]);
-const ncrpMappings = Object.fromEntries(cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined));
+const ncrpMappings = Object.fromEntries([
+    ...cellTypes.map((t, i) => [t.ncrpName, i]).filter((x) => x[0] != undefined)
+]);
 const moderatorIds = cellTypes.map((t, i) => [t, i]).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);

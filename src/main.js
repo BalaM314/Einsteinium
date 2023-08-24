@@ -43,8 +43,9 @@ let settings = {
     "moderatorExtraHeat": 2,
     "moderatorExtraPower": 1,
     "coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110],
-    "activeCoolers": [150, 3200, 3000, 4800, 4000, 2800, 7000, 6600, 5400, 6400, 2400, 3600, 2600, 3000, 3600],
+    "activeCoolers": [0, 0, 150, 3200, 3000, 4800, 4000, 2800, 7000, 6600, 5400, 6400, 2400, 3600, 2600, 3000, 3600],
 };
+let placingActiveCooler = false;
 const consts = {
     defaultName: "Unnamed Reactor"
 };
@@ -94,7 +95,6 @@ class Reactor {
             return false;
         }
         this.contents[y][x][z] = id;
-        this.valids[y][x][z] = (cellTypes[id].type == "misc");
         this.update();
         return true;
     }
@@ -136,20 +136,21 @@ class Reactor {
         function cellClicked(e) {
             const y = +this.parentElement.getAttribute("y");
             const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
+            const pos = [x, y, z];
             if (e.buttons & 2 && e.shiftKey) {
                 return;
             }
             else if (e.buttons & 2 && !e.shiftKey) {
-                defaultReactor.edit([x, y, z], 0);
+                defaultReactor.edit(pos, 0);
             }
             else if (e.buttons & 4) {
-                const id = defaultReactor.get([x, y, z]);
+                const id = defaultReactor.get(pos);
                 if (id != null) {
                     selectCell.call(hotbarCells.at(id - 1));
                 }
             }
             else {
-                defaultReactor.edit([x, y, z], getSelectedId());
+                defaultReactor.edit(pos, getSelectedId(e.shiftKey));
             }
         }
         function cellContextMenued(e) {
@@ -168,6 +169,7 @@ class Reactor {
                     const pos = [x, y, z];
                     const cell = document.createElement("div");
                     const stat = cellInfo[y][x][z];
+                    const type = this.getData(pos);
                     const extraTooltip = ("adjacentCells" in stat) ?
                         `\nAdjacent Cells: ${stat.adjacentCells}
 ${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
@@ -175,15 +177,17 @@ Adjacent Moderators: ${stat.adjacentModerators}
 Heat Multiplier: ${stat.heatMultiplier * 100}%
 Energy Multiplier: ${stat.energyMultiplier * 100}%`
                         : "";
+                    const activeTooltip = type.activeCooler ? `` : "";
                     cell.classList.add("cell");
                     if (!this.cellValid(pos))
                         cell.classList.add("invalid");
+                    if (type.activeCooler)
+                        cell.classList.add("active-cooler");
                     cell.addEventListener("mousedown", cellClicked);
                     cell.addEventListener("contextmenu", cellContextMenued);
                     cell.style.setProperty("grid-row", (z + 1).toString());
                     cell.style.setProperty("grid-column", (x + 1).toString());
-                    const type = this.getData(pos);
-                    cell.title = type.tooltipText + extraTooltip;
+                    cell.title = type.tooltipText + extraTooltip + activeTooltip;
                     cell.style.backgroundImage = `url(${type.imagePath})`;
                     layer.appendChild(cell);
                 }
@@ -273,7 +277,8 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
                     }
                     else if (type.type == "cooler") {
                         if (this.cellValid(pos)) {
-                            totalCooling -= settings.coolers[id];
+                            totalCooling -=
+                                id & 32 ? settings.activeCoolers[id & removeActiveBitmask] : settings.coolers[id];
                         }
                     }
                 }
@@ -373,10 +378,15 @@ function selectCell() {
     }
     this.classList.add("hotbarcellselected");
 }
-function getSelectedId() {
+function getSelectedId(shift = false) {
     let calcedId = +(hotbarCells.find(c => c.classList.contains("hotbarcellselected"))?.getAttribute("block-id") ?? 0);
-    if (calcedId in cellTypes)
-        return calcedId;
+    if (calcedId in cellTypes) {
+        const type = cellTypes[calcedId];
+        if (type.type == "cooler" && (placingActiveCooler != shift))
+            return calcedId + 32;
+        else
+            return calcedId;
+    }
     else
         return 0;
 }
@@ -447,7 +457,7 @@ function getHotbarCell(image, tooltip, id) {
 }
 hotbar.append(...hotbarCells = [
     ...cellTypes
-        .filter(cellType => cellType.placeable)
+        .filter(cellType => cellType.placeable && !cellType.activeCooler)
         .map(cellType => getHotbarCell(cellType.imagePath, cellType.tooltipText, cellType.id)),
     getHotbarCell("assets/00.png", "Remove", 0)
 ]);

@@ -25,20 +25,39 @@ interface PreprocessedModeratorCellData {
 	type: "moderator";
 	valid: CellValidCheck;
 }
-type CellData = PreprocessedCellData & {
+type CellData = PreprocessedBasicCellData & (PreprocessedMiscCellData | (Omit<PreprocessedCoolerCellData, "coolAmount"> & {
+	coolAmount: number;
+}) | PreprocessedModeratorCellData) & {
 	imagePath: string;
 	id: BlockID;
 	placeable: boolean;
 	tooltipText: string;
+	activeCooler?: boolean;
 };
-
-const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
-	...t,
-	id: i as BlockID,
-	imagePath: `assets/${i}.png`,
-	placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
-	tooltipText: `${t.displayedName}\n${t.description}`
-})))([
+const removeActiveBitmask = ~ 32;
+const activeCoolerBlockData = `Name:"nuclearcraft:active_cooler"`;
+const cellTypes = ((d:PreprocessedCellData[]):CellData[] => {
+	d.forEach((t, i) => {
+		if(t.type == "cooler"){
+			d[i + 32] = {
+				...t,
+				coolAmount: [t.coolAmount[1], t.coolAmount[1]], //bit of a hack...,
+				displayedName: `Active ${t.displayedName}`,
+				ncrpName: `Active ${t.ncrpName}`,
+				blockData: activeCoolerBlockData,
+			};
+		}
+	});
+	return d.map((t, i) => ({
+		...t,
+		coolAmount: "coolAmount" in t ? t.coolAmount[0] : undefined!, //yet another hack, but I claim to know better than typecript here: if ! "coolAmount" in t then t is not a cooler, so coolAmount should be undefined
+		id: i as BlockID,
+		imagePath: `assets/${i & removeActiveBitmask}.png`,
+		placeable: t.placeable ?? (t.type == "cooler" || t.type == "moderator"),
+		tooltipText: `${t.displayedName}\n${t.description}`,
+		activeCooler: t.type == "cooler" ? t.coolAmount[0] == t.coolAmount[1] : undefined //also a hack
+	}))
+})([
 	{
 		displayedName: "Air",
 		type: "misc",
@@ -239,7 +258,8 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => d.map((t, i) => ({
 	}
 ]);
 
-const ncrpMappings = Object.fromEntries(
-	cellTypes.map((t, i) => [t.ncrpName, i as BlockID] as const).filter((x):x is [string, BlockID] => x[0] != undefined)
-) satisfies Record<string, BlockID>;
+const ncrpMappings = Object.fromEntries([
+	...cellTypes.map((t, i) => [t.ncrpName, i as BlockID] as const).filter((x):x is [string, BlockID] => x[0] != undefined)
+]) satisfies Record<string, BlockID>;
 const moderatorIds = cellTypes.map((t, i) => [t, i] as const).filter(([t, i]) => t.type == "moderator").map(([t, i]) => i);
+

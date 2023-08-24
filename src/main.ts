@@ -52,9 +52,9 @@ let settings = {
 	"moderatorExtraHeat": 2,
 	"moderatorExtraPower": 1,
 	"coolers": [0, 0, 60, 90, 90, 120, 130, 120, 150, 140, 120, 160, 80, 160, 80, 120, 110],
-	"activeCoolers": [150, 3200, 3000, 4800, 4000, 2800, 7000, 6600, 5400, 6400, 2400, 3600, 2600, 3000, 3600],
+	"activeCoolers": [0, 0, 150, 3200, 3000, 4800, 4000, 2800, 7000, 6600, 5400, 6400, 2400, 3600, 2600, 3000, 3600],
 };
-
+let placingActiveCooler = false; //TODO gui element
 const consts = {
 	defaultName: "Unnamed Reactor"
 };
@@ -128,7 +128,6 @@ class Reactor {
 			return false;
 		}
 		this.contents[y][x][z] = id;
-		this.valids[y][x][z] = (cellTypes[id].type == "misc");
 		this.update();
 		return true;
 	}
@@ -176,18 +175,20 @@ class Reactor {
 		function cellClicked(this:HTMLDivElement, e:MouseEvent){
 			//this is pretty cursed but it works
 			const y = +this.parentElement!.getAttribute("y")!;
-			const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1);
+			const [z, x] = this.style.gridArea.split(" / ").map(a => +a - 1); //TODO b o d g e
+			const pos:Pos = [x, y, z];
 			if(e.buttons & 2 && e.shiftKey){ //Shift right click
 				return;
 			} else if(e.buttons & 2 && !e.shiftKey){ //Right click
-				defaultReactor.edit([x, y, z], 0);
-			} else if(e.buttons & 4){
-				const id = defaultReactor.get([x, y, z]);
+				defaultReactor.edit(pos, 0);
+			} else if(e.buttons & 4){ //Middle click
+				const id = defaultReactor.get(pos);
 				if(id != null){
 					selectCell.call(hotbarCells.at(id - 1)!);
+					//Nice trick: if id is zero, it will use the last icon, which is the "X" icon
 				}
-			} else {
-				defaultReactor.edit([x, y, z], getSelectedId());
+			} else { //Left click
+				defaultReactor.edit(pos, getSelectedId(e.shiftKey));
 			}
 			//Calling any function on the event here does nothing to stop the menu from being fired
 		}
@@ -208,6 +209,7 @@ class Reactor {
 				const pos:Pos = [x, y, z];
 				const cell = document.createElement("div");
 				const stat = cellInfo[y][x][z];
+				const type = this.getData(pos)!;
 				const extraTooltip = ("adjacentCells" in stat) ?
 `\nAdjacent Cells: ${stat.adjacentCells}
 ${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
@@ -215,14 +217,15 @@ Adjacent Moderators: ${stat.adjacentModerators}
 Heat Multiplier: ${stat.heatMultiplier * 100}%
 Energy Multiplier: ${stat.energyMultiplier * 100}%`
 				: ""
+				const activeTooltip = type.activeCooler ? `` : "";//TODO moar tooltips
 				cell.classList.add("cell");
 				if(!this.cellValid(pos)) cell.classList.add("invalid");
+				if(type.activeCooler) cell.classList.add("active-cooler");
 				cell.addEventListener("mousedown", cellClicked);
 				cell.addEventListener("contextmenu", cellContextMenued);
 				cell.style.setProperty("grid-row", (z + 1).toString());
 				cell.style.setProperty("grid-column", (x + 1).toString());
-				const type = this.getData(pos)!;
-				cell.title = type.tooltipText + extraTooltip;
+				cell.title = type.tooltipText + extraTooltip + activeTooltip;
 				cell.style.backgroundImage = `url(${type.imagePath})`;
 				layer.appendChild(cell);
 			}}
@@ -328,8 +331,9 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 						};
 					} else if(type.type == "cooler"){
 						if(this.cellValid(pos)){
-							totalCooling -= settings.coolers[id];
-							//TODO configurable coolant amount
+							totalCooling -=
+								id & 32 ? settings.activeCoolers[id & removeActiveBitmask] : settings.coolers[id];
+							//TODO fix configurable coolant amount, also this is kinda jank
 						}
 					}
 				}
@@ -445,11 +449,14 @@ function selectCell(this:HTMLDivElement){
 	this.classList.add("hotbarcellselected");
 }
 
-function getSelectedId():BlockID {
+function getSelectedId(shift = false):BlockID {
 	let calcedId = +(hotbarCells.find(c => c.classList.contains("hotbarcellselected"))?.getAttribute("block-id") ?? 0);
-	if(calcedId in cellTypes)
-		return calcedId as BlockID;
-	else return 0;
+	if(calcedId in cellTypes){
+		const type = cellTypes[calcedId];
+		if(type.type == "cooler" && (placingActiveCooler != shift)) //active cooler mode XOR shift
+			return calcedId + 32 as BlockID; //Place active cooler
+		else return calcedId as BlockID;
+	} else return 0;
 }
 
 function loadReactor(data:string){
@@ -530,7 +537,7 @@ function getHotbarCell(image:string, tooltip:string, id:BlockID){
 //Make the hotbar
 hotbar.append(...hotbarCells = [
 	...cellTypes
-		.filter(cellType => cellType.placeable)
+		.filter(cellType => cellType.placeable && !cellType.activeCooler) //Don't add a new image for each active cooler
 		.map(cellType =>
 			getHotbarCell(cellType.imagePath, cellType.tooltipText, cellType.id)
 		),

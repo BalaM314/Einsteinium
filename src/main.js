@@ -219,7 +219,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
         }
         const stateIntArray = this.contents.map(l => l.map(r => r.filter(c => cellTypes[c].blockData))).flat(2);
         const posIntArray = this.contents.map((l, y) => l.map((r, x) => r.map((c, z) => [c, z]).filter(([c]) => cellTypes[c].blockData).map(([, z]) => 65536 * x + 256 * y + z))).flat(2);
-        const mapIntState = this.contents.map(l => l.map(r => r.map(c => cellTypes[c].blockData).filter((c) => c != undefined))).flat(2);
+        const mapIntState = cellTypes.map((t, i) => [t, i]).filter(([t]) => t.blockData != undefined).map(([t, i]) => `{mapSlot:${t.id}s,mapState:{${t.blockData}}}`);
         return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
     }
     getAdjacentFuelCells(pos) {

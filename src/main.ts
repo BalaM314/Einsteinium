@@ -47,6 +47,8 @@ const keybindMapping:Record<string, number> = {
 
 let settings = {
 	"heatMult": 1.0,
+	"powerMult": 1.0,
+	"burnRateMult": 1.0,
 	"neutronRadiationReach": 4,
 	"maxReactorSize": 10,
 	"moderatorExtraHeat": 2,
@@ -255,7 +257,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 	}
 
 	exportToBG(includeCasings:boolean){
-		//TODO feedback
+		//TODO feedback, possibly alert()?
 		//Dire, what have you done?! BG strings are a **mess**.
 		if(includeCasings){
 			console.warn("includeCasings is not yet implemented.");//TODO
@@ -405,9 +407,9 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		${(netHeat > 0) ? `Meltdown time: ${round((settings.heatCapacityPerBlock * this.x * this.y * this.z) / netHeat / settings.ticksPerSecond, 1)} s<br>` : ""}
 		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
 		<span style="color: #AFA">Efficiency: ${percentage(checkNaN(totalEnergyPerTick / (cellsCount[1] * basePower), 1), 2)}</span><br>
-		<span style="color: #FF8">Total Power: ${round(totalEnergyPerTick)} RF/t</span><br>
-		Fuel Pellet Duration: ${checkNaN(round(settings.fuelTime/cellsCount[1] / 20, 1), 0, true)} s<br>
-		<span style="color: #FF8">Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1]), 0)} RF</span><br>
+		<span style="color: #FF8">Total Power: ${round(totalEnergyPerTick * settings.powerMult)} RF/t</span><br>
+		Fuel Pellet Duration: ${checkNaN(round(settings.fuelTime/cellsCount[1] / 20 / settings.burnRateMult, 1), 0, true)} s<br>
+		<span style="color: #FF8">Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1] * settings.powerMult / settings.burnRateMult), 0)} RF</span><br>
 		Space Efficiency: ${percentage(spaceEfficiency, 2)}
 		<h2>Materials</h2>
 		Casings: ${cellsCount[19]}<br>

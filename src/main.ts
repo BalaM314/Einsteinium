@@ -255,6 +255,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 	}
 
 	exportToBG(includeCasings:boolean){
+		//TODO feedback
 		//Dire, what have you done?! BG strings are a **mess**.
 		if(includeCasings){
 			console.warn("includeCasings is not yet implemented.");//TODO

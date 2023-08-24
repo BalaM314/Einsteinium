@@ -466,7 +466,7 @@ function loadReactor(data:string){
 		
 		const parsed = JSON.parse(data);
 		//Make sure the data is valid
-		assert(parsed.metadata.version.match(/[1-9].[0.9].[0-9]/gi), "Invalid version");
+		assert(parsed.metadata.version.match(/[1-9].[0-9].[0-9]/gi), "Invalid version");
 		assert(parsed.metadata.validationCode == validationCode, "Incorrect validation code");
 		if(parsed.metadata.version != VERSION){
 			console.warn("Loading JSON file with a different data version.");

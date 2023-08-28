@@ -218,8 +218,8 @@ ${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdja
 Adjacent Moderators: ${stat.adjacentModerators}
 Heat Multiplier: ${stat.heatMultiplier * 100}%
 Energy Multiplier: ${stat.energyMultiplier * 100}%`
-				: ""
-				const activeTooltip = type.activeCooler ? `` : "";//TODO moar tooltips
+				: "";
+				const activeTooltip = type.activeCooler ? `\nFuel consumption: ${"🤷‍♀️"} mb/t (${"🤷‍♂️"} items/hour)` : "";//TODO get the data from JEI
 				cell.classList.add("cell");
 				if(!this.cellValid(pos)) cell.classList.add("invalid");
 				if(type.activeCooler) cell.classList.add("active-cooler");

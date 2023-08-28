@@ -441,13 +441,19 @@ uploadButton.onchange = function(e:Event){
 }
 
 window.addEventListener("keydown", e => {
-	if(e.key in hotbarKeybindMapping){
+	if(e.ctrlKey && e.key == "o"){
+		e.preventDefault();
+		uploadButton.click();
+	} else if(e.ctrlKey && e.key == "s"){
+		e.preventDefault();
+		defaultReactor.export();
+	} else if(e.ctrlKey && e.key == "e"){
+		e.preventDefault();
+		copyToClipboard(defaultReactor.exportToBG(false)).then(() => alert('Copied to clipboard. Click the Paste button in the Template Manager in-game.'));
+	} else if(e.key in hotbarKeybindMapping){
 		const cell = hotbarCells[hotbarKeybindMapping[e.key]];
 		if(!cell) throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${hotbarKeybindMapping[e.key]}`);
 		cell.click();
-	} else if(e.ctrlKey && e.key == "o"){
-		e.preventDefault();
-		uploadButton.click();
 	}
 });
 

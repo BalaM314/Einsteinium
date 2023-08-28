@@ -21,7 +21,7 @@ let basePower = 60;
 let placingActiveCooler = false;
 
 /** Maps a key to the index of the hotbar element to click. */
-const keybindMapping:Record<string, number> = {
+const hotbarKeybindMapping:Record<string, number> = {
 	"0": 18,
 	"1": 0,
 	"2": 1,
@@ -440,13 +440,16 @@ uploadButton.onchange = function(e:Event){
 	 }
 }
 
-document.body.onkeydown = e => {
-	if(e.key in keybindMapping){
-		const cell = hotbarCells[keybindMapping[e.key]];
-		if(!cell) throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${keybindMapping[e.key]}`);
+window.addEventListener("keydown", e => {
+	if(e.key in hotbarKeybindMapping){
+		const cell = hotbarCells[hotbarKeybindMapping[e.key]];
+		if(!cell) throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${hotbarKeybindMapping[e.key]}`);
 		cell.click();
+	} else if(e.ctrlKey && e.key == "o"){
+		e.preventDefault();
+		uploadButton.click();
 	}
-}
+});
 
 function selectCell(this:HTMLDivElement){
 	for(const cell of hotbarCells){

@@ -14,7 +14,7 @@ const validationCode = "This is a string of text that only Einsteinium's data fi
 let baseHeat = 18;
 let basePower = 60;
 let placingActiveCooler = false;
-const keybindMapping = {
+const hotbarKeybindMapping = {
     "0": 18,
     "1": 0,
     "2": 1,
@@ -368,14 +368,18 @@ uploadButton.onchange = function (e) {
         loadReactor(content);
     };
 };
-document.body.onkeydown = e => {
-    if (e.key in keybindMapping) {
-        const cell = hotbarCells[keybindMapping[e.key]];
+window.addEventListener("keydown", e => {
+    if (e.key in hotbarKeybindMapping) {
+        const cell = hotbarCells[hotbarKeybindMapping[e.key]];
         if (!cell)
-            throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${keybindMapping[e.key]}`);
+            throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${hotbarKeybindMapping[e.key]}`);
         cell.click();
     }
-};
+    else if (e.ctrlKey && e.key == "o") {
+        e.preventDefault();
+        uploadButton.click();
+    }
+});
 function selectCell() {
     for (const cell of hotbarCells) {
         cell.classList.remove("hotbarcellselected");

@@ -181,7 +181,7 @@ Adjacent Moderators: ${stat.adjacentModerators}
 Heat Multiplier: ${stat.heatMultiplier * 100}%
 Energy Multiplier: ${stat.energyMultiplier * 100}%`
                         : "";
-                    const activeTooltip = type.activeCooler ? `` : "";
+                    const activeTooltip = type.activeCooler ? `\nFuel consumption: ${"🤷‍♀️"} mb/t (${"🤷‍♂️"} items/hour)` : "";
                     cell.classList.add("cell");
                     if (!this.cellValid(pos))
                         cell.classList.add("invalid");

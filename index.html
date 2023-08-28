@@ -39,7 +39,7 @@
 		</div>
 		<div id="options-panel">
 			<div class="flex"><button>Do stuff!</button></div>
-			<div class="flex"><button onclick="copyToClipboard(defaultReactor.exportToBG());">Export to BG string</button></div>
+			<div class="flex"><button onclick="copyToClipboard(defaultReactor.exportToBG()); alert('Copied to clipboard. Click the Paste button in the Template Manager in-game.')">Export to BG string</button></div>
 			<div class="flex"><input type="number" id="x-input" value="5">x<input type="number" id="y-input" value="5">x<input type="number" id="z-input" value="5"></div>
 			<div class="flex"><button onclick="regenReactor()">Regenerate reactor with above values</button></div>
 			<div class="flex"><button onclick="defaultReactor.export()">Download reactor as JSON</button></div>

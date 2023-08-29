@@ -113,6 +113,14 @@ class Reactor {
 		) return this.valids[y][x][z];
 		else return true;
 	}
+	isIDAndValid([x, y, z]:Pos, id:BlockID):boolean {
+		if(
+			(x >= 0 && x < this.x) &&
+			(y >= 0 && y < this.y) &&
+			(z >= 0 && z < this.z)
+		) return this.contents[y][x][z] == id && this.valids[y][x][z];
+		else return false;
+	}
 	getData([x, y, z]:Pos):CellData | null {
 		const xInRange = x >= 0 && x < this.x;
 		const yInRange = y >= 0 && y < this.y;

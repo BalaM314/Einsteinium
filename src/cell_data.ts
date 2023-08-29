@@ -215,11 +215,17 @@ const cellTypes = ((d:PreprocessedCellData[]):CellData[] => {
 		ncrpName: "Tin",
 		coolAmount: [120, 3000],
 		valid(reactor, [x, y, z]){
-			return (
-				(reactor.get([x + 1, y, z]) == 7 && reactor.get([x - 1, y, z]) == 7) ||
-				(reactor.get([x, y + 1, z]) == 7 && reactor.get([x, y - 1, z]) == 7) ||
-				(reactor.get([x, y, z + 1]) == 7 && reactor.get([x, y, z - 1]) == 7)
-			);
+			const pairs:[Pos, Pos][] = [
+				[[x + 1, y, z], [x - 1, y, z]],
+				[[x, y + 1, z], [x, y - 1, z]],
+				[[x, y, z + 1], [x, y, z - 1]],
+			];
+			for(const [a, b] of pairs){
+				if(reactor.isIDAndValid(a, 7) && reactor.isIDAndValid(b, 7)){
+					return true;
+				}
+			}
+			return false;
 		}
 	},{
 		displayedName: "Magnesium Cooler",

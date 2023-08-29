@@ -10,7 +10,7 @@ const titleText = getElement("title", HTMLSpanElement);
 const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells:HTMLDivElement[] = [];
 
-
+//TODO "are you sure you want to leave this page?"
 
 const VERSION = "2.1.0";
 /** do not modify */

@@ -39,14 +39,14 @@
 		</div>
 		<div id="options-panel">
 			<div class="flex"><button id="do-stuff">Do stuff!</button></div>
-			<div class="flex"><button id="bg-export" onclick="copyToClipboard(defaultReactor.exportToBG()); alert('Copied to clipboard. Click the Paste button in the Template Manager in-game.')">Export to BG string</button></div>
+			<div class="flex"><button id="bg-export">Export to BG string</button></div>
 			<div class="flex"><input type="number" id="x-input" value="5">x<input type="number" id="y-input" value="5">x<input type="number" id="z-input" value="5"></div>
-			<div class="flex"><button id="regen-reactor" onclick="regenReactor()">Regenerate reactor with above values</button></div>
-			<div class="flex"><button id="export-reactor" onclick="defaultReactor.export()">Download reactor as JSON</button></div>
+			<div class="flex"><button id="regen-reactor">Regenerate reactor with above values</button></div>
+			<div class="flex"><button id="download-reactor">Download reactor as JSON</button></div>
 			<div class="noflex"><br><label for="upload-button" style="font-size: 17px;">Upload reactor from file</label><br><input id="upload-button" name="upload-button" type="file" accept="application/json"></input></div>
-			<div class="noflex"><label for="heat-input">Fuel base heat:</label><input type="number" id="heat-input" onchange="baseHeat = this.value;" value="18"></div>
-			<div class="noflex"><label for="power-input">Fuel base power:</label><input type="number" id="power-input" onchange="basePower = this.value;" value="60"></div>
-			<div class="flex"><label for="active-input" title="You can also hold shift to place active coolers. Shift+placing while this checkbox is ticked will place regular coolers.">Place active </label><input type="checkbox" id="active-input" onchange="placingActiveCooler = this.checked;"></div>
+			<div class="noflex"><label for="heat-input">Fuel base heat:</label><input type="number" id="heat-input" value="18"></div>
+			<div class="noflex"><label for="power-input">Fuel base power:</label><input type="number" id="power-input" value="60"></div>
+			<div class="flex"><label for="active-input" title="You can also hold shift to place active coolers. Shift+placing while this checkbox is ticked will place regular coolers.">Place active </label><input type="checkbox" id="active-input"></div>
 		</div>
 		<div id="hotbar">
 			<!-- Generated -->

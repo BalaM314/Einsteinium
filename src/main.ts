@@ -4,6 +4,8 @@ const bgExportButton = getElement("bg-export", HTMLButtonElement);
 const x_input = getElement("x-input", HTMLInputElement);
 const y_input = getElement("y-input", HTMLInputElement);
 const z_input = getElement("z-input", HTMLInputElement);
+const regenerateButton = getElement("regen-reactor", HTMLButtonElement);
+const downloadButton = getElement("download-reactor", HTMLButtonElement);
 const uploadButton = getElement("upload-button", HTMLInputElement);
 const heatInput = getElement("heat-input", HTMLInputElement);
 const powerInput = getElement("power-input", HTMLInputElement);
@@ -19,10 +21,6 @@ let hotbarCells:HTMLDivElement[] = [];
 const VERSION = "2.1.0";
 /** do not modify */
 const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
-
-let baseHeat = 18;
-let basePower = 60;
-let placingActiveCooler = false;
 
 /** Maps a key to the index of the hotbar element to click. */
 const hotbarKeybindMapping:Record<string, number> = {
@@ -77,6 +75,11 @@ interface FuelCellStats extends BasicCellStats {
 	adjacentModerators: number;
 	heatMultiplier: number;
 	energyMultiplier: number;
+}
+
+interface FuelInfo {
+	heat: number;
+	power: number;
 }
 
 class Reactor {
@@ -149,12 +152,15 @@ class Reactor {
 	}
 
 	update(){
+		const fuel = {
+			heat: getHeat(), power: getPower()
+		}
 		//necessary because: on first update moderators will become valid, then on the next update redstone coolers, then on the next update gold coolers, then on the fourth update tin coolers
 		this.updateCellsValidity();
 		this.updateCellsValidity();
 		this.updateCellsValidity();
 		this.updateCellsValidity();
-		const stats = this.calculateStats();
+		const stats = this.calculateStats(fuel);
 		this.updateStats(statsPanel, stats);
 		this.updateDOM(reactorLayers, stats);
 	}
@@ -317,7 +323,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == id && this.cellValid(pos)), 0);
 	}
 
-	calculateStats(){
+	calculateStats(fuel:FuelInfo){
 		let totalHeat = 0;
 		let totalCooling = 0;
 		let totalEnergyPerTick = 0;
@@ -341,8 +347,8 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 						let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
 						energyMultiplier += adjacentModerators * (settings.moderatorExtraPower/6) * (adjacentCells + distantAdjacentCells + 1);
 						heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);
-						totalHeat += baseHeat * heatMultiplier;
-						totalEnergyPerTick += basePower * energyMultiplier;
+						totalHeat += fuel.heat * heatMultiplier;
+						totalEnergyPerTick += fuel.power * energyMultiplier;
 						cellInfo[y][x][z] = {
 							...cellInfo[y][x][z]!,
 							adjacentCells, adjacentModerators, distantAdjacentCells,
@@ -372,6 +378,10 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 			cellsCount,
 			spaceEfficiency,
 			cellInfo,
+			maxBaseHeat: checkNaN(Math.floor(-totalCooling / (totalHeat / fuel.heat)), 0),
+			powerEfficiency: checkNaN(totalEnergyPerTick / (cellsCount[1] * fuel.power), 1),
+			//TODO clean up code pattern
+			//TODO clean up multiplication and division of totalHeat / fuel.heat
 		};
 	}
 
@@ -407,7 +417,7 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 	}
 
 	updateStats(DOMnode:HTMLDivElement, {
-		cellInfo, cellsCount, totalCooling, totalEnergyPerTick, totalHeat, netHeat, spaceEfficiency
+		cellInfo, cellsCount, totalCooling, totalEnergyPerTick, totalHeat, netHeat, spaceEfficiency, maxBaseHeat, powerEfficiency
 	}:ReturnType<(typeof Reactor)["prototype"]["calculateStats"]>){
 
 		//TODO fix handling of heat settings
@@ -419,8 +429,8 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		<span style="color: #AAF">Total cooling: ${round(totalCooling, 10)} HU/t</span><br>
 		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
 		${(netHeat > 0) ? `Meltdown time: ${round((settings.heatCapacityPerBlock * this.x * this.y * this.z) / netHeat / settings.ticksPerSecond, 1)} s<br>` : ""}
-		Max base heat: ${checkNaN(Math.floor(-totalCooling / (totalHeat / baseHeat)), 0)}<br>
-		<span style="color: #AFA">Efficiency: ${percentage(checkNaN(totalEnergyPerTick / (cellsCount[1] * basePower), 1), 2)}</span><br>
+		Max base heat: ${maxBaseHeat}<br>
+		<span style="color: #AFA">Efficiency: ${percentage(powerEfficiency, 2)}</span><br>
 		<span style="color: #FF8">Total Power: ${round(totalEnergyPerTick * settings.powerMult)} RF/t</span><br>
 		Fuel Pellet Duration: ${checkNaN(round(settings.fuelTime/cellsCount[1] / 20 / settings.burnRateMult, 1), 0, true)} s<br>
 		<span style="color: #FF8">Energy Per Pellet: ${checkNaN(round(totalEnergyPerTick * settings.fuelTime / cellsCount[1] * settings.powerMult / settings.burnRateMult), 0)} RF</span><br>
@@ -441,27 +451,49 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 }
 
 
+/**
+ * UI
+ */
+
 uploadButton.onchange = function(e:Event){
-	 let file = (e.target as HTMLInputElement).files![0];
-	 let reader = new FileReader();
-	 reader.readAsText(file);
-	 reader.onload = function(readerEvent){
-			let content = readerEvent.target!.result;
-			console.log(content);
-			loadReactor(content as string);
-	 }
+	let file = (e.target as HTMLInputElement).files![0];
+	let reader = new FileReader();
+	reader.readAsText(file);
+	reader.onload = function(readerEvent){
+		let content = readerEvent.target!.result;
+		console.log(content);
+		loadReactor(content as string);
+	}
 }
+
+bgExportButton.addEventListener("click", () => {
+	copyToClipboard(defaultReactor.exportToBG(false))
+		.then(() => alert('Copied to clipboard. Click the Paste button in the Template Manager in-game.'));
+});
+regenerateButton.addEventListener("click", () => {
+	if(confirm("Are you sure you want to clear the reactor? This will remove all placed blocks!"))
+		regenReactor();
+});
+downloadButton.addEventListener("click", () => {
+	defaultReactor.export();
+});
+heatInput.addEventListener("change", () => {
+	defaultReactor.update();
+});
+powerInput.addEventListener("change", () => {
+	defaultReactor.update();
+});
 
 window.addEventListener("keydown", e => {
 	if(e.ctrlKey && e.key == "o"){
 		e.preventDefault();
 		uploadButton.click();
+	} else if((e.ctrlKey && e.shiftKey && e.key == "s") || e.ctrlKey && e.key == "e"){
+		e.preventDefault();
+		bgExportButton.click();
 	} else if(e.ctrlKey && e.key == "s"){
 		e.preventDefault();
-		defaultReactor.export();
-	} else if(e.ctrlKey && e.key == "e"){
-		e.preventDefault();
-		copyToClipboard(defaultReactor.exportToBG(false)).then(() => alert('Copied to clipboard. Click the Paste button in the Template Manager in-game.'));
+		downloadButton.click();
 	} else if(e.key in hotbarKeybindMapping){
 		const cell = hotbarCells[hotbarKeybindMapping[e.key]];
 		if(!cell) throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${hotbarKeybindMapping[e.key]}`);
@@ -476,14 +508,24 @@ function selectCell(this:HTMLDivElement){
 	this.classList.add("hotbarcellselected");
 }
 
-function getSelectedId(shift = false):BlockID {
+function getSelectedId(shift:boolean):BlockID {
 	let calcedId = +(hotbarCells.find(c => c.classList.contains("hotbarcellselected"))?.getAttribute("block-id") ?? 0);
 	if(calcedId in cellTypes){
 		const type = cellTypes[calcedId];
-		if(type.type == "cooler" && (placingActiveCooler != shift)) //active cooler mode XOR shift
+		if(type.type == "cooler" && (getPlacingActive() != shift)) //active cooler mode XOR shift
 			return calcedId + 32 as BlockID; //Place active cooler
 		else return calcedId as BlockID;
 	} else return 0;
+}
+
+function getHeat(){
+	return +heatInput.value;
+}
+function getPower(){
+	return +powerInput.value;
+}
+function getPlacingActive(){
+	return activeInput.checked;
 }
 
 function loadReactor(data:string){

@@ -425,9 +425,9 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		<h1 style="color: #FF4; border-bottom: 1px dashed white;">Reactor Stats</h1>
 		<br>
 		<h2>Heat and Power</h2>
-		<span style="color: #FAA">Total heat: ${round(totalHeat, 10)} HU/t</span><br>
-		<span style="color: #AAF">Total cooling: ${round(totalCooling, 10)} HU/t</span><br>
-		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 10)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
+		<span style="color: #FAA">Total heat: ${round(totalHeat, 2)} HU/t</span><br>
+		<span style="color: #AAF">Total cooling: ${round(totalCooling, 2)} HU/t</span><br>
+		Net heat gen: <${(netHeat <= 0) ? "span" : "strong"} style="color: ${(netHeat <= 0) ? "#00FF00" : "#FF0000"}">${round(netHeat, 2)} HU/t</${(netHeat <= 0) ? "span" : "strong"}><br>
 		${(netHeat > 0) ? `Meltdown time: ${round((settings.heatCapacityPerBlock * this.x * this.y * this.z) / netHeat / settings.ticksPerSecond, 1)} s<br>` : ""}
 		Max base heat: ${maxBaseHeat}<br>
 		<span style="color: #AFA">Efficiency: ${percentage(powerEfficiency, 2)}</span><br>

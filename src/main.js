@@ -1,9 +1,13 @@
 "use strict";
 const reactorName = getElement("reactor-name", HTMLInputElement);
-const uploadButton = getElement("upload-button", HTMLInputElement);
+const bgExportButton = getElement("bg-export", HTMLButtonElement);
 const x_input = getElement("x-input", HTMLInputElement);
 const y_input = getElement("y-input", HTMLInputElement);
 const z_input = getElement("z-input", HTMLInputElement);
+const uploadButton = getElement("upload-button", HTMLInputElement);
+const heatInput = getElement("heat-input", HTMLInputElement);
+const powerInput = getElement("power-input", HTMLInputElement);
+const activeInput = getElement("active-input", HTMLInputElement);
 const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);

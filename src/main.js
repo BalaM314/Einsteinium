@@ -17,7 +17,20 @@ const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells = [];
 const VERSION = "2.1.0";
 const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
-const hotbarKeybindMapping = {
+const _keybindMapping = () => ({
+    "Ctrl+s": downloadButton,
+    "Ctrl+Shift+s": bgExportButton,
+    "Ctrl+o": uploadButton,
+    "Ctrl+e": bgExportButton,
+    "Ctrl+r": () => {
+        if (localStorage.getItem("einsteinium-regenerateButton-info-shown")) {
+            regenerateButton.click();
+        }
+        else {
+            alert(`Einsteinium uses the keybind Ctrl+R to regenerate (clear) the reactor. To reload the page, you can use Ctrl+Shift+R or F5.`);
+            localStorage.setItem("einsteinium-regenerateButton-info-shown", "true");
+        }
+    },
     "0": hotbarCells[18],
     "1": hotbarCells[0],
     "2": hotbarCells[1],
@@ -38,7 +51,7 @@ const hotbarKeybindMapping = {
     "i": hotbarCells[16],
     "o": hotbarCells[17],
     "p": hotbarCells[18],
-};
+});
 let settings = {
     "heatMult": 1.0,
     "powerMult": 1.0,
@@ -190,10 +203,10 @@ class Reactor {
                     const type = this.getData(pos);
                     const extraTooltip = ("adjacentCells" in stat) ?
                         `\nAdjacent Cells: ${stat.adjacentCells}
-${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
+${stat.distantAdjacentCells ? `Distant "adjacent" cells: ${stat.distantAdjacentCells}\n` : ""}\
 Adjacent Moderators: ${stat.adjacentModerators}
-Heat Multiplier: ${stat.heatMultiplier * 100}%
-Energy Multiplier: ${stat.energyMultiplier * 100}%`
+Heat Multiplier: ${percentage(stat.heatMultiplier)}
+Energy Multiplier: ${percentage(stat.energyMultiplier)}`
                         : "";
                     const activeTooltip = type.activeCooler ? `\nFuel consumption: ${"🤷‍♀️"} mb/t (${"🤷‍♂️"} items/hour)` : "";
                     cell.classList.add("cell");
@@ -216,16 +229,16 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
     }
     export() {
         download(this.name.replace(/[./\\;"?]/, "_") + ".json", `{
-				"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
-				"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
-				"content": ` + JSON.stringify(this.contents) + `,
-				"metadata":{
-					"version":"${VERSION}",
-					"dimensions":[${this.x},${this.y},${this.z}],
-					"name": "${this.name}",
-					"validationCode": "${validationCode}"
-				}
-			}`);
+	"readme": "Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's compressed JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
+	"READMEALSO": "This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
+	"metadata": {
+		"version": "${VERSION}",
+		"dimensions": [${this.x},${this.y},${this.z}],
+		"name": "${this.name}",
+		"validationCode": "${validationCode}"
+	},
+	"content": ${JSON.stringify(this.contents)}
+}`);
     }
     exportToBG(includeCasings) {
         if (includeCasings) {
@@ -262,9 +275,9 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
         return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == id && this.cellValid(pos)), 0);
     }
     calculateStats(fuel) {
-        let totalHeat = 0;
+        let totalHeatMultiplier = 0;
         let totalCooling = 0;
-        let totalEnergyPerTick = 0;
+        let totalEnergyMultiplier = 0;
         let cellsCount = Array(cellTypes.length).fill(0);
         let cellInfo = array3D(this.y, this.x, this.z, null);
         for (let y = 0; y < this.y; y++) {
@@ -281,12 +294,14 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
                         let adjacentCells = this.getAdjacentFuelCells(pos);
                         let distantAdjacentCells = this.getDistantAdjacentCells(pos);
                         let adjacentModerators = this.getAdjacentModerators(pos);
-                        let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
-                        let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
-                        energyMultiplier += adjacentModerators * (settings.moderatorExtraPower / 6) * (adjacentCells + distantAdjacentCells + 1);
-                        heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat / 6) * (adjacentCells + distantAdjacentCells + 1);
-                        totalHeat += fuel.heat * heatMultiplier;
-                        totalEnergyPerTick += fuel.power * energyMultiplier;
+                        let heatMultiplier = ((adjacentCells + distantAdjacentCells + 1) *
+                            (adjacentCells + distantAdjacentCells + 2) / 2) + (adjacentModerators * (settings.moderatorExtraHeat / 6) *
+                            (adjacentCells + distantAdjacentCells + 1));
+                        let energyMultiplier = (adjacentCells + distantAdjacentCells + 1 +
+                            adjacentModerators * (settings.moderatorExtraPower / 6) *
+                                (adjacentCells + distantAdjacentCells + 1));
+                        totalHeatMultiplier += heatMultiplier;
+                        totalEnergyMultiplier += energyMultiplier;
                         cellInfo[y][x][z] = {
                             ...cellInfo[y][x][z],
                             adjacentCells, adjacentModerators, distantAdjacentCells,
@@ -304,18 +319,17 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
         }
         assertType(cellInfo);
         cellsCount[19] = 2 * (this.x * this.y + this.x * this.z + this.y * this.z);
-        const netHeat = totalHeat + totalCooling;
-        const spaceEfficiency = 1 - cellsCount[0] / (this.x * this.y * this.z);
+        const totalHeat = totalHeatMultiplier * fuel.heat;
         return {
             totalHeat,
             totalCooling,
-            netHeat,
-            totalEnergyPerTick,
+            netHeat: totalHeat + totalCooling,
+            totalEnergyPerTick: totalEnergyMultiplier * fuel.power,
             cellsCount,
-            spaceEfficiency,
+            spaceEfficiency: 1 - cellsCount[0] / (this.x * this.y * this.z),
             cellInfo,
-            maxBaseHeat: checkNaN(Math.floor(-totalCooling / (totalHeat / fuel.heat)), 0),
-            powerEfficiency: checkNaN(totalEnergyPerTick / (cellsCount[1] * fuel.power), 1),
+            maxBaseHeat: checkNaN(Math.floor(-totalCooling / totalHeatMultiplier), 0),
+            powerEfficiency: checkNaN(totalEnergyMultiplier / cellsCount[1], 1),
         };
     }
     checkValidation(check, pos) {
@@ -402,20 +416,23 @@ powerInput.addEventListener("change", () => {
     defaultReactor.update();
 });
 window.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.key == "o") {
+    if (e.target instanceof HTMLInputElement)
+        return;
+    let key = e.key.toLowerCase();
+    if (e.altKey)
+        key = "Alt+" + key;
+    if (e.shiftKey)
+        key = "Shift+" + key;
+    if (e.ctrlKey)
+        key = "Ctrl+" + key;
+    if (key in keybindMapping) {
         e.preventDefault();
-        uploadButton.click();
-    }
-    else if ((e.ctrlKey && e.shiftKey && e.key == "s") || e.ctrlKey && e.key == "e") {
-        e.preventDefault();
-        bgExportButton.click();
-    }
-    else if (e.ctrlKey && e.key == "s") {
-        e.preventDefault();
-        downloadButton.click();
-    }
-    else if (e.key in hotbarKeybindMapping) {
-        hotbarKeybindMapping[e.key].click();
+        ((key) => {
+            if (typeof key == "function")
+                key();
+            else
+                key.click();
+        })(keybindMapping[key]);
     }
 });
 function selectCell() {
@@ -521,6 +538,7 @@ document.querySelector("#options-panel>.flex button")?.addEventListener("click",
     open(atob("aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1kUXc0dzlXZ1hjUQ=="));
     this.innerText = "what did you think would happen";
 });
+const keybindMapping = _keybindMapping();
 let defaultReactor;
 function regenReactor() {
     defaultReactor = new Reactor(+x_input.value, +y_input.value, +z_input.value);

@@ -23,7 +23,20 @@ const VERSION = "2.1.0";
 const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
 
 /** Maps a key to the element to click. */
-const hotbarKeybindMapping:Record<string, HTMLElement> = {
+const _keybindMapping:() => Record<string, HTMLElement | (() => unknown)> = () => ({
+	//Not-immediately invoked function expression used because the hotbar is only initialized later in the code.
+	"Ctrl+s": downloadButton,
+	"Ctrl+Shift+s": bgExportButton,
+	"Ctrl+o": uploadButton,
+	"Ctrl+e": bgExportButton,
+	"Ctrl+r": () => {
+		if(localStorage.getItem("einsteinium-regenerateButton-info-shown")){
+			regenerateButton.click();
+		} else {
+			alert(`Einsteinium uses the keybind Ctrl+R to regenerate (clear) the reactor. To reload the page, you can use Ctrl+Shift+R or F5.`);
+			localStorage.setItem("einsteinium-regenerateButton-info-shown", "true");
+		}
+	},
 	"0": hotbarCells[18],
 	"1": hotbarCells[0],
 	"2": hotbarCells[1],
@@ -44,7 +57,7 @@ const hotbarKeybindMapping:Record<string, HTMLElement> = {
 	"i": hotbarCells[16],
 	"o": hotbarCells[17],
 	"p": hotbarCells[18],
-};
+});
 
 
 let settings = {
@@ -492,17 +505,17 @@ powerInput.addEventListener("change", () => {
 });
 
 window.addEventListener("keydown", e => {
-	if(e.ctrlKey && e.key == "o"){
+	if(e.target instanceof HTMLInputElement) return;
+	let key = e.key.toLowerCase();
+	if(e.altKey) key = "Alt+" + key;
+	if(e.shiftKey) key = "Shift+" + key;
+	if(e.ctrlKey) key = "Ctrl+" + key;
+	if(key in keybindMapping){
 		e.preventDefault();
-		uploadButton.click();
-	} else if((e.ctrlKey && e.shiftKey && e.key == "s") || e.ctrlKey && e.key == "e"){
-		e.preventDefault();
-		bgExportButton.click();
-	} else if(e.ctrlKey && e.key == "s"){
-		e.preventDefault();
-		downloadButton.click();
-	} else if(e.key in hotbarKeybindMapping){
-		hotbarKeybindMapping[e.key].click();
+		((key) => {
+			if(typeof key == "function") key();
+			else key.click();
+		})(keybindMapping[key])
 	}
 });
 
@@ -621,6 +634,9 @@ selectCell.call(hotbarCells[0]);
 document.querySelector("#options-panel>.flex button")?.addEventListener("click", function(this:HTMLElement){
 	open(atob("aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1kUXc0dzlXZ1hjUQ==")); this.innerText = "what did you think would happen";
 });
+
+//Initialize keybind mappings
+const keybindMapping = _keybindMapping();
 
 let defaultReactor:Reactor;
 function regenReactor(){

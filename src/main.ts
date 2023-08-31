@@ -324,9 +324,9 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 
 	calculateStats(fuel:FuelInfo){
 		//prepare variables that will be calculated during the loop
-		let totalHeat = 0;
+		let totalHeatMultiplier = 0;
 		let totalCooling = 0;
-		let totalEnergyPerTick = 0;
+		let totalEnergyMultiplier = 0;
 		let cellsCount = Array<number>(cellTypes.length).fill(0);
 		let cellInfo:(CellStats | null)[][][] = array3D(this.y, this.x, this.z, null);
 		for(let y = 0; y < this.y; y ++){
@@ -343,12 +343,20 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 						let adjacentCells = this.getAdjacentFuelCells(pos);
 						let distantAdjacentCells = this.getDistantAdjacentCells(pos);
 						let adjacentModerators = this.getAdjacentModerators(pos);
-						let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
-						let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
-						energyMultiplier += adjacentModerators * (settings.moderatorExtraPower/6) * (adjacentCells + distantAdjacentCells + 1);
-						heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);
-						totalHeat += fuel.heat * heatMultiplier;
-						totalEnergyPerTick += fuel.power * energyMultiplier;
+						let heatMultiplier = (
+							(adjacentCells + distantAdjacentCells + 1) *
+							(adjacentCells + distantAdjacentCells + 2) / 2
+						) + ( 
+							adjacentModerators * (settings.moderatorExtraHeat/6) *
+							(adjacentCells + distantAdjacentCells + 1)
+						);
+						let energyMultiplier = (
+							adjacentCells + distantAdjacentCells + 1 +
+							adjacentModerators * (settings.moderatorExtraPower/6) *
+							(adjacentCells + distantAdjacentCells + 1)
+						);
+						totalHeatMultiplier += heatMultiplier;
+						totalEnergyMultiplier += energyMultiplier;
 						cellInfo[y][x][z] = {
 							...cellInfo[y][x][z]!,
 							adjacentCells, adjacentModerators, distantAdjacentCells,
@@ -369,18 +377,18 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 
 		//Set number of casings
 		cellsCount[19] = 2 * (this.x*this.y + this.x*this.z + this.y*this.z);
+		const totalHeat = totalHeatMultiplier * fuel.heat;
 
 		return {
 			totalHeat,
 			totalCooling,
 			netHeat: totalHeat + totalCooling,
-			totalEnergyPerTick,
+			totalEnergyPerTick: totalEnergyMultiplier * fuel.power,
 			cellsCount,
 			spaceEfficiency: 1 - cellsCount[0] / (this.x * this.y * this.z),
 			cellInfo,
-			maxBaseHeat: checkNaN(Math.floor(-totalCooling / (totalHeat / fuel.heat)), 0),
-			powerEfficiency: checkNaN(totalEnergyPerTick / (cellsCount[1] * fuel.power), 1),
-			//TODO clean up multiplication and division of totalHeat / fuel.heat
+			maxBaseHeat: checkNaN(Math.floor(-totalCooling / totalHeatMultiplier), 0),
+			powerEfficiency: checkNaN(totalEnergyMultiplier / cellsCount[1], 1),
 		};
 	}
 

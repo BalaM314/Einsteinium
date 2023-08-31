@@ -63,6 +63,7 @@ const consts = {
 };
 class Reactor {
     constructor(x, y, z) {
+        this.modified = false;
         this.contents = [];
         this.valids = [];
         this.y = constrain(y, 1, settings.maxReactorSize);
@@ -115,6 +116,7 @@ class Reactor {
             return false;
         }
         this.contents[y][x][z] = id;
+        this.modified = true;
         this.update();
         return true;
     }
@@ -231,6 +233,7 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 	},
 	"content": ${JSON.stringify(this.contents)}
 }`);
+        this.modified = false;
     }
     exportToBG(includeCasings) {
         if (includeCasings) {
@@ -425,6 +428,13 @@ window.addEventListener("keydown", e => {
             else
                 key.click();
         })(keybindMapping[key]);
+    }
+});
+window.addEventListener("beforeunload", e => {
+    if (defaultReactor.modified) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes! To save, download the reactor or press Ctrl+S.";
+        return "You have unsaved changes! To save, download the reactor or press Ctrl+S.";
     }
 });
 function selectCell() {

@@ -16,7 +16,7 @@ const titleText = getElement("title", HTMLSpanElement);
 const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells:HTMLDivElement[] = [];
 
-//TODO "are you sure you want to leave this page?"
+//TODO save to localstorage option
 
 const VERSION = "2.1.0";
 /** do not modify */
@@ -101,6 +101,7 @@ class Reactor {
 	valids: boolean[][][];
 	x:number; y:number; z:number;
 	name:string;
+	modified = false;
 	constructor(x:number, y:number, z:number){
 		this.contents = [];
 		this.valids = [];
@@ -157,6 +158,7 @@ class Reactor {
 			return false;
 		}
 		this.contents[y][x][z] = id;
+		this.modified = true;
 		this.update();
 		return true;
 	}
@@ -164,7 +166,7 @@ class Reactor {
 	update(){
 		const fuel = {
 			heat: getHeat(), power: getPower()
-		}
+		};
 		//necessary because: on first update moderators will become valid, then on the next update redstone coolers, then on the next update gold coolers, then on the fourth update tin coolers
 		this.updateCellsValidity();
 		this.updateCellsValidity();
@@ -281,6 +283,7 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 	"content": ${JSON.stringify(this.contents)}
 }`
 		);
+		this.modified = false;
 	}
 
 	exportToBG(includeCasings:boolean){
@@ -515,6 +518,14 @@ window.addEventListener("keydown", e => {
 		})(keybindMapping[key])
 	}
 });
+window.addEventListener("beforeunload", e => {
+	if(defaultReactor.modified){
+		e.preventDefault();
+		//chrome sucks
+		e.returnValue = "You have unsaved changes! To save, download the reactor or press Ctrl+S.";
+		return "You have unsaved changes! To save, download the reactor or press Ctrl+S.";
+	}
+});
 
 function selectCell(this:HTMLDivElement){
 	for(const cell of hotbarCells){
@@ -646,7 +657,7 @@ function regenReactor(){
 }
 regenReactor();
 
-
+//TODO clean this up
 titleText.innerHTML = `<strong>Einsteinium</strong> beta v${VERSION}: editing `;
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);

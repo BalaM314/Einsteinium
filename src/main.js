@@ -237,21 +237,38 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
         this.modified = false;
     }
     exportToBG(includeCasings) {
-        if (includeCasings) {
-            console.warn("includeCasings is not yet implemented.");
-        }
         const ACTIVE_COOLER = 32;
+        let xOffset = includeCasings ? 1 : 0;
+        let yOffset = includeCasings ? 1 : 0;
+        let zOffset = includeCasings ? 1 : 0;
+        let endX = includeCasings ? this.x + 1 : this.x - 1;
+        let endY = includeCasings ? this.y + 1 : this.y - 1;
+        let endZ = includeCasings ? this.z + 1 : this.z - 1;
         const stateIntArray = this.contents.map(l => l.map(r => r.filter(c => cellTypes[c].blockData)
             .map(c => cellTypes[c].activeCooler ? ACTIVE_COOLER : c))).flat(2);
         const posIntArray = this.contents.map((l, y) => l.map((r, x) => r.map((c, z) => [c, z])
             .filter(([c]) => cellTypes[c].blockData)
-            .map(([, z]) => 65536 * x + 256 * y + z))).flat(2);
+            .map(([, z]) => 65536 * (x + xOffset) + 256 * (y + yOffset) + (z + zOffset)))).flat(2);
         const mapIntState = cellTypes
             .map((t, i) => [t, i])
             .filter(([t]) => t.blockData != undefined && !t.activeCooler)
             .map(([t, i]) => `{mapSlot:${t.id}s,mapState:{${t.blockData}}}`)
             .concat(`{mapSlot:${ACTIVE_COOLER}s,mapState:{${activeCoolerBlockData}}}`);
-        return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
+        if (includeCasings) {
+            const numCasings = 2 * (this.x * this.y + this.y * this.z + this.x * this.z);
+            stateIntArray.push(...Array(numCasings).fill(19));
+            posIntArray.push(...Array.from({ length: this.x }, (_, x) => Array.from({ length: this.y }, (_, y) => ([
+                65536 * (x + xOffset) + 256 * (y + yOffset) + (0),
+                65536 * (x + xOffset) + 256 * (y + yOffset) + (endZ)
+            ]))).flat(2), ...Array.from({ length: this.x }, (_, x) => Array.from({ length: this.z }, (_, z) => ([
+                65536 * (x + xOffset) + 256 * (0) + (z + zOffset),
+                65536 * (x + xOffset) + 256 * (endY) + (z + zOffset)
+            ]))).flat(2), ...Array.from({ length: this.y }, (_, y) => Array.from({ length: this.z }, (_, z) => ([
+                65536 * (0) + 256 * (y + yOffset) + (z + zOffset),
+                65536 * (endX) + 256 * (y + yOffset) + (z + zOffset)
+            ]))).flat(2));
+        }
+        return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${endX},Y:${endY},Z:${endZ}}}`;
     }
     getAdjacentFuelCells(pos) {
         return adjacentPositions(pos).reduce((acc, pos) => acc + +(this.get(pos) == 1), 0);

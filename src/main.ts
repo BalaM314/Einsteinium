@@ -192,7 +192,6 @@ class Reactor {
 		reactorLayers.innerHTML = "";
 		reactorLayers.style.setProperty("--cells-z", this.z.toString());
 		reactorLayers.style.setProperty("--cells-x", this.x.toString());
-		//So glad this worked ^^
 
 		function cellClicked(this:HTMLDivElement, e:MouseEvent){
 			//this is pretty cursed but it works
@@ -234,10 +233,10 @@ class Reactor {
 				const type = this.getData(pos)!;
 				const extraTooltip = ("adjacentCells" in stat) ?
 `\nAdjacent Cells: ${stat.adjacentCells}
-${stat.distantAdjacentCells ? ("Distant \"adjacent\" cells: " + stat.distantAdjacentCells + "\n") : ""}\
+${stat.distantAdjacentCells ? `Distant "adjacent" cells: ${stat.distantAdjacentCells}\n` : ""}\
 Adjacent Moderators: ${stat.adjacentModerators}
-Heat Multiplier: ${stat.heatMultiplier * 100}%
-Energy Multiplier: ${stat.energyMultiplier * 100}%`
+Heat Multiplier: ${percentage(stat.heatMultiplier)}
+Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 				: "";
 				const activeTooltip = type.activeCooler ? `\nFuel consumption: ${"🤷‍♀️"} mb/t (${"🤷‍♂️"} items/hour)` : "";//TODO get the data from JEI
 				cell.classList.add("cell");
@@ -260,17 +259,17 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 		//Generates and then saves the JSON for the reactor. Format can just be read off the code.
 		download(
 			this.name.replace(/[./\\;"?]/, "_") + ".json",
-			`{
-				"readme":"Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's raw JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
-				"READMEALSO":"This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
-				"content": ` + JSON.stringify(this.contents) + `,
-				"metadata":{
-					"version":"${VERSION}",
-					"dimensions":[${this.x},${this.y},${this.z}],
-					"name": "${this.name}",
-					"validationCode": "${validationCode}"
-				}
-			}`
+`{
+	"readme": "Hello! You appear to have tried to open this JSON file with a text editor. You shouldn't be doing that as it's compressed JSON which makes no sense. Please open this using the website at https://balam314.github.io/Einsteinium/index.html",
+	"READMEALSO": "This is the data storage file for a NuclearCraft fission reactor generated with Einsteinium.",
+	"metadata": {
+		"version": "${VERSION}",
+		"dimensions": [${this.x},${this.y},${this.z}],
+		"name": "${this.name}",
+		"validationCode": "${validationCode}"
+	},
+	"content": ${JSON.stringify(this.contents)}
+}`
 		);
 	}
 
@@ -324,9 +323,10 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 	}
 
 	calculateStats(fuel:FuelInfo){
-		let totalHeat = 0;
+		//prepare variables that will be calculated during the loop
+		let totalHeatMultiplier = 0;
 		let totalCooling = 0;
-		let totalEnergyPerTick = 0;
+		let totalEnergyMultiplier = 0;
 		let cellsCount = Array<number>(cellTypes.length).fill(0);
 		let cellInfo:(CellStats | null)[][][] = array3D(this.y, this.x, this.z, null);
 		for(let y = 0; y < this.y; y ++){
@@ -343,12 +343,20 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 						let adjacentCells = this.getAdjacentFuelCells(pos);
 						let distantAdjacentCells = this.getDistantAdjacentCells(pos);
 						let adjacentModerators = this.getAdjacentModerators(pos);
-						let heatMultiplier = (adjacentCells + distantAdjacentCells + 1) * (adjacentCells + distantAdjacentCells + 2) / 2;
-						let energyMultiplier = adjacentCells + distantAdjacentCells + 1;
-						energyMultiplier += adjacentModerators * (settings.moderatorExtraPower/6) * (adjacentCells + distantAdjacentCells + 1);
-						heatMultiplier += adjacentModerators * (settings.moderatorExtraHeat/6) * (adjacentCells + distantAdjacentCells + 1);
-						totalHeat += fuel.heat * heatMultiplier;
-						totalEnergyPerTick += fuel.power * energyMultiplier;
+						let heatMultiplier = (
+							(adjacentCells + distantAdjacentCells + 1) *
+							(adjacentCells + distantAdjacentCells + 2) / 2
+						) + ( 
+							adjacentModerators * (settings.moderatorExtraHeat/6) *
+							(adjacentCells + distantAdjacentCells + 1)
+						);
+						let energyMultiplier = (
+							adjacentCells + distantAdjacentCells + 1 +
+							adjacentModerators * (settings.moderatorExtraPower/6) *
+							(adjacentCells + distantAdjacentCells + 1)
+						);
+						totalHeatMultiplier += heatMultiplier;
+						totalEnergyMultiplier += energyMultiplier;
 						cellInfo[y][x][z] = {
 							...cellInfo[y][x][z]!,
 							adjacentCells, adjacentModerators, distantAdjacentCells,
@@ -364,24 +372,23 @@ Energy Multiplier: ${stat.energyMultiplier * 100}%`
 				}
 			}
 		}
+		//The array is full now
 		assertType<CellStats[][][]>(cellInfo);
 
+		//Set number of casings
 		cellsCount[19] = 2 * (this.x*this.y + this.x*this.z + this.y*this.z);
-		const netHeat = totalHeat + totalCooling;
-		const spaceEfficiency = 1 - cellsCount[0] / (this.x * this.y * this.z);
+		const totalHeat = totalHeatMultiplier * fuel.heat;
 
 		return {
 			totalHeat,
 			totalCooling,
-			netHeat,
-			totalEnergyPerTick,
+			netHeat: totalHeat + totalCooling,
+			totalEnergyPerTick: totalEnergyMultiplier * fuel.power,
 			cellsCount,
-			spaceEfficiency,
+			spaceEfficiency: 1 - cellsCount[0] / (this.x * this.y * this.z),
 			cellInfo,
-			maxBaseHeat: checkNaN(Math.floor(-totalCooling / (totalHeat / fuel.heat)), 0),
-			powerEfficiency: checkNaN(totalEnergyPerTick / (cellsCount[1] * fuel.power), 1),
-			//TODO clean up code pattern
-			//TODO clean up multiplication and division of totalHeat / fuel.heat
+			maxBaseHeat: checkNaN(Math.floor(-totalCooling / totalHeatMultiplier), 0),
+			powerEfficiency: checkNaN(totalEnergyMultiplier / cellsCount[1], 1),
 		};
 	}
 

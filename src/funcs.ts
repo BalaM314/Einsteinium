@@ -90,3 +90,20 @@ function round(amount:number, places = 0):number {
 function percentage(amount:number, places = 0):string {
 	return `${round(amount * 100, places)}%`;
 }
+
+/**
+ * Helper function to display a popup on first use of a feature. Do not overuse as getting spammed with alert() is annoying.
+ * @param key Gets "einsteinium-" prepended to it.
+ * @param message Message displayed in the alert box.
+ * @param callback Called if it is not the first use.
+ */
+function firstUsePopup(key:string, message:string, callback:() => unknown, runCallbackAfterMessage = false){
+	const lsKey = `einsteinium-${key}`;
+	if(localStorage.getItem(lsKey) != null){
+		callback();
+	} else {
+		alert(message);
+		localStorage.setItem(lsKey, "true");
+		if(runCallbackAfterMessage) callback();
+	}
+}

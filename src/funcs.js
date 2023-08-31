@@ -90,3 +90,15 @@ function round(amount, places = 0) {
 function percentage(amount, places = 0) {
     return `${round(amount * 100, places)}%`;
 }
+function firstUsePopup(key, message, callback, runCallbackAfterMessage = false) {
+    const lsKey = `einsteinium-${key}`;
+    if (localStorage.getItem(lsKey) != null) {
+        callback();
+    }
+    else {
+        alert(message);
+        localStorage.setItem(lsKey, "true");
+        if (runCallbackAfterMessage)
+            callback();
+    }
+}

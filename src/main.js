@@ -22,15 +22,7 @@ const _keybindMapping = () => ({
     "Ctrl+Shift+s": bgExportButton,
     "Ctrl+o": uploadButton,
     "Ctrl+e": bgExportButton,
-    "Ctrl+r": () => {
-        if (localStorage.getItem("einsteinium-regenerateButton-info-shown")) {
-            regenerateButton.click();
-        }
-        else {
-            alert(`Einsteinium uses the keybind Ctrl+R to regenerate (clear) the reactor. To reload the page, you can use Ctrl+Shift+R or F5.`);
-            localStorage.setItem("einsteinium-regenerateButton-info-shown", "true");
-        }
-    },
+    "Ctrl+r": () => firstUsePopup("regenerateButton-popup-shown", `Einsteinium uses the keybind Ctrl+R to regenerate (clear) the reactor. To reload the page, you can use Ctrl+Shift+R or F5.`, () => regenerateButton.click()),
     "0": hotbarCells[18],
     "1": hotbarCells[0],
     "2": hotbarCells[1],

@@ -13,6 +13,7 @@ const activeInput = getElement("active-input", HTMLInputElement);
 const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
+const versionText = getElement("version-text", HTMLSpanElement);
 const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells = [];
 const VERSION = "2.1.0";
@@ -239,9 +240,17 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
         if (includeCasings) {
             console.warn("includeCasings is not yet implemented.");
         }
-        const stateIntArray = this.contents.map(l => l.map(r => r.filter(c => cellTypes[c].blockData))).flat(2);
-        const posIntArray = this.contents.map((l, y) => l.map((r, x) => r.map((c, z) => [c, z]).filter(([c]) => cellTypes[c].blockData).map(([, z]) => 65536 * x + 256 * y + z))).flat(2);
-        const mapIntState = cellTypes.map((t, i) => [t, i]).filter(([t]) => t.blockData != undefined).map(([t, i]) => `{mapSlot:${t.id}s,mapState:{${t.blockData}}}`);
+        const ACTIVE_COOLER = 32;
+        const stateIntArray = this.contents.map(l => l.map(r => r.filter(c => cellTypes[c].blockData)
+            .map(c => cellTypes[c].activeCooler ? ACTIVE_COOLER : c))).flat(2);
+        const posIntArray = this.contents.map((l, y) => l.map((r, x) => r.map((c, z) => [c, z])
+            .filter(([c]) => cellTypes[c].blockData)
+            .map(([, z]) => 65536 * x + 256 * y + z))).flat(2);
+        const mapIntState = cellTypes
+            .map((t, i) => [t, i])
+            .filter(([t]) => t.blockData != undefined && !t.activeCooler)
+            .map(([t, i]) => `{mapSlot:${t.id}s,mapState:{${t.blockData}}}`)
+            .concat(`{mapSlot:${ACTIVE_COOLER}s,mapState:{${activeCoolerBlockData}}}`);
         return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
     }
     getAdjacentFuelCells(pos) {
@@ -547,7 +556,7 @@ function regenReactor() {
     defaultReactor.update();
 }
 regenReactor();
-titleText.innerHTML = `<strong>Einsteinium</strong> beta v${VERSION}: editing `;
+versionText.innerHTML = VERSION;
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");

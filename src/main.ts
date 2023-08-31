@@ -13,6 +13,7 @@ const activeInput = getElement("active-input", HTMLInputElement);
 const reactorLayers = getElement("reactor-layers", HTMLDivElement);
 const statsPanel = getElement("stats-panel", HTMLDivElement);
 const titleText = getElement("title", HTMLSpanElement);
+const versionText = getElement("version-text", HTMLSpanElement);
 const hotbar = getElement("hotbar", HTMLDivElement);
 let hotbarCells:HTMLDivElement[] = [];
 
@@ -287,22 +288,32 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 	}
 
 	exportToBG(includeCasings:boolean){
-		//Dire, what have you done?! BG strings are a **mess**.
 		if(includeCasings){
 			console.warn("includeCasings is not yet implemented.");//TODO
 		}
-		const stateIntArray = this.contents.map(l => l.map(
-			r => r.filter(c => cellTypes[c].blockData)
+		const ACTIVE_COOLER = 32;
+		/** Mapping of [array index] to state ID */
+		const stateIntArray = this.contents.map(l => l.map(r =>
+			r.filter(c => cellTypes[c].blockData)
+			//Use the block id as the state id, unless it's an active cooler, then use a constant
+			//This is done to avoid there being 15 state entries for "active cooler".
+			.map(c => cellTypes[c].activeCooler ? ACTIVE_COOLER : c)
 		)).flat(2);
-		const posIntArray = this.contents.map((l, y) => l.map(
-			(r, x) => r.map((c, z) => [c, z] as const).filter(([c]) => cellTypes[c].blockData).map(([, z]) => 65536 * x + 256 * y + z)
+		/** Mapping of [array index] to position (encoded as an integer) */
+		const posIntArray = this.contents.map((l, y) => l.map((r, x) =>
+			r.map((c, z) => [c, z] as const)
+			.filter(([c]) => cellTypes[c].blockData)
+			.map(([, z]) => 65536 * x + 256 * y + z)
 		)).flat(2);
-		const mapIntState = cellTypes.map((t, i) => [t, i] as const).filter(([t]) => t.blockData != undefined).map(([t, i]) =>
-			`{mapSlot:${t.id}s,mapState:{${t.blockData!}}}`
-		);
-		//TODO all active coolers are duped
+		/** Mapping of state ID to state */
+		const mapIntState = cellTypes
+			.map((t, i) => [t, i] as const)
+			.filter(([t]) => t.blockData != undefined && !t.activeCooler)
+			.map(([t, i]) => `{mapSlot:${t.id}s,mapState:{${t.blockData!}}}`)
+			//Add the entry for active cooler separately
+			.concat(`{mapSlot:${ACTIVE_COOLER}s,mapState:{${activeCoolerBlockData}}}`);
+		
 		return `{stateIntArray:[I;${stateIntArray.join(",")}],dim:0,posIntArray:[I;${posIntArray.join(",")}],startPos:{X:0,Y:0,Z:0},mapIntState:[${mapIntState.join(",")}],endPos:{X:${this.x - 1},Y:${this.y - 1},Z:${this.z - 1}}}`;
-		//It just works.
 	}
 
 	getAdjacentFuelCells(pos:Pos){
@@ -440,7 +451,6 @@ Energy Multiplier: ${percentage(stat.energyMultiplier)}`
 		cellInfo, cellsCount, totalCooling, totalEnergyPerTick, totalHeat, netHeat, spaceEfficiency, maxBaseHeat, powerEfficiency
 	}:ReturnType<(typeof Reactor)["prototype"]["calculateStats"]>){
 
-		//TODO fix handling of heat settings
 		DOMnode.innerHTML = `\
 		<h1 style="color: #FF4; border-bottom: 1px dashed white;">Reactor Stats</h1>
 		<br>
@@ -657,8 +667,7 @@ function regenReactor(){
 }
 regenReactor();
 
-//TODO clean this up
-titleText.innerHTML = `<strong>Einsteinium</strong> beta v${VERSION}: editing `;
+versionText.innerHTML = VERSION;
 console.log("%cWelcome to Einsteinium!", "font-size: 50px; color: blue");
 console.log("Version Beta v" + VERSION);
 console.log("Einsteinium is a tool to help you build NuclearCraft fission reactors.");

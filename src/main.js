@@ -18,26 +18,26 @@ let hotbarCells = [];
 const VERSION = "2.1.0";
 const validationCode = "This is a string of text that only Einsteinium's data files should have and is used to validate the JSON. Einsteinium is a tool to help you plan NuclearCraft fission reactors. grhe3uy48er9tfijrewiorf.";
 const hotbarKeybindMapping = {
-    "0": 18,
-    "1": 0,
-    "2": 1,
-    "3": 2,
-    "4": 3,
-    "5": 4,
-    "6": 5,
-    "7": 6,
-    "8": 7,
-    "9": 8,
-    "q": 9,
-    "w": 10,
-    "e": 11,
-    "r": 12,
-    "t": 13,
-    "y": 14,
-    "u": 15,
-    "i": 16,
-    "o": 17,
-    "p": 18,
+    "0": hotbarCells[18],
+    "1": hotbarCells[0],
+    "2": hotbarCells[1],
+    "3": hotbarCells[2],
+    "4": hotbarCells[3],
+    "5": hotbarCells[4],
+    "6": hotbarCells[5],
+    "7": hotbarCells[6],
+    "8": hotbarCells[7],
+    "9": hotbarCells[8],
+    "q": hotbarCells[9],
+    "w": hotbarCells[10],
+    "e": hotbarCells[11],
+    "r": hotbarCells[12],
+    "t": hotbarCells[13],
+    "y": hotbarCells[14],
+    "u": hotbarCells[15],
+    "i": hotbarCells[16],
+    "o": hotbarCells[17],
+    "p": hotbarCells[18],
 };
 let settings = {
     "heatMult": 1.0,
@@ -415,10 +415,7 @@ window.addEventListener("keydown", e => {
         downloadButton.click();
     }
     else if (e.key in hotbarKeybindMapping) {
-        const cell = hotbarCells[hotbarKeybindMapping[e.key]];
-        if (!cell)
-            throw new Error(`Bad keybind mapping: invalid key ${e.key}: invalid index ${hotbarKeybindMapping[e.key]}`);
-        cell.click();
+        hotbarKeybindMapping[e.key].click();
     }
 });
 function selectCell() {

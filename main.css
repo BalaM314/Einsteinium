@@ -56,7 +56,7 @@ html, body {
 	height: fit-content;
 	background-color: black;
 	display: grid;
-	gap: 1.6px;
+	gap: 1px;
 	grid-template-columns: repeat(var(--cells-x), 1fr);
 	grid-template-rows: repeat(var(--cells-z), 1fr);
 }

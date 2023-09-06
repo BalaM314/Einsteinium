@@ -1,0 +1,12 @@
+{
+	"name": "Einsteinium",
+	"version": "1.0.0",
+	"description": "A tool to help you build Nuclearcraft fission reactors.",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "tsc -w"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT"
+}

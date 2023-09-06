@@ -17,7 +17,7 @@ html, body {
 }
 #title-bar {
 	display: flex;
-	justify-content: center;
+	justify-content: space-around;
 	align-items: center;
 	grid-row: 1;
 	grid-column: span 3;

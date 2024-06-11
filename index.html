@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Einsteinium- a portable NuclearCraft reactor planner.</title>
 	<script src="src/cell_data.js"></script>
 	<script src="src/funcs.js"></script>
@@ -29,7 +29,7 @@
 <body>
 	<div id="page-wrapper">
 		<div id="title-bar">
-			<div comment="symmetry"></div>
+			<div></div>
 			<span id="title-text">
 				<span id="title"><strong>Einsteinium</strong> beta v<span id="version-text">[unknown]</span>: editing</span>
 				<input type="text" id="reactor-name" value="Unnamed Reactor" onchange="defaultReactor.name = this.value;">
@@ -48,7 +48,7 @@
 			<div class="flex"><input type="number" id="x-input" value="5">x<input type="number" id="y-input" value="5">x<input type="number" id="z-input" value="5"></div>
 			<div class="flex"><button id="regen-reactor">Regenerate reactor with above values</button></div>
 			<div class="flex"><button id="download-reactor">Download reactor as JSON</button></div>
-			<div class="noflex"><br><label for="upload-button" style="font-size: 17px;">Upload reactor from file</label><br><input id="upload-button" name="upload-button" type="file" accept="application/json"></input></div>
+			<div class="noflex"><br><label for="upload-button" style="font-size: 17px;">Upload reactor from file</label><br><input id="upload-button" name="upload-button" type="file" accept="application/json" /></div>
 			<div class="noflex"><label for="heat-input">Fuel base heat:</label><input type="number" id="heat-input" value="18"></div>
 			<div class="noflex"><label for="power-input">Fuel base power:</label><input type="number" id="power-input" value="60"></div>
 			<div class="flex"><label for="active-input" title="You can also hold shift to place active coolers. Shift+placing while this checkbox is ticked will place regular coolers.">Place active </label><input type="checkbox" id="active-input"></div>
